@@ -1,40 +1,56 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "pico_rtos.h"
+#include "../include/pico_rtos.h"
 
 #define LED_PIN 25
 #define BLINK_INTERVAL 500 // 500 ms
 
-void led_task_1(void *param) {
+// LED ON task
+void led_on_task(void *param) {
     while (1) {
+        // Turn LED on
         gpio_put(LED_PIN, 1);
-        pico_rtos_task_suspend(pico_rtos_get_current_task());
+        printf("LED ON\n");
+        
+        // Wait for specified interval
         pico_rtos_task_delay(BLINK_INTERVAL);
     }
 }
 
-void led_task_2(void *param) {
+// LED OFF task
+void led_off_task(void *param) {
     while (1) {
+        // Turn LED off
         gpio_put(LED_PIN, 0);
-        pico_rtos_task_suspend(pico_rtos_get_current_task());
+        printf("LED OFF\n");
+        
+        // Wait for specified interval
         pico_rtos_task_delay(BLINK_INTERVAL);
     }
 }
 
 int main() {
+    // Initialize standard I/O
     stdio_init_all();
+    
+    // Initialize GPIO
     gpio_init(LED_PIN);
     gpio_set_dir(LED_PIN, GPIO_OUT);
-
+    
+    // Initialize RTOS
     pico_rtos_init();
-
-    pico_rtos_task_t task_1;
-    pico_rtos_task_create(&task_1, "LED Task 1", led_task_1, NULL, 256, 1);
-
-    pico_rtos_task_t task_2;
-    pico_rtos_task_create(&task_2, "LED Task 2", led_task_2, NULL, 256, 1);
-
+    
+    // Create LED tasks
+    pico_rtos_task_t led_on_task_handle;
+    pico_rtos_task_create(&led_on_task_handle, "LED On Task", led_on_task, NULL, 256, 1);
+    
+    pico_rtos_task_t led_off_task_handle;
+    pico_rtos_task_create(&led_off_task_handle, "LED Off Task", led_off_task, NULL, 256, 1);
+    
+    // Start the scheduler
+    printf("Starting Pico-RTOS scheduler...\n");
     pico_rtos_start();
-
+    
+    // We should never reach here
     return 0;
 }

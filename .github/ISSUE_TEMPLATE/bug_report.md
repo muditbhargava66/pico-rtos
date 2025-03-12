@@ -1,7 +1,7 @@
 ---
-name: Bug Report
+name: Bug report
 about: Create a report to help us improve
-title: ''
+title: '[BUG] '
 labels: bug
 assignees: ''
 
@@ -12,21 +12,23 @@ A clear and concise description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
+1. Configure project with '...'
+2. Compile with '....'
+3. Run '....'
 4. See error
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Code sample**
+If applicable, add a minimal code sample that demonstrates the issue.
 
 **Environment (please complete the following information):**
- - OS: [e.g., Windows, macOS, Linux]
- - Compiler: [e.g., GCC, Clang]
- - Version: [e.g., 1.0.0]
+ - Pico-RTOS version: [e.g. 0.1.0]
+ - Pico SDK version: [e.g. 1.4.0]
+ - Compiler: [e.g. gcc 10.3.1]
+ - OS: [e.g. Ubuntu 22.04]
+ - Hardware: [e.g. Raspberry Pi Pico]
 
 **Additional context**
 Add any other context about the problem here.
