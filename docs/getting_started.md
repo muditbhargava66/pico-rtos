@@ -11,33 +11,65 @@ This guide will walk you through the steps to set up and start using Pico-RTOS o
 
 ## Installation
 
-1. Clone the Pico-RTOS repository:
-   ```
-   git clone https://github.com/muditbhargava66/pico-rtos.git
-   ```
+To get started with Pico-RTOS, follow these steps:
 
-2. Navigate to the project directory:
-   ```
-   cd pico-rtos
-   ```
+### 1. Clone the Repository
 
-3. Create a build directory and navigate to it:
-   ```
-   mkdir build
-   cd build
-   ```
+```bash
+git clone https://github.com/muditbhargava66/pico-rtos.git
+cd pico-rtos
+```
 
-4. Configure the project using CMake:
-   ```
-   cmake ..
-   ```
+### 2. Set Up the Pico SDK
 
-5. Build the project:
-   ```
-   make
-   ```
+You have three options for setting up the Pico SDK:
 
-6. Flash the generated binary to your Raspberry Pi Pico board.
+#### Option A: Use the Setup Script (Recommended)
+
+Run the provided setup script, which will automatically set up the Pico SDK as a submodule:
+
+```bash
+chmod +x setup-pico-sdk.sh
+./setup-pico-sdk.sh
+```
+
+#### Option B: Manual Submodule Setup
+
+Alternatively, you can manually set up the submodule:
+
+```bash
+# Add the Pico SDK as a submodule
+git submodule add -b master https://github.com/raspberrypi/pico-sdk.git extern/pico-sdk
+
+# Initialize and update submodules
+git submodule update --init --recursive
+
+# Copy the SDK import script to the project root
+cp extern/pico-sdk/external/pico_sdk_import.cmake .
+```
+
+#### Option C: Use an Existing SDK Installation
+
+If you already have the Pico SDK installed elsewhere, you can set the `PICO_SDK_PATH` environment variable:
+
+```bash
+# Linux/macOS
+export PICO_SDK_PATH=/path/to/your/pico-sdk
+
+# Windows
+set PICO_SDK_PATH=C:\path\to\your\pico-sdk
+```
+
+### 3. Build the Project
+
+```bash
+mkdir build
+cd build
+cmake ..
+make
+```
+
+### 4. Flash the generated binary to your Raspberry Pi Pico board.
 
 ## Usage
 
