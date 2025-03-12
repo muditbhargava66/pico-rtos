@@ -193,19 +193,54 @@ The Pico-RTOS documentation is available in the `docs/` directory:
 
 ```
 pico-rtos/
-├── .github/                  # GitHub templates and workflows
-├── docs/                     # Documentation
-├── examples/                 # Example projects
-│   ├── led_blinking/         # Simple LED blinking example
-│   └── task_synchronization/ # Task synchronization example
-├── include/                  # Public header files
-│   ├── pico_rtos/            # Component-specific headers
-│   └── pico_rtos.h           # Main include file
-├── src/                      # Implementation files
-├── tests/                    # Unit tests
-├── extern/                   # External dependencies (including Pico SDK)
-├── setup-pico-sdk.sh         # SDK setup script
-└── CMakeLists.txt            # Main build configuration
+├── .github/
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug_report.md
+│   │   └── feature_request.md
+│   └── PULL_REQUEST_TEMPLATE.md
+├── docs/
+│   ├── api_reference.md
+│   ├── contributing.md
+│   ├── troubleshooting.md
+│   ├── getting_started.md
+│   └── user_guide.md
+├── examples/
+│   ├── led_blinking/
+│   │   ├── CMakeLists.txt
+│   │   └── main.c
+│   └── task_synchronization/
+│       ├── CMakeLists.txt
+│       └── main.c
+├── include/
+│   ├── pico_rtos/
+│   │   ├── mutex.h
+│   │   ├── queue.h
+│   │   ├── semaphore.h
+│   │   ├── task.h
+│   │   └── timer.h
+│   └── pico_rtos.h
+├── src/
+│   ├── mutex.c
+│   ├── queue.c
+│   ├── semaphore.c
+│   ├── task.c
+│   ├── timer.c
+│   └── core.c
+├── tests/
+│   ├── mutex_test.c
+│   ├── queue_test.c
+│   ├── semaphore_test.c
+│   ├── task_test.c
+│   └── timer_test.c
+├── extern/
+├── .gitignore
+├── .gitmodules
+├── CMakeLists.txt
+├── CODE_OF_CONDUCT.md
+├── CONTRIBUTING.md
+├── LICENSE
+├── ROADMAP.md
+└── README.md
 ```
 
 ## Contributing
