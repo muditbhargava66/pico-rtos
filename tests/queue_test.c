@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "pico/stdlib.h"
 #include "pico_rtos.h"
 
 #define QUEUE_TEST_TASK_STACK_SIZE 256
@@ -28,6 +29,9 @@ void queue_test_task_2(void *param) {
 }
 
 int main() {
+    // Initialize standard I/O
+    stdio_init_all();
+    
     pico_rtos_init();
 
     pico_rtos_queue_init(&queue, queue_buffer, sizeof(int), QUEUE_SIZE);

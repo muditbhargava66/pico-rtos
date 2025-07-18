@@ -1,4 +1,5 @@
-#include "../include/pico_rtos/semaphore.h"
+#include "pico_rtos/semaphore.h"
+#include "pico_rtos.h"
 #include "pico/critical_section.h"
 
 bool pico_rtos_semaphore_init(pico_rtos_semaphore_t *semaphore, uint32_t initial_count, uint32_t max_count) {

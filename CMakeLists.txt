@@ -33,7 +33,7 @@ pico_sdk_init()
 
 # Version information
 set(PICO_RTOS_VERSION_MAJOR 0)
-set(PICO_RTOS_VERSION_MINOR 1)
+set(PICO_RTOS_VERSION_MINOR 2)
 set(PICO_RTOS_VERSION_PATCH 0)
 
 # Configuration options
@@ -55,6 +55,9 @@ add_library(pico_rtos STATIC
     src/task.c
     src/timer.c
     src/core.c
+    src/context_switch.c
+    src/context_switch.S
+    src/blocking.c
 )
 
 # Set up include directories - use generator expressions to handle install correctly
@@ -73,6 +76,7 @@ target_link_libraries(pico_rtos
 if(PICO_RTOS_BUILD_EXAMPLES)
     add_subdirectory(examples/led_blinking)
     add_subdirectory(examples/task_synchronization)
+    add_subdirectory(examples/system_test)
 endif()
 
 # Build tests if enabled

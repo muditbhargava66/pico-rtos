@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "pico/stdlib.h"
 #include "pico_rtos.h"
 
 #define TIMER_TEST_PERIOD 1000 // 1 second
@@ -10,6 +11,9 @@ void timer_callback(void *param) {
 }
 
 int main() {
+    // Initialize standard I/O
+    stdio_init_all();
+    
     pico_rtos_init();
 
     pico_rtos_timer_init(&timer, "Timer Test", timer_callback, NULL, TIMER_TEST_PERIOD, true);

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "pico/stdlib.h"
 #include "pico_rtos.h"
 
 #define BLINK_INTERVAL 500 // 500 ms

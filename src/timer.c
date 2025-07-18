@@ -1,4 +1,4 @@
-#include "../include/pico_rtos/timer.h"
+#include "pico_rtos/timer.h"
 #include "pico/critical_section.h"
 
 bool pico_rtos_timer_init(pico_rtos_timer_t *timer, const char *name, 
@@ -134,10 +134,12 @@ uint32_t pico_rtos_timer_get_remaining_time(pico_rtos_timer_t *timer) {
     uint32_t current_time = pico_rtos_get_tick_count();
     uint32_t remaining;
     
-    if (current_time >= timer->expiry_time) {
+    // Handle overflow-safe time comparison
+    uint32_t elapsed = current_time - timer->start_time;
+    if (elapsed >= timer->period) {
         remaining = 0;
     } else {
-        remaining = timer->expiry_time - current_time;
+        remaining = timer->period - elapsed;
     }
     
     critical_section_exit(&timer->cs);
@@ -156,54 +158,9 @@ void pico_rtos_timer_delete(pico_rtos_timer_t *timer) {
     
     critical_section_exit(&timer->cs);
     
-    // Note: In a real implementation, we would also remove this timer
-    // from the timer list, but that functionality would need to be
-    // implemented in core.c
+    // Remove timer from the timer list
+    extern void pico_rtos_remove_timer(pico_rtos_timer_t *timer);
+    pico_rtos_remove_timer(timer);
 }
 
-// This function is called by the core RTOS timer handler
-void pico_rtos_timer_handler(void) {
-    extern pico_rtos_timer_t *pico_rtos_get_first_timer(void);
-    extern pico_rtos_timer_t *pico_rtos_get_next_timer(pico_rtos_timer_t *timer);
-    
-    pico_rtos_timer_t *timer = pico_rtos_get_first_timer();
-    
-    extern uint32_t pico_rtos_get_tick_count(void);
-    uint32_t current_time = pico_rtos_get_tick_count();
-    
-    while (timer != NULL) {
-        critical_section_enter_blocking(&timer->cs);
-        
-        if (timer->running && !timer->expired && 
-            (current_time >= timer->expiry_time)) {
-            
-            // Timer has expired
-            timer->expired = true;
-            
-            // Execute callback if provided
-            pico_rtos_timer_callback_t callback = timer->callback;
-            void *param = timer->param;
-            
-            critical_section_exit(&timer->cs);
-            
-            // Execute callback outside of critical section
-            if (callback != NULL) {
-                callback(param);
-            }
-            
-            critical_section_enter_blocking(&timer->cs);
-            
-            // Handle auto-reload
-            if (timer->auto_reload && timer->running) {
-                timer->expired = false;
-                timer->expiry_time = current_time + timer->period;
-            } else {
-                timer->running = false;
-            }
-        }
-        
-        critical_section_exit(&timer->cs);
-        
-        timer = pico_rtos_get_next_timer(timer);
-    }
-}
+// Timer handler is now implemented in core.c to prevent deadlocks

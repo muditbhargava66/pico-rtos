@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "pico/stdlib.h"
 #include "pico_rtos.h"
 
 #define TASK_TEST_STACK_SIZE 256
@@ -20,6 +21,9 @@ void task_test_2(void *param) {
 }
 
 int main() {
+    // Initialize standard I/O
+    stdio_init_all();
+    
     pico_rtos_init();
 
     pico_rtos_task_t task_1;

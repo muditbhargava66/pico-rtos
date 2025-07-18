@@ -2,34 +2,57 @@
 
 This document outlines the planned development roadmap for Pico-RTOS across future versions.
 
-## Version 0.2.0 (Q2 2025)
+## Version 0.2.0 (COMPLETED - January 2025) ✅
 
 ### Core Functionality
-- [ ] Complete proper context switching for ARM Cortex-M0+
-- [ ] Implement thread-safe dynamic memory allocation
-- [ ] Add configurable system tick frequency
-- [ ] Support for task priorities with preemption
-- [ ] Implement task yield functionality
+- [x] Complete proper context switching for ARM Cortex-M0+
+- [x] Implement thread-safe dynamic memory allocation
+- [x] Add configurable system tick frequency
+- [x] Support for task priorities with preemption
+- [x] Implement task yield functionality
+- [x] Add idle task implementation
+- [x] Implement stack overflow protection
+- [x] Add interrupt nesting support
 
 ### Synchronization
-- [ ] Enhance mutex with priority inheritance to prevent priority inversion
-- [ ] Add recursive mutex support
-- [ ] Implement task notification system (lightweight alternative to semaphores)
-- [ ] Add support for mutex timeout handling
+- [x] Enhance mutex with priority inheritance to prevent priority inversion
+- [x] Add recursive mutex support
+- [x] Implement task notification system (lightweight alternative to semaphores)
+- [x] Add support for mutex timeout handling
+- [x] Complete blocking/unblocking mechanism
 
 ### System Services
-- [ ] Add idle task hook for power management
-- [ ] Implement runtime statistics collection
-- [ ] Integrate with Pico SDK sleep modes
-- [ ] Add system uptime tracking with rollover handling
+- [x] Add idle task hook for power management
+- [x] Implement runtime statistics collection
+- [x] Integrate with Pico SDK sleep modes
+- [x] Add system uptime tracking with rollover handling
+- [x] Add comprehensive memory tracking
+- [x] Implement system diagnostics and monitoring
+
+### Examples & Documentation
+- [ ] Add example for hardware interrupt handling *(moved to v0.2.1)*
+- [ ] Create example for multi-task communication patterns *(moved to v0.2.1)*
+- [x] Improve getting started documentation
+- [x] Add memory management guide
+- [x] Create comprehensive flashing and testing guide
+- [x] Add detailed troubleshooting documentation
+- [x] Implement contributing guidelines
+
+## Version 0.2.1 (Q1 2025) - Minor Update
 
 ### Examples & Documentation
 - [ ] Add example for hardware interrupt handling
 - [ ] Create example for multi-task communication patterns
-- [ ] Improve getting started documentation
-- [ ] Add memory management guide
+- [ ] Add power management example using idle task hooks
+- [ ] Create performance benchmarking example
 
-## Version 0.3.0 (Q3 2025)
+### Minor Enhancements
+- [ ] Add configurable system tick frequency options
+- [ ] Enhance error reporting with more detailed codes
+- [ ] Add optional debug logging system
+- [ ] Improve build system with more configuration options
+
+## Version 0.3.0 (Q2 2025)
 
 ### Core Functionality
 - [ ] Implement event groups for multi-event synchronization
@@ -55,7 +78,7 @@ This document outlines the planned development roadmap for Pico-RTOS across futu
 - [ ] Support for software timers with higher resolution
 - [ ] Add timeouts to all blocking operations
 
-## Version 0.4.0 (Q4 2025)
+## Version 0.4.0 (Q3 2025)
 
 ### Advanced Features
 - [ ] Implement multi-core support for RP2040
@@ -81,7 +104,7 @@ This document outlines the planned development roadmap for Pico-RTOS across futu
 - [ ] Optimize for code size and performance
 - [ ] Configurable feature set to minimize footprint
 
-## Version 1.0.0 (Q1 2026)
+## Version 1.0.0 (Q4 2025)
 
 ### Stability & Performance
 - [ ] Complete MISRA C compliance
