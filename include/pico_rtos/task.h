@@ -4,32 +4,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "pico/critical_section.h"
+#include "types.h"
 
-#define PICO_RTOS_TASK_NAME_MAX_LENGTH 32
-#define PICO_RTOS_WAIT_FOREVER UINT32_MAX
-#define PICO_RTOS_NO_WAIT 0
 
-typedef void (*pico_rtos_task_function_t)(void *param);
-
-typedef enum {
-    PICO_RTOS_TASK_STATE_READY,
-    PICO_RTOS_TASK_STATE_RUNNING,
-    PICO_RTOS_TASK_STATE_BLOCKED,    // Blocked on a resource or delay
-    PICO_RTOS_TASK_STATE_SUSPENDED,  // Explicitly suspended
-    PICO_RTOS_TASK_STATE_TERMINATED  // Task has terminated
-} pico_rtos_task_state_t;
-
-typedef enum {
-    PICO_RTOS_BLOCK_REASON_NONE,
-    PICO_RTOS_BLOCK_REASON_DELAY,
-    PICO_RTOS_BLOCK_REASON_QUEUE_FULL,
-    PICO_RTOS_BLOCK_REASON_QUEUE_EMPTY,
-    PICO_RTOS_BLOCK_REASON_SEMAPHORE,
-    PICO_RTOS_BLOCK_REASON_MUTEX
-} pico_rtos_block_reason_t;
 
 // Forward declaration for blocking objects
-typedef struct pico_rtos_block_object pico_rtos_block_object_t;
+struct pico_rtos_block_object;
 
 typedef struct pico_rtos_task {
     const char *name;
@@ -37,13 +17,14 @@ typedef struct pico_rtos_task {
     void *param;
     uint32_t stack_size;
     uint32_t priority;
+    uint32_t original_priority; // For priority inheritance
     pico_rtos_task_state_t state;
     uint32_t *stack_ptr;
     uint32_t *stack_base;
     uint32_t delay_until;
     bool auto_delete;
     pico_rtos_block_reason_t block_reason;
-    pico_rtos_block_object_t *blocking_object;
+    struct pico_rtos_block_object *blocking_object;
     struct pico_rtos_task *next;  // For linked list of tasks
     critical_section_t cs;
 } pico_rtos_task_t;
@@ -98,5 +79,28 @@ pico_rtos_task_t *pico_rtos_get_current_task(void);
  * @return const char* String representation of the task state
  */
 const char *pico_rtos_task_get_state_string(pico_rtos_task_t *task);
+
+/**
+ * @brief Delete a task and free its resources
+ *
+ * @param task Task to delete
+ */
+void pico_rtos_task_delete(pico_rtos_task_t *task);
+
+/**
+ * @brief Yield the current task (give up CPU voluntarily)
+ * 
+ * This allows other tasks of the same priority to run.
+ */
+void pico_rtos_task_yield(void);
+
+/**
+ * @brief Change a task's priority
+ *
+ * @param task Task to change priority for, or NULL for current task
+ * @param new_priority New priority value
+ * @return true if priority was changed successfully, false otherwise
+ */
+bool pico_rtos_task_set_priority(pico_rtos_task_t *task, uint32_t new_priority);
 
 #endif // PICO_RTOS_TASK_H

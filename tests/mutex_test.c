@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "pico/stdlib.h"
 #include "pico_rtos.h"
 
 #define MUTEX_TEST_TASK_STACK_SIZE 256
@@ -30,6 +31,9 @@ void mutex_test_task_2(void *param) {
 }
 
 int main() {
+    // Initialize standard I/O
+    stdio_init_all();
+    
     // Initialize the RTOS
     pico_rtos_init();
     

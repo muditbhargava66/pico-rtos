@@ -2,6 +2,10 @@
 
 This document provides a comprehensive reference for the Pico-RTOS API.
 
+## Version 0.2.0 - Production Ready
+
+This API reference covers all functions available in Pico-RTOS v0.2.0, which is production-ready with comprehensive features including priority inheritance, stack overflow protection, and memory management.
+
 ## Core RTOS Functions
 
 - `bool pico_rtos_init(void)`
@@ -66,6 +70,22 @@ This document provides a comprehensive reference for the Pico-RTOS API.
   - Parameters:
     - `task`: Task to get state for.
   - Returns string representation of the task state.
+
+- `void pico_rtos_task_delete(pico_rtos_task_t *task)`
+  - Delete a task and free its resources.
+  - Parameters:
+    - `task`: Task to delete.
+
+- `void pico_rtos_task_yield(void)`
+  - Yield the current task (give up CPU voluntarily).
+  - This allows other tasks of the same priority to run.
+
+- `bool pico_rtos_task_set_priority(pico_rtos_task_t *task, uint32_t new_priority)`
+  - Change a task's priority.
+  - Parameters:
+    - `task`: Task to change priority for, or `NULL` for current task.
+    - `new_priority`: New priority value.
+  - Returns `true` if priority was changed successfully, `false` otherwise.
 
 ## Mutex
 
@@ -244,6 +264,80 @@ This document provides a comprehensive reference for the Pico-RTOS API.
   - Parameters:
     - `timer`: Pointer to timer structure.
 
+## Memory Management
+
+- `void *pico_rtos_malloc(size_t size)`
+  - Allocate memory with tracking.
+  - Parameters:
+    - `size`: Size of memory to allocate in bytes.
+  - Returns pointer to allocated memory, or `NULL` if allocation failed.
+
+- `void pico_rtos_free(void *ptr, size_t size)`
+  - Free previously allocated memory.
+  - Parameters:
+    - `ptr`: Pointer to memory to free.
+    - `size`: Size of memory being freed.
+
+- `void pico_rtos_get_memory_stats(uint32_t *current, uint32_t *peak, uint32_t *allocations)`
+  - Get memory usage statistics.
+  - Parameters:
+    - `current`: Pointer to store current memory usage.
+    - `peak`: Pointer to store peak memory usage.
+    - `allocations`: Pointer to store total allocation count.
+
+## System Monitoring
+
+- `void pico_rtos_get_system_stats(pico_rtos_system_stats_t *stats)`
+  - Get comprehensive system statistics.
+  - Parameters:
+    - `stats`: Pointer to structure to store system statistics.
+
+- `uint32_t pico_rtos_get_idle_counter(void)`
+  - Get idle task counter for CPU usage statistics.
+  - Returns idle counter value.
+
+## Stack Overflow Protection
+
+- `void pico_rtos_check_stack_overflow(void)`
+  - Check all tasks for stack overflow.
+  - Called automatically by idle task.
+
+- `void pico_rtos_handle_stack_overflow(pico_rtos_task_t *task)`
+  - Handle stack overflow (weak function, can be overridden).
+  - Parameters:
+    - `task`: Task that experienced stack overflow.
+
+## Interrupt Handling
+
+- `void pico_rtos_interrupt_enter(void)`
+  - Called when entering an interrupt.
+  - Tracks interrupt nesting level.
+
+- `void pico_rtos_interrupt_exit(void)`
+  - Called when exiting an interrupt.
+  - Handles deferred context switches.
+
+- `void pico_rtos_request_context_switch(void)`
+  - Request a context switch (interrupt-safe).
+  - Defers context switch if in interrupt context.
+
+## System Statistics Structure
+
+```c
+typedef struct {
+    uint32_t total_tasks;        // Total number of tasks
+    uint32_t ready_tasks;        // Number of ready tasks
+    uint32_t blocked_tasks;      // Number of blocked tasks
+    uint32_t suspended_tasks;    // Number of suspended tasks
+    uint32_t terminated_tasks;   // Number of terminated tasks
+    uint32_t current_memory;     // Current memory usage
+    uint32_t peak_memory;        // Peak memory usage
+    uint32_t total_allocations;  // Total allocations made
+    uint32_t idle_counter;       // Idle task counter
+    uint32_t system_uptime;      // System uptime in ms
+} pico_rtos_system_stats_t;
+```
+
 ## Constants
 
 - `PICO_RTOS_WAIT_FOREVER`: Wait indefinitely for a resource.
@@ -253,5 +347,12 @@ This document provides a comprehensive reference for the Pico-RTOS API.
 
 - `pico_rtos_task_function_t`: Type for task functions.
 - `pico_rtos_timer_callback_t`: Type for timer callback functions.
+- `pico_rtos_system_stats_t`: System statistics structure.
+
+## Version Information
+
+- `PICO_RTOS_VERSION_MAJOR`: Major version number (0).
+- `PICO_RTOS_VERSION_MINOR`: Minor version number (2).
+- `PICO_RTOS_VERSION_PATCH`: Patch version number (0).
 
 ---

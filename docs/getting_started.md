@@ -2,6 +2,14 @@
 
 This guide will walk you through the steps to set up and start using Pico-RTOS on your Raspberry Pi Pico board.
 
+## 🚀 Production Ready
+
+Pico-RTOS v0.2.0 is now **production-ready** with comprehensive features including:
+- Complete ARM Cortex-M0+ context switching
+- Priority inheritance and stack overflow protection
+- Memory management with tracking and leak detection
+- Real-time system monitoring and diagnostics
+
 ## Prerequisites
 
 - Raspberry Pi Pico board
@@ -69,7 +77,14 @@ cmake ..
 make
 ```
 
-### 4. Flash the generated binary to your Raspberry Pi Pico board.
+### 4. Flash and Test
+
+After building, you'll have several executables ready to flash:
+
+- **Examples**: `led_blinking.uf2`, `task_synchronization.uf2`, `system_test.uf2`
+- **Tests**: `mutex_test.uf2`, `queue_test.uf2`, `semaphore_test.uf2`, `task_test.uf2`, `timer_test.uf2`
+
+For detailed flashing and testing instructions, see the [Flashing and Testing Guide](flashing_and_testing.md).
 
 ## Usage
 
@@ -82,16 +97,42 @@ For more detailed information on using the Pico-RTOS API, refer to the [User Gui
 
 ## Examples
 
-The Pico-RTOS repository includes example projects in the `examples/` directory. These examples demonstrate various features and usage patterns of the RTOS.
+The Pico-RTOS repository includes comprehensive example projects in the `examples/` directory:
+
+### Available Examples
+
+1. **LED Blinking** (`examples/led_blinking/`) - Professional LED control with proper task priorities and mutex synchronization
+2. **Task Synchronization** (`examples/task_synchronization/`) - Demonstrates semaphore usage between tasks
+3. **System Test** (`examples/system_test/`) - Comprehensive test covering all RTOS features including:
+   - Priority inheritance validation
+   - Memory management testing
+   - Queue and semaphore operations
+   - System statistics monitoring
+   - Stack overflow protection
+
+### Running Examples
 
 To build and run an example project:
 
-1. Navigate to the example project directory:
-   ```
-   cd examples/led_blinking
+1. Build all examples:
+   ```bash
+   mkdir build && cd build
+   cmake ..
+   make
    ```
 
-2. Follow the installation steps mentioned above to build and flash the example project.
+2. Flash the desired example:
+   ```bash
+   # For comprehensive system test (recommended first test):
+   cp examples/system_test/system_test.uf2 /path/to/pico/drive/
+   
+   # For LED blinking example:
+   cp examples/led_blinking/led_blinking.uf2 /path/to/pico/drive/
+   ```
+
+3. Connect to serial output to see the results (see [Flashing and Testing Guide](flashing_and_testing.md)):
+   - Baud rate: 115200
+   - Use `screen`, `minicom`, or the provided helper script
 
 ## Troubleshooting
 

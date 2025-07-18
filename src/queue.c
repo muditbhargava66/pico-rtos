@@ -1,4 +1,5 @@
-#include "../include/pico_rtos/queue.h"
+#include "pico_rtos/queue.h"
+#include "pico_rtos.h"
 #include "pico/critical_section.h"
 #include <string.h>
 

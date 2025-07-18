@@ -2,7 +2,8 @@
 
 # Pico-RTOS
 
-![Pico-RTOS Version](https://img.shields.io/badge/version-0.1.0-blue)
+![Pico-RTOS Version](https://img.shields.io/badge/version-0.2.0-blue)
+![Production Ready](https://img.shields.io/badge/status-production%20ready-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)
 [![Contributors](https://img.shields.io/github/contributors/muditbhargava66/pico-rtos)](https://github.com/muditbhargava66/pico-rtos/graphs/contributors)
@@ -13,7 +14,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/muditbhargava66/pico-rtos)](https://github.com/muditbhargava66/pico-rtos/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/muditbhargava66/pico-rtos)](https://github.com/muditbhargava66/pico-rtos/network/members)
 
-**Pico-RTOS is a lightweight real-time operating system specifically designed for the Raspberry Pi Pico board. It provides a set of APIs and primitives for multitasking, inter-task communication, synchronization, and timing, allowing you to develop efficient and responsive embedded applications.**
+**Pico-RTOS is a production-ready, lightweight real-time operating system specifically designed for the Raspberry Pi Pico board. It provides a comprehensive set of APIs and primitives for multitasking, inter-task communication, synchronization, and timing, with professional-grade features like priority inheritance, stack overflow protection, and memory management.**
 
 </div>
 
@@ -21,29 +22,51 @@
 
 - **Task Management**
   - Preemptive multitasking with priority-based scheduling
-  - Task creation, suspension, and deletion
-  - Task delay and yield functionality
+  - Task creation, suspension, deletion, and priority management
+  - Task delay, yield, and blocking functionality
+  - Automatic idle task with power management
 
 - **Inter-task Communication**
   - Queue-based messaging with timeout support
   - Send and receive with optional blocking
-  - Efficient memory management
+  - Priority-based task unblocking
+  - Efficient memory management with tracking
 
 - **Synchronization Primitives**
-  - Mutexes with ownership tracking and deadlock prevention
+  - Mutexes with priority inheritance and deadlock prevention
   - Counting and binary semaphores
   - Robust timeout handling for all blocking operations
+  - Complete blocking/unblocking mechanism
+
+- **Memory Management**
+  - Thread-safe dynamic memory allocation
+  - Comprehensive memory usage tracking and statistics
+  - Automatic cleanup of terminated tasks
+  - Memory leak detection and prevention
+
+- **Safety & Reliability**
+  - Stack overflow protection with dual canaries
+  - Thread-safe operations throughout
+  - Interrupt nesting support with deferred context switches
+  - Race condition elimination
+
+- **System Monitoring**
+  - Real-time system statistics and diagnostics
+  - CPU usage monitoring with idle time measurement
+  - Memory usage tracking and peak detection
+  - Task state monitoring and debugging support
 
 - **Timing Services**
-  - System tick counter with millisecond precision
+  - System tick counter with overflow-safe handling
   - Software timers with one-shot and auto-reload modes
-  - Accurate delay functions
+  - Accurate delay functions with timeout support
+  - Timer callback execution outside critical sections
 
 - **Core Features**
+  - Production-ready ARM Cortex-M0+ context switching
   - Lightweight footprint optimized for the RP2040 processor
-  - Efficient context switching
-  - Critical section management
-  - Easy-to-use API for task management and synchronization
+  - Professional-grade error handling and validation
+  - Easy-to-use API with comprehensive documentation
 
 ## Getting Started
 
@@ -183,11 +206,12 @@ pico_rtos_timer_start(&timer);
 
 The Pico-RTOS documentation is available in the `docs/` directory:
 
-- [API Reference](docs/api_reference.md): Detailed information about the Pico-RTOS API and its usage.
-- [User Guide](docs/user_guide.md): Comprehensive guide on using Pico-RTOS in your projects.
-- [Getting Started](docs/getting_started.md): Step-by-step guide to set up and start using Pico-RTOS.
-- [Troubleshooting](docs/troubleshooting.md): Solutions to common issues.
-- [Contributing Guidelines](docs/contributing.md): Information on how to contribute to the Pico-RTOS project.
+- [Getting Started](docs/getting_started.md): Step-by-step guide to set up and start using Pico-RTOS
+- [Flashing and Testing Guide](docs/flashing_and_testing.md): Complete guide for flashing firmware and monitoring output
+- [User Guide](docs/user_guide.md): Comprehensive guide on using Pico-RTOS in your projects
+- [API Reference](docs/api_reference.md): Detailed information about the Pico-RTOS API and its usage
+- [Troubleshooting](docs/troubleshooting.md): Solutions to common issues and debugging tips
+- [Contributing Guidelines](docs/contributing.md): Information on how to contribute to the Pico-RTOS project
 
 ## Project Structure
 
@@ -201,14 +225,18 @@ pico-rtos/
 ├── docs/
 │   ├── api_reference.md
 │   ├── contributing.md
-│   ├── troubleshooting.md
+│   ├── flashing_and_testing.md
 │   ├── getting_started.md
+│   ├── troubleshooting.md
 │   └── user_guide.md
 ├── examples/
 │   ├── led_blinking/
 │   │   ├── CMakeLists.txt
 │   │   └── main.c
-│   └── task_synchronization/
+│   ├── task_synchronization/
+│   │   ├── CMakeLists.txt
+│   │   └── main.c
+│   └── system_test/
 │       ├── CMakeLists.txt
 │       └── main.c
 ├── include/
@@ -225,7 +253,10 @@ pico-rtos/
 │   ├── semaphore.c
 │   ├── task.c
 │   ├── timer.c
-│   └── core.c
+│   ├── core.c
+│   ├── context_switch.c
+│   ├── context_switch.S
+│   └── blocking.c
 ├── tests/
 │   ├── mutex_test.c
 │   ├── queue_test.c
@@ -236,6 +267,9 @@ pico-rtos/
 ├── .gitignore
 ├── .gitmodules
 ├── CMakeLists.txt
+├── CHANGELOG.md
+├── TODO.md
+├── FIXES_APPLIED.md
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
 ├── LICENSE
