@@ -53,6 +53,7 @@ dkms.conf
 
 # CMake build directory
 build/
+build_test/
 
 # Visual Studio Code settings
 .vscode/
@@ -172,4 +173,11 @@ env/
 !extern/pico-sdk/
 !.gitmodules
 
-TODO.md
+# Configuration files (generated)
+config/.config
+config/cmake_config.cmake
+include/pico_rtos_config.h
+
+# Menuconfig temporary files
+.config.old
+.config.tmp

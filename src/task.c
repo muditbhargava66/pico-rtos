@@ -2,6 +2,8 @@
 #include <string.h>
 #include "pico_rtos/task.h"
 #include "pico_rtos/context_switch.h"
+#include "pico_rtos/error.h"
+#include "pico_rtos/logging.h"
 #include "pico_rtos.h"
 #include "pico/critical_section.h"
 
@@ -11,9 +13,28 @@ static bool pico_rtos_setup_task_stack(pico_rtos_task_t *task);
 bool pico_rtos_task_create(pico_rtos_task_t *task, const char *name, 
                           pico_rtos_task_function_t function, void *param, 
                           uint32_t stack_size, uint32_t priority) {
-    if (task == NULL || function == NULL || stack_size < 128) {
+    if (task == NULL) {
+        PICO_RTOS_LOG_TASK_ERROR("Task creation failed: NULL task pointer");
+        PICO_RTOS_REPORT_ERROR(PICO_RTOS_ERROR_INVALID_POINTER, 0);
+        return false;
+    }
+    
+    if (function == NULL) {
+        PICO_RTOS_LOG_TASK_ERROR("Task creation failed: NULL function pointer for task %s", 
+                                name ? name : "unnamed");
+        PICO_RTOS_REPORT_ERROR(PICO_RTOS_ERROR_TASK_FUNCTION_NULL, 0);
+        return false;
+    }
+    
+    if (stack_size < 128) {
+        PICO_RTOS_LOG_TASK_ERROR("Task creation failed: Stack size too small (%lu bytes) for task %s", 
+                                stack_size, name ? name : "unnamed");
+        PICO_RTOS_REPORT_ERROR(PICO_RTOS_ERROR_TASK_STACK_TOO_SMALL, stack_size);
         return false; // Minimum stack size of 128 bytes
     }
+    
+    PICO_RTOS_LOG_TASK_INFO("Creating task: %s (priority %lu, stack %lu bytes)", 
+                           name ? name : "unnamed", priority, stack_size);
     
     // Initialize task structure
     memset(task, 0, sizeof(pico_rtos_task_t));
@@ -31,12 +52,16 @@ bool pico_rtos_task_create(pico_rtos_task_t *task, const char *name,
     
     // Setup task stack
     if (!pico_rtos_setup_task_stack(task)) {
+        PICO_RTOS_LOG_TASK_ERROR("Task creation failed: Stack setup failed for task %s", 
+                                name ? name : "unnamed");
+        PICO_RTOS_REPORT_ERROR(PICO_RTOS_ERROR_OUT_OF_MEMORY, stack_size);
         return false;
     }
     
     // Add task to scheduler
     pico_rtos_scheduler_add_task(task);
     
+    PICO_RTOS_LOG_TASK_DEBUG("Task %s created successfully", name ? name : "unnamed");
     return true;
 }
 
@@ -49,6 +74,7 @@ void pico_rtos_task_suspend(pico_rtos_task_t *task) {
     }
     
     if (task != NULL) {
+        PICO_RTOS_LOG_TASK_INFO("Suspending task: %s", task->name ? task->name : "unnamed");
         task->state = PICO_RTOS_TASK_STATE_SUSPENDED;
         
         // If suspending current task, trigger a context switch
@@ -57,6 +83,8 @@ void pico_rtos_task_suspend(pico_rtos_task_t *task) {
             pico_rtos_scheduler(); // Trigger scheduler
             return;
         }
+    } else {
+        PICO_RTOS_LOG_TASK_WARN("Attempted to suspend NULL task");
     }
     
     pico_rtos_exit_critical();
@@ -64,13 +92,19 @@ void pico_rtos_task_suspend(pico_rtos_task_t *task) {
 
 void pico_rtos_task_resume(pico_rtos_task_t *task) {
     if (task == NULL) {
+        PICO_RTOS_LOG_TASK_WARN("Attempted to resume NULL task");
         return;
     }
     
     pico_rtos_enter_critical();
     
     if (task->state == PICO_RTOS_TASK_STATE_SUSPENDED) {
+        PICO_RTOS_LOG_TASK_INFO("Resuming task: %s", task->name ? task->name : "unnamed");
         task->state = PICO_RTOS_TASK_STATE_READY;
+    } else {
+        PICO_RTOS_LOG_TASK_DEBUG("Task %s was not suspended (state: %s)", 
+                                task->name ? task->name : "unnamed",
+                                pico_rtos_task_get_state_string(task));
     }
     
     pico_rtos_exit_critical();
@@ -78,6 +112,7 @@ void pico_rtos_task_resume(pico_rtos_task_t *task) {
 
 void pico_rtos_task_delay(uint32_t ms) {
     if (ms == 0) {
+        PICO_RTOS_LOG_TASK_DEBUG("Task delay called with 0ms, ignoring");
         return;
     }
     
@@ -85,6 +120,8 @@ void pico_rtos_task_delay(uint32_t ms) {
     
     pico_rtos_task_t *current_task = pico_rtos_get_current_task();
     if (current_task != NULL) {
+        PICO_RTOS_LOG_TASK_DEBUG("Task %s delaying for %lu ms", 
+                                current_task->name ? current_task->name : "unnamed", ms);
         current_task->state = PICO_RTOS_TASK_STATE_BLOCKED;
         current_task->block_reason = PICO_RTOS_BLOCK_REASON_DELAY;
         current_task->delay_until = pico_rtos_get_tick_count() + ms;
@@ -92,6 +129,8 @@ void pico_rtos_task_delay(uint32_t ms) {
         pico_rtos_exit_critical();
         pico_rtos_scheduler(); // Trigger scheduler to switch tasks
         return;
+    } else {
+        PICO_RTOS_LOG_TASK_WARN("Task delay called with no current task");
     }
     
     pico_rtos_exit_critical();

@@ -1,0 +1,9 @@
+# Python dependencies for Pico-RTOS build system
+# Install with: pip install -r requirements.txt
+
+# Kconfig library for menuconfig functionality
+kconfiglib>=14.1.0
+
+# Optional: For enhanced terminal support
+# colorama>=0.4.4  # Cross-platform colored terminal text
+# rich>=10.0.0     # Rich text and beautiful formatting

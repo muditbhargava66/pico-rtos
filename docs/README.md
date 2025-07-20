@@ -1,6 +1,6 @@
 # Pico-RTOS Documentation
 
-Welcome to the Pico-RTOS documentation! This directory contains comprehensive guides and references for using Pico-RTOS v0.2.0.
+Welcome to the Pico-RTOS documentation! This directory contains comprehensive guides and references for using Pico-RTOS v0.2.1.
 
 ## Documentation Overview
 
@@ -35,6 +35,27 @@ Welcome to the Pico-RTOS documentation! This directory contains comprehensive gu
   - Usage examples for each function
   - Data structures and constants
   - Version information
+
+### 🚨 **Error Handling**
+- **[Error Code Reference](error_codes.md)** - Comprehensive error documentation
+  - Complete error code catalog with descriptions
+  - Common causes and solutions for each error
+  - Error handling best practices
+  - Debugging with error history and statistics
+
+### 📝 **Debug Logging**
+- **[Logging System Guide](logging_guide.md)** - Debug logging documentation
+  - Configuration and initialization
+  - Log levels and subsystem filtering
+  - Custom output functions
+  - Performance considerations and best practices
+
+### ⚙️ **Configuration System**
+- **[Menuconfig Guide](menuconfig_guide.md)** - Interactive configuration system
+  - Terminal-based menuconfig interface
+  - GUI configuration option
+  - Build system integration
+  - Configuration profiles and automation
 
 ### 🔍 **Troubleshooting**
 - **[Troubleshooting Guide](troubleshooting.md)** - Problem solving
@@ -73,12 +94,16 @@ Welcome to the Pico-RTOS documentation! This directory contains comprehensive gu
 ## Documentation Features
 
 ### 🎯 **Production Ready**
-All documentation covers Pico-RTOS v0.2.0 features including:
+All documentation covers Pico-RTOS v0.2.1 features including:
 - Priority inheritance and deadlock prevention
 - Stack overflow protection
 - Memory management and leak detection
 - Real-time system monitoring
 - Professional error handling
+- Configurable system tick frequency
+- Enhanced error reporting with detailed codes and history
+- Optional debug logging system with zero overhead when disabled
+- Comprehensive examples demonstrating hardware integration patterns
 
 ### 💡 **Practical Examples**
 Every guide includes:
@@ -110,8 +135,11 @@ If you can't find what you're looking for:
 |----------|--------|--------------|
 | Getting Started | ✅ Complete | v0.2.0 |
 | Flashing and Testing | ✅ Complete | v0.2.0 |
-| User Guide | ✅ Complete | v0.2.0 |
-| API Reference | ✅ Complete | v0.2.0 |
+| User Guide | ✅ Complete | v0.2.1 |
+| API Reference | ✅ Complete | v0.2.1 |
+| Error Code Reference | ✅ Complete | v0.2.1 |
+| Logging System Guide | ✅ Complete | v0.2.1 |
+| Menuconfig Guide | ✅ Complete | v0.2.1 |
 | Troubleshooting | ✅ Complete | v0.2.0 |
 | Contributing | ✅ Complete | v0.2.0 |
 

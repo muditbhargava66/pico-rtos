@@ -2,8 +2,9 @@
 
 # Pico-RTOS
 
-![Pico-RTOS Version](https://img.shields.io/badge/version-0.2.0-blue)
+![Pico-RTOS Version](https://img.shields.io/badge/version-0.2.1-blue)
 ![Production Ready](https://img.shields.io/badge/status-production%20ready-brightgreen)
+![Real-Time Compliant](https://img.shields.io/badge/real--time-compliant-success)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)
 [![Contributors](https://img.shields.io/github/contributors/muditbhargava66/pico-rtos)](https://github.com/muditbhargava66/pico-rtos/graphs/contributors)
@@ -14,7 +15,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/muditbhargava66/pico-rtos)](https://github.com/muditbhargava66/pico-rtos/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/muditbhargava66/pico-rtos)](https://github.com/muditbhargava66/pico-rtos/network/members)
 
-**Pico-RTOS is a production-ready, lightweight real-time operating system specifically designed for the Raspberry Pi Pico board. It provides a comprehensive set of APIs and primitives for multitasking, inter-task communication, synchronization, and timing, with professional-grade features like priority inheritance, stack overflow protection, and memory management.**
+**Pico-RTOS is a production-ready, lightweight real-time operating system specifically designed for the Raspberry Pi Pico board. It provides a comprehensive set of APIs and primitives for multitasking, inter-task communication, synchronization, and timing, with professional-grade features like priority inheritance, stack overflow protection, memory management, and an intuitive menuconfig-style configuration system. Version 0.2.1 includes critical performance fixes that ensure true real-time compliance with O(1) unblocking and bounded critical sections.**
 
 </div>
 
@@ -61,6 +62,21 @@
   - Software timers with one-shot and auto-reload modes
   - Accurate delay functions with timeout support
   - Timer callback execution outside critical sections
+
+- **Enhanced Developer Experience (v0.2.1)**
+  - Interactive menuconfig-style configuration interface
+  - GUI configuration option with tkinter
+  - Comprehensive examples demonstrating real-world integration patterns
+  - Enhanced error reporting with 60+ specific error codes
+  - Optional debug logging system with zero overhead when disabled
+  - Configurable system tick frequency (100Hz to 2000Hz)
+
+- **Configuration System**
+  - Interactive menuconfig-style configuration interface
+  - GUI configuration option with tkinter
+  - Automatic generation of CMake and C header files
+  - Built-in validation and dependency checking
+  - Support for configuration profiles and presets
 
 - **Core Features**
   - Production-ready ARM Cortex-M0+ context switching
@@ -119,13 +135,49 @@ export PICO_SDK_PATH=/path/to/your/pico-sdk
 set PICO_SDK_PATH=C:\path\to\your\pico-sdk
 ```
 
-### 3. Build the Project
+### 3. Configure and Build the Project
+
+Pico-RTOS now includes a menuconfig-style configuration system for easy customization:
+
+#### Option A: Using Menuconfig (Recommended)
+
+```bash
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Configure interactively
+make menuconfig
+
+# Build with your configuration
+make build
+```
+
+#### Option B: Using GUI Configuration
+
+```bash
+# Use graphical configuration interface
+make guiconfig
+
+# Build with your configuration
+make build
+```
+
+#### Option C: Traditional CMake Build
 
 ```bash
 mkdir build
 cd build
 cmake ..
 make
+```
+
+#### Quick Start
+
+For a complete setup from scratch:
+
+```bash
+# Set up everything and build with defaults
+make quick-start
 ```
 
 ### 4. Flash and Run
@@ -202,6 +254,34 @@ pico_rtos_timer_init(&timer, "My Timer", timer_callback, NULL, 1000, true);
 pico_rtos_timer_start(&timer);
 ```
 
+## Comprehensive Examples (v0.2.1)
+
+Pico-RTOS v0.2.1 includes four professional examples demonstrating real-world integration patterns:
+
+### Hardware Interrupt Handling
+```bash
+make flash-hardware_interrupt
+```
+Demonstrates RTOS-aware GPIO interrupt handling with proper ISR implementation and safe communication between interrupt context and tasks using queues.
+
+### Multi-Task Communication
+```bash
+make flash-task_communication
+```
+Shows three key communication patterns: queue-based producer-consumer, semaphore-based resource sharing, and lightweight task notifications.
+
+### Power Management
+```bash
+make flash-power_management
+```
+Illustrates power optimization using idle task hooks, integration with Pico SDK sleep modes, and wake-up event handling.
+
+### Performance Benchmarking
+```bash
+make flash-performance_benchmark
+```
+Provides comprehensive performance measurements including context switch timing, interrupt latency, and synchronization overhead.
+
 ## Documentation
 
 The Pico-RTOS documentation is available in the `docs/` directory:
@@ -217,36 +297,38 @@ The Pico-RTOS documentation is available in the `docs/` directory:
 
 ```
 pico-rtos/
-├── .github/
-│   ├── ISSUE_TEMPLATE/
-│   │   ├── bug_report.md
-│   │   └── feature_request.md
-│   └── PULL_REQUEST_TEMPLATE.md
-├── docs/
-│   ├── api_reference.md
-│   ├── contributing.md
-│   ├── flashing_and_testing.md
-│   ├── getting_started.md
-│   ├── troubleshooting.md
-│   └── user_guide.md
-├── examples/
-│   ├── led_blinking/
-│   │   ├── CMakeLists.txt
-│   │   └── main.c
-│   ├── task_synchronization/
-│   │   ├── CMakeLists.txt
-│   │   └── main.c
-│   └── system_test/
-│       ├── CMakeLists.txt
-│       └── main.c
-├── include/
-│   ├── pico_rtos/
-│   │   ├── mutex.h
-│   │   ├── queue.h
-│   │   ├── semaphore.h
-│   │   ├── task.h
-│   │   └── timer.h
-│   └── pico_rtos.h
+├── config/                     # Configuration files (generated)
+├── docs/                       # Comprehensive documentation
+│   ├── release/               # Release-specific documentation
+│   ├── api_reference.md       # Complete API documentation
+│   ├── user_guide.md          # User guide and best practices
+│   ├── error_codes.md         # Error code reference
+│   ├── logging_guide.md       # Debug logging guide
+│   └── menuconfig_guide.md    # Configuration system guide
+├── examples/                   # Professional example applications
+│   ├── led_blinking/          # Basic task management
+│   ├── task_synchronization/  # Semaphore usage patterns
+│   ├── task_communication/    # Inter-task communication
+│   ├── hardware_interrupt/    # RTOS-aware interrupt handling
+│   ├── power_management/      # Power optimization techniques
+│   ├── performance_benchmark/ # Performance measurement
+│   └── system_test/           # Comprehensive RTOS validation
+├── include/                    # Public header files
+│   ├── pico_rtos/             # Individual component headers
+│   │   ├── config.h           # Configuration definitions
+│   │   ├── error.h            # Error reporting system
+│   │   ├── logging.h          # Debug logging system
+│   │   └── [other headers]    # Core RTOS headers
+│   └── pico_rtos.h            # Main RTOS header
+├── scripts/                    # Build and utility scripts
+│   ├── menuconfig.py          # Interactive configuration system
+│   └── test_menuconfig.py     # Configuration system tests
+├── src/                        # RTOS implementation
+├── tests/                      # Unit and integration tests
+├── Kconfig                     # Menuconfig definitions
+├── Makefile                    # Build system with menuconfig
+├── menuconfig.sh               # Configuration script
+└── requirements.txt            # Python dependencies
 ├── src/
 │   ├── mutex.c
 │   ├── queue.c

@@ -2,9 +2,9 @@
 
 This document provides a comprehensive reference for the Pico-RTOS API.
 
-## Version 0.2.0 - Production Ready
+## Version 0.2.1 - Enhanced Developer Experience
 
-This API reference covers all functions available in Pico-RTOS v0.2.0, which is production-ready with comprehensive features including priority inheritance, stack overflow protection, and memory management.
+This API reference covers all functions available in Pico-RTOS v0.2.1, which builds upon the production-ready v0.2.0 foundation with enhanced developer experience, comprehensive examples, configurable system options, and improved debugging capabilities.
 
 ## Core RTOS Functions
 
@@ -26,6 +26,10 @@ This API reference covers all functions available in Pico-RTOS v0.2.0, which is 
 - `const char *pico_rtos_get_version_string(void)`
   - Get the RTOS version string.
   - Returns the version string in format "X.Y.Z".
+
+- `uint32_t pico_rtos_get_tick_rate_hz(void)`
+  - Get the current system tick frequency.
+  - Returns the system tick rate in Hz (configured at build time).
 
 - `void pico_rtos_enter_critical(void)`
   - Enter a critical section (disable interrupts).
@@ -321,6 +325,147 @@ This API reference covers all functions available in Pico-RTOS v0.2.0, which is 
   - Request a context switch (interrupt-safe).
   - Defers context switch if in interrupt context.
 
+## Enhanced Error Reporting
+
+- `bool pico_rtos_error_init(void)`
+  - Initialize the error reporting system.
+  - Returns `true` if initialization successful, `false` otherwise.
+
+- `void pico_rtos_report_error_detailed(pico_rtos_error_t code, const char *file, int line, const char *function, uint32_t context_data)`
+  - Report an error with detailed context information.
+  - Typically called through the `PICO_RTOS_REPORT_ERROR` macro.
+  - Parameters:
+    - `code`: Error code to report.
+    - `file`: Source file name where error occurred.
+    - `line`: Line number where error occurred.
+    - `function`: Function name where error occurred.
+    - `context_data`: Additional context-specific data.
+
+- `const char *pico_rtos_get_error_description(pico_rtos_error_t code)`
+  - Get human-readable description for an error code.
+  - Parameters:
+    - `code`: Error code to get description for.
+  - Returns pointer to static string containing error description.
+
+- `bool pico_rtos_get_last_error(pico_rtos_error_info_t *error_info)`
+  - Get information about the last error that occurred.
+  - Parameters:
+    - `error_info`: Pointer to structure to fill with error information.
+  - Returns `true` if error information was available, `false` if no errors occurred.
+
+- `void pico_rtos_clear_last_error(void)`
+  - Clear the last error information.
+  - Resets the last error to `PICO_RTOS_ERROR_NONE`.
+
+- `void pico_rtos_get_error_stats(pico_rtos_error_stats_t *stats)`
+  - Get comprehensive error statistics.
+  - Parameters:
+    - `stats`: Pointer to structure to fill with error statistics.
+
+- `void pico_rtos_set_error_callback(pico_rtos_error_callback_t callback)`
+  - Set error callback function for custom error handling.
+  - Parameters:
+    - `callback`: Pointer to callback function, or `NULL` to disable callbacks.
+
+### Error History Functions (if enabled)
+
+- `bool pico_rtos_get_error_history(pico_rtos_error_info_t *errors, size_t max_count, size_t *actual_count)`
+  - Get error history from the circular buffer.
+  - Parameters:
+    - `errors`: Array to store error information.
+    - `max_count`: Maximum number of errors to retrieve.
+    - `actual_count`: Pointer to store actual number of errors retrieved.
+  - Returns `true` if successful, `false` if invalid parameters.
+
+- `size_t pico_rtos_get_error_count(void)`
+  - Get the number of errors currently stored in history.
+  - Returns number of errors in history buffer.
+
+- `void pico_rtos_clear_error_history(void)`
+  - Clear all error history.
+  - Removes all errors from the history buffer.
+
+## Debug Logging System
+
+### Logging Configuration Functions
+
+- `void pico_rtos_log_init(pico_rtos_log_output_func_t output_func)`
+  - Initialize the logging system.
+  - Parameters:
+    - `output_func`: Function to handle log output (can be `NULL` for no output).
+
+- `void pico_rtos_log_set_level(pico_rtos_log_level_t level)`
+  - Set the current log level.
+  - Parameters:
+    - `level`: New log level (only messages at or below this level will be processed).
+
+- `pico_rtos_log_level_t pico_rtos_log_get_level(void)`
+  - Get the current log level.
+  - Returns current log level.
+
+- `void pico_rtos_log_enable_subsystem(uint32_t subsystem_mask)`
+  - Enable logging for specific subsystems.
+  - Parameters:
+    - `subsystem_mask`: Bitwise OR of subsystems to enable.
+
+- `void pico_rtos_log_disable_subsystem(uint32_t subsystem_mask)`
+  - Disable logging for specific subsystems.
+  - Parameters:
+    - `subsystem_mask`: Bitwise OR of subsystems to disable.
+
+- `bool pico_rtos_log_is_subsystem_enabled(pico_rtos_log_subsystem_t subsystem)`
+  - Check if a subsystem is enabled for logging.
+  - Parameters:
+    - `subsystem`: Subsystem to check.
+  - Returns `true` if enabled, `false` otherwise.
+
+### Logging Output Functions
+
+- `void pico_rtos_log(pico_rtos_log_level_t level, pico_rtos_log_subsystem_t subsystem, const char *file, int line, const char *format, ...)`
+  - Core logging function (typically not called directly).
+  - Parameters:
+    - `level`: Log level.
+    - `subsystem`: Originating subsystem.
+    - `file`: Source file name.
+    - `line`: Source line number.
+    - `format`: Printf-style format string.
+    - `...`: Format arguments.
+
+- `void pico_rtos_log_default_output(const pico_rtos_log_entry_t *entry)`
+  - Default log output function that prints to stdout.
+  - Parameters:
+    - `entry`: Pointer to the log entry.
+
+- `void pico_rtos_log_compact_output(const pico_rtos_log_entry_t *entry)`
+  - Compact log output function for resource-constrained environments.
+  - Parameters:
+    - `entry`: Pointer to the log entry.
+
+### Logging Utility Functions
+
+- `const char *pico_rtos_log_level_to_string(pico_rtos_log_level_t level)`
+  - Get string representation of log level.
+  - Parameters:
+    - `level`: Log level.
+  - Returns string representation.
+
+- `const char *pico_rtos_log_subsystem_to_string(pico_rtos_log_subsystem_t subsystem)`
+  - Get string representation of subsystem.
+  - Parameters:
+    - `subsystem`: Subsystem.
+  - Returns string representation.
+
+## Idle Task Hook Support
+
+- `void pico_rtos_set_idle_hook(pico_rtos_idle_hook_t hook)`
+  - Set idle task hook function for power management.
+  - Parameters:
+    - `hook`: Function to call during idle periods.
+
+- `void pico_rtos_clear_idle_hook(void)`
+  - Clear the idle task hook function.
+  - Removes any previously set idle hook.
+
 ## System Statistics Structure
 
 ```c
@@ -338,6 +483,33 @@ typedef struct {
 } pico_rtos_system_stats_t;
 ```
 
+## Error Information Structure
+
+```c
+typedef struct {
+    pico_rtos_error_t code;          // Error code
+    uint32_t timestamp;              // System tick when error occurred
+    uint32_t task_id;                // ID of task where error occurred
+    const char *file;                // Source file where error was reported
+    int line;                        // Line number where error was reported
+    const char *function;            // Function name where error occurred
+    const char *description;         // Human-readable error description
+    uint32_t context_data;           // Additional context-specific data
+} pico_rtos_error_info_t;
+```
+
+## Log Entry Structure
+
+```c
+typedef struct {
+    uint32_t timestamp;                                     // System timestamp in ticks
+    pico_rtos_log_level_t level;                           // Log level
+    pico_rtos_log_subsystem_t subsystem;                   // Originating subsystem
+    uint32_t task_id;                                      // Task ID (0 for ISR context)
+    char message[PICO_RTOS_LOG_MESSAGE_MAX_LENGTH];        // Formatted message
+} pico_rtos_log_entry_t;
+```
+
 ## Constants
 
 - `PICO_RTOS_WAIT_FOREVER`: Wait indefinitely for a resource.
@@ -353,6 +525,54 @@ typedef struct {
 
 - `PICO_RTOS_VERSION_MAJOR`: Major version number (0).
 - `PICO_RTOS_VERSION_MINOR`: Minor version number (2).
-- `PICO_RTOS_VERSION_PATCH`: Patch version number (0).
+- `PICO_RTOS_VERSION_PATCH`: Patch version number (1).
+
+## Configuration Constants
+
+### System Tick Frequencies
+- `PICO_RTOS_TICK_RATE_HZ_100`: 100 Hz tick rate
+- `PICO_RTOS_TICK_RATE_HZ_250`: 250 Hz tick rate
+- `PICO_RTOS_TICK_RATE_HZ_500`: 500 Hz tick rate
+- `PICO_RTOS_TICK_RATE_HZ_1000`: 1000 Hz tick rate (default)
+- `PICO_RTOS_TICK_RATE_HZ_2000`: 2000 Hz tick rate
+
+### Log Levels
+- `PICO_RTOS_LOG_LEVEL_NONE`: No logging
+- `PICO_RTOS_LOG_LEVEL_ERROR`: Error conditions only
+- `PICO_RTOS_LOG_LEVEL_WARN`: Warnings and errors
+- `PICO_RTOS_LOG_LEVEL_INFO`: Informational messages, warnings, and errors
+- `PICO_RTOS_LOG_LEVEL_DEBUG`: All messages including debug information
+
+### Log Subsystems
+- `PICO_RTOS_LOG_SUBSYSTEM_CORE`: Core scheduler functions
+- `PICO_RTOS_LOG_SUBSYSTEM_TASK`: Task management
+- `PICO_RTOS_LOG_SUBSYSTEM_MUTEX`: Mutex operations
+- `PICO_RTOS_LOG_SUBSYSTEM_QUEUE`: Queue operations
+- `PICO_RTOS_LOG_SUBSYSTEM_TIMER`: Timer operations
+- `PICO_RTOS_LOG_SUBSYSTEM_MEMORY`: Memory management
+- `PICO_RTOS_LOG_SUBSYSTEM_SEMAPHORE`: Semaphore operations
+- `PICO_RTOS_LOG_SUBSYSTEM_ALL`: All subsystems
+
+## Error Reporting Macros
+
+- `PICO_RTOS_REPORT_ERROR(code, context_data)`: Report an error with full context information
+- `PICO_RTOS_REPORT_ERROR_SIMPLE(code)`: Report an error with simple context
+
+## Logging Macros
+
+### General Logging Macros
+- `PICO_RTOS_LOG_ERROR(subsystem, format, ...)`: Log an error message
+- `PICO_RTOS_LOG_WARN(subsystem, format, ...)`: Log a warning message
+- `PICO_RTOS_LOG_INFO(subsystem, format, ...)`: Log an informational message
+- `PICO_RTOS_LOG_DEBUG(subsystem, format, ...)`: Log a debug message
+
+### Subsystem-Specific Convenience Macros
+- `PICO_RTOS_LOG_CORE_ERROR/WARN/INFO/DEBUG(format, ...)`: Core subsystem logging
+- `PICO_RTOS_LOG_TASK_ERROR/WARN/INFO/DEBUG(format, ...)`: Task subsystem logging
+- `PICO_RTOS_LOG_MUTEX_ERROR/WARN/INFO/DEBUG(format, ...)`: Mutex subsystem logging
+- `PICO_RTOS_LOG_QUEUE_ERROR/WARN/INFO/DEBUG(format, ...)`: Queue subsystem logging
+- `PICO_RTOS_LOG_TIMER_ERROR/WARN/INFO/DEBUG(format, ...)`: Timer subsystem logging
+- `PICO_RTOS_LOG_MEMORY_ERROR/WARN/INFO/DEBUG(format, ...)`: Memory subsystem logging
+- `PICO_RTOS_LOG_SEM_ERROR/WARN/INFO/DEBUG(format, ...)`: Semaphore subsystem logging
 
 ---

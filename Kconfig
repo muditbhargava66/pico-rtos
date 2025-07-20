@@ -1,0 +1,416 @@
+# Pico-RTOS Configuration
+# This file defines the configuration options for Pico-RTOS using Kconfig syntax
+
+mainmenu "Pico-RTOS Configuration"
+
+menu "Build Options"
+
+config BUILD_EXAMPLES
+    bool "Build example projects"
+    default y
+    help
+      Build the example projects that demonstrate various RTOS features.
+      Examples include LED blinking, task synchronization, communication
+      patterns, hardware interrupt handling, power management, and
+      performance benchmarking.
+
+config BUILD_TESTS
+    bool "Build test projects"
+    default y
+    help
+      Build the unit test projects for testing RTOS functionality.
+      Tests cover all major RTOS components including tasks, mutexes,
+      queues, semaphores, and timers.
+
+config ENABLE_DEBUG
+    bool "Enable debug output and assertions"
+    default y
+    help
+      Enable debug output and runtime assertions. This adds debugging
+      information and validation checks that help during development
+      but may impact performance in production builds.
+
+config ENABLE_INSTALL
+    bool "Enable installation targets"
+    default n
+    help
+      Enable CMake installation targets for system-wide installation
+      of the RTOS library and headers. Useful for packaging and
+      distribution.
+
+endmenu
+
+menu "System Timing"
+
+choice TICK_RATE
+    prompt "System tick frequency"
+    default TICK_RATE_1000
+    help
+      Select the system tick frequency in Hz. Higher frequencies provide
+      better timing resolution but increase system overhead. Lower
+      frequencies reduce overhead but provide coarser timing.
+
+config TICK_RATE_100
+    bool "100 Hz (10ms tick period)"
+    help
+      Low overhead, coarse timing resolution.
+      Suitable for applications with relaxed timing requirements.
+
+config TICK_RATE_250
+    bool "250 Hz (4ms tick period)"
+    help
+      Balanced performance between overhead and timing resolution.
+      Good for most general-purpose applications.
+
+config TICK_RATE_500
+    bool "500 Hz (2ms tick period)"
+    help
+      Good timing resolution with moderate overhead.
+      Suitable for applications requiring precise timing.
+
+config TICK_RATE_1000
+    bool "1000 Hz (1ms tick period)"
+    help
+      Excellent timing resolution (default).
+      Standard configuration for most real-time applications.
+
+config TICK_RATE_2000
+    bool "2000 Hz (0.5ms tick period)"
+    help
+      High resolution timing with higher system overhead.
+      Use only when sub-millisecond precision is required.
+
+endchoice
+
+config TICK_RATE_HZ
+    int
+    default 100 if TICK_RATE_100
+    default 250 if TICK_RATE_250
+    default 500 if TICK_RATE_500
+    default 1000 if TICK_RATE_1000
+    default 2000 if TICK_RATE_2000
+
+endmenu
+
+menu "System Resources"
+
+config MAX_TASKS
+    int "Maximum number of concurrent tasks"
+    range 1 64
+    default 16
+    help
+      Maximum number of tasks that can exist simultaneously in the system.
+      Each task consumes memory for its control block and stack.
+      Higher values increase memory usage but allow more concurrent tasks.
+      
+      Recommended values:
+      - Small applications: 4-8 tasks
+      - Medium applications: 8-16 tasks
+      - Large applications: 16-32 tasks
+      
+      Values above 32 may impact performance and consume significant memory.
+
+config MAX_TIMERS
+    int "Maximum number of software timers"
+    range 1 32
+    default 8
+    help
+      Maximum number of software timers that can be active simultaneously.
+      Software timers are used for periodic callbacks and one-shot events.
+      Each timer consumes memory for its control structure.
+      
+      Recommended values:
+      - Simple applications: 4-8 timers
+      - Complex applications: 8-16 timers
+
+config TASK_STACK_SIZE_DEFAULT
+    int "Default task stack size (bytes)"
+    range 256 8192
+    default 1024
+    help
+      Default stack size allocated for tasks when not explicitly specified.
+      Stack size must be sufficient for:
+      - Local variables
+      - Function call overhead
+      - Interrupt handling (if interrupts occur during task execution)
+      
+      Recommended values:
+      - Simple tasks: 512-1024 bytes
+      - Complex tasks: 1024-2048 bytes
+      - Tasks with large local variables: 2048+ bytes
+      
+      Stack overflow protection will detect insufficient stack sizes.
+
+config IDLE_STACK_SIZE
+    int "Idle task stack size (bytes)"
+    range 128 1024
+    default 256
+    help
+      Stack size for the idle task. The idle task runs when no other
+      tasks are ready and handles system cleanup operations.
+      
+      Increase this value if you use idle hooks that require more stack space.
+
+endmenu
+
+menu "Feature Configuration"
+
+config ENABLE_STACK_CHECKING
+    bool "Enable stack overflow checking"
+    default y
+    help
+      Enable automatic stack overflow detection using stack canaries.
+      The system periodically checks for stack corruption and calls
+      the stack overflow handler if detected.
+      
+      This feature has minimal performance impact and is highly
+      recommended for development and production builds.
+
+config ENABLE_MEMORY_TRACKING
+    bool "Enable memory usage tracking"
+    default y
+    help
+      Track memory allocations and provide usage statistics.
+      Enables functions like pico_rtos_get_memory_stats() and
+      helps detect memory leaks.
+      
+      Adds small overhead to malloc/free operations but provides
+      valuable debugging information.
+
+config ENABLE_RUNTIME_STATS
+    bool "Enable runtime statistics collection"
+    default y
+    help
+      Collect runtime statistics including task execution times,
+      system load, and performance metrics.
+      
+      Enables comprehensive system monitoring through
+      pico_rtos_get_system_stats().
+
+endmenu
+
+menu "Error Handling"
+
+config ENABLE_ERROR_HISTORY
+    bool "Enable error history tracking"
+    default y
+    help
+      Maintain a circular buffer of recent errors for debugging.
+      Provides detailed error information including timestamps,
+      source locations, and context data.
+      
+      Requires memory tracking to be enabled for optimal operation.
+
+config ERROR_HISTORY_SIZE
+    int "Error history buffer size"
+    range 5 50
+    default 10
+    depends on ENABLE_ERROR_HISTORY
+    help
+      Number of error entries to keep in the error history buffer.
+      Larger values provide more debugging information but consume
+      more memory.
+      
+      Each entry consumes approximately 64 bytes of memory.
+
+endmenu
+
+menu "Debug Logging"
+
+config ENABLE_LOGGING
+    bool "Enable debug logging system"
+    default n
+    help
+      Enable the configurable debug logging system.
+      When disabled, all logging macros compile to nothing,
+      providing zero runtime overhead.
+      
+      Enable this for development and debugging builds.
+      Disable for production builds to minimize code size and overhead.
+
+if ENABLE_LOGGING
+
+choice LOG_LEVEL
+    prompt "Default log level"
+    default LOG_LEVEL_INFO
+    help
+      Set the default log level. Only messages at or below this
+      level will be processed and output.
+
+config LOG_LEVEL_NONE
+    bool "None - No logging"
+
+config LOG_LEVEL_ERROR
+    bool "Error - Error conditions only"
+
+config LOG_LEVEL_WARN
+    bool "Warning - Warnings and errors"
+
+config LOG_LEVEL_INFO
+    bool "Info - Informational messages, warnings, and errors"
+
+config LOG_LEVEL_DEBUG
+    bool "Debug - All messages including debug information"
+
+endchoice
+
+config LOG_LEVEL_VALUE
+    int
+    default 0 if LOG_LEVEL_NONE
+    default 1 if LOG_LEVEL_ERROR
+    default 2 if LOG_LEVEL_WARN
+    default 3 if LOG_LEVEL_INFO
+    default 4 if LOG_LEVEL_DEBUG
+
+config LOG_MESSAGE_MAX_LENGTH
+    int "Maximum log message length"
+    range 32 512
+    default 128
+    help
+      Maximum length of formatted log messages in characters.
+      Longer messages will be truncated.
+      
+      Larger values consume more stack space during logging operations.
+
+menu "Log Subsystems"
+
+config LOG_SUBSYSTEM_CORE
+    bool "Core scheduler and system functions"
+    default y
+    help
+      Enable logging for core RTOS functions including scheduler,
+      initialization, and system management.
+
+config LOG_SUBSYSTEM_TASK
+    bool "Task management functions"
+    default y
+    help
+      Enable logging for task creation, deletion, state changes,
+      and task management operations.
+
+config LOG_SUBSYSTEM_MUTEX
+    bool "Mutex operations"
+    default y
+    help
+      Enable logging for mutex lock/unlock operations, timeouts,
+      and priority inheritance events.
+
+config LOG_SUBSYSTEM_QUEUE
+    bool "Queue operations"
+    default y
+    help
+      Enable logging for queue send/receive operations, queue
+      full/empty conditions, and queue management.
+
+config LOG_SUBSYSTEM_TIMER
+    bool "Timer operations"
+    default y
+    help
+      Enable logging for software timer operations including
+      start, stop, expiration, and timer management.
+
+config LOG_SUBSYSTEM_MEMORY
+    bool "Memory management"
+    default y
+    help
+      Enable logging for memory allocation, deallocation,
+      and memory usage statistics.
+
+config LOG_SUBSYSTEM_SEMAPHORE
+    bool "Semaphore operations"
+    default y
+    help
+      Enable logging for semaphore give/take operations,
+      timeouts, and semaphore management.
+
+endmenu
+
+config LOG_SUBSYSTEM_MASK
+    hex
+    default 0xFF if LOG_SUBSYSTEM_CORE && LOG_SUBSYSTEM_TASK && LOG_SUBSYSTEM_MUTEX && LOG_SUBSYSTEM_QUEUE && LOG_SUBSYSTEM_TIMER && LOG_SUBSYSTEM_MEMORY && LOG_SUBSYSTEM_SEMAPHORE
+    default 0x7F if !LOG_SUBSYSTEM_SEMAPHORE && LOG_SUBSYSTEM_CORE && LOG_SUBSYSTEM_TASK && LOG_SUBSYSTEM_MUTEX && LOG_SUBSYSTEM_QUEUE && LOG_SUBSYSTEM_TIMER && LOG_SUBSYSTEM_MEMORY
+    default 0x3F if !LOG_SUBSYSTEM_SEMAPHORE && !LOG_SUBSYSTEM_MEMORY && LOG_SUBSYSTEM_CORE && LOG_SUBSYSTEM_TASK && LOG_SUBSYSTEM_MUTEX && LOG_SUBSYSTEM_QUEUE && LOG_SUBSYSTEM_TIMER
+    default 0x1F if !LOG_SUBSYSTEM_SEMAPHORE && !LOG_SUBSYSTEM_MEMORY && !LOG_SUBSYSTEM_TIMER && LOG_SUBSYSTEM_CORE && LOG_SUBSYSTEM_TASK && LOG_SUBSYSTEM_MUTEX && LOG_SUBSYSTEM_QUEUE
+    default 0x0F if !LOG_SUBSYSTEM_SEMAPHORE && !LOG_SUBSYSTEM_MEMORY && !LOG_SUBSYSTEM_TIMER && !LOG_SUBSYSTEM_QUEUE && LOG_SUBSYSTEM_CORE && LOG_SUBSYSTEM_TASK && LOG_SUBSYSTEM_MUTEX
+    default 0x07 if !LOG_SUBSYSTEM_SEMAPHORE && !LOG_SUBSYSTEM_MEMORY && !LOG_SUBSYSTEM_TIMER && !LOG_SUBSYSTEM_QUEUE && !LOG_SUBSYSTEM_MUTEX && LOG_SUBSYSTEM_CORE && LOG_SUBSYSTEM_TASK
+    default 0x03 if !LOG_SUBSYSTEM_SEMAPHORE && !LOG_SUBSYSTEM_MEMORY && !LOG_SUBSYSTEM_TIMER && !LOG_SUBSYSTEM_QUEUE && !LOG_SUBSYSTEM_MUTEX && !LOG_SUBSYSTEM_TASK && LOG_SUBSYSTEM_CORE
+    default 0x01 if LOG_SUBSYSTEM_CORE && !LOG_SUBSYSTEM_TASK && !LOG_SUBSYSTEM_MUTEX && !LOG_SUBSYSTEM_QUEUE && !LOG_SUBSYSTEM_TIMER && !LOG_SUBSYSTEM_MEMORY && !LOG_SUBSYSTEM_SEMAPHORE
+    default 0x00
+
+endif # ENABLE_LOGGING
+
+endmenu
+
+menu "Advanced Configuration"
+
+config CUSTOM_TICK_RATE
+    bool "Use custom tick rate"
+    default n
+    help
+      Enable this to specify a custom tick rate not available
+      in the predefined options. Use with caution as invalid
+      tick rates may cause system instability.
+
+config CUSTOM_TICK_RATE_VALUE
+    int "Custom tick rate (Hz)"
+    range 10 10000
+    default 1000
+    depends on CUSTOM_TICK_RATE
+    help
+      Custom system tick frequency in Hz.
+      Valid range: 10-10000 Hz
+      
+      Consider the following when choosing a custom tick rate:
+      - Higher rates provide better timing precision
+      - Higher rates increase system overhead
+      - The rate must be achievable by the hardware timer
+      - Common rates are multiples of 100 or 250
+
+config ENABLE_ASSERTIONS
+    bool "Enable runtime assertions"
+    default y if ENABLE_DEBUG
+    default n
+    help
+      Enable runtime assertion checks throughout the RTOS code.
+      Assertions help catch programming errors and invalid states
+      during development but add overhead in production.
+
+config ENABLE_PROFILING
+    bool "Enable performance profiling hooks"
+    default n
+    help
+      Enable hooks for performance profiling and analysis.
+      This allows external profiling tools to monitor RTOS
+      performance characteristics.
+
+endmenu
+
+menu "Hardware Configuration"
+
+config ENABLE_HARDWARE_TIMERS
+    bool "Use hardware timers for system tick"
+    default y
+    help
+      Use hardware timers for generating the system tick interrupt.
+      This provides more accurate timing than software-based approaches.
+
+config TIMER_INTERRUPT_PRIORITY
+    int "System timer interrupt priority"
+    range 0 7
+    default 0
+    help
+      Priority level for the system timer interrupt.
+      Lower values indicate higher priority.
+      
+      The system timer should typically have the highest priority
+      to ensure accurate timing.
+
+config ENABLE_CONTEXT_SWITCH_PROFILING
+    bool "Enable context switch profiling"
+    default n
+    help
+      Enable measurement of context switch timing for performance
+      analysis. This adds minimal overhead but provides valuable
+      performance metrics.
+
+endmenu

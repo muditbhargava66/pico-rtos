@@ -1,10 +1,17 @@
 #include "pico_rtos/timer.h"
+#include "pico_rtos/error.h"
 #include "pico/critical_section.h"
 
 bool pico_rtos_timer_init(pico_rtos_timer_t *timer, const char *name, 
                          pico_rtos_timer_callback_t callback, void *param, 
                          uint32_t period, bool auto_reload) {
     if (timer == NULL) {
+        PICO_RTOS_REPORT_ERROR(PICO_RTOS_ERROR_INVALID_POINTER, 0);
+        return false;
+    }
+    
+    if (period == 0) {
+        PICO_RTOS_REPORT_ERROR(PICO_RTOS_ERROR_TIMER_INVALID_PERIOD, period);
         return false;
     }
     

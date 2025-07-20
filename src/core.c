@@ -7,6 +7,9 @@
 #include "hardware/irq.h"
 #include "hardware/sync.h"
 #include "pico_rtos.h"
+#include "pico_rtos/config.h"
+#include "pico_rtos/error.h"
+#include "pico_rtos/logging.h"
 #include "pico_rtos/context_switch.h"
 
 // Forward declarations (internal functions not exposed in header)
@@ -28,8 +31,11 @@ static critical_section_t scheduler_cs;
 
 // Idle task variables
 static pico_rtos_task_t idle_task;
-static uint32_t idle_task_stack[64]; // 256 bytes stack for idle task
+static uint32_t idle_task_stack[PICO_RTOS_IDLE_TASK_STACK_SIZE]; // Configurable stack size
 static uint32_t idle_task_counter = 0;
+
+// Idle hook function pointer
+static pico_rtos_idle_hook_t idle_hook_function = NULL;
 
 // Context switching variables (defined in context_switch.c)
 extern uint32_t *current_task_stack_ptr;
@@ -42,7 +48,7 @@ typedef struct pico_rtos_block_object {
 } pico_rtos_block_object_t;
 
 // Version string
-static const char *version_string = "0.2.0";
+static const char *version_string = "0.2.1";
 
 // Memory tracking variables
 static uint32_t total_allocated_memory = 0;
@@ -83,8 +89,13 @@ static void pico_rtos_idle_task_function(void *param) {
             pico_rtos_check_stack_overflow();
         }
         
-        // Put CPU to sleep to save power
-        __wfi(); // Wait for interrupt
+        // Call user-defined idle hook if registered
+        if (idle_hook_function != NULL) {
+            idle_hook_function();
+        } else {
+            // Default behavior: put CPU to sleep to save power
+            __wfi(); // Wait for interrupt
+        }
     }
 }
 
@@ -160,17 +171,24 @@ void pico_rtos_check_stack_overflow(void) {
 
 // Handle stack overflow - can be customized by user
 __attribute__((weak)) void pico_rtos_handle_stack_overflow(pico_rtos_task_t *task) {
+    // Log the stack overflow error
+    PICO_RTOS_LOG_CORE_ERROR("Stack overflow detected in task: %s (priority %lu, stack size %lu)",
+                            task->name ? task->name : "Unknown", task->priority, task->stack_size);
+    
     // Default handler - print error and halt
     printf("STACK OVERFLOW DETECTED in task: %s\n", task->name ? task->name : "Unknown");
     printf("Task priority: %lu, Stack size: %lu\n", task->priority, task->stack_size);
     
     // Terminate the offending task
     task->state = PICO_RTOS_TASK_STATE_TERMINATED;
+    PICO_RTOS_LOG_CORE_WARN("Task %s terminated due to stack overflow", 
+                           task->name ? task->name : "Unknown");
     
     // Trigger scheduler to switch to another task
     pico_rtos_context_switch();
     
     // If we get here, halt the system
+    PICO_RTOS_LOG_CORE_ERROR("System halted due to stack overflow");
     while (1) {
         __wfi();
     }
@@ -178,26 +196,41 @@ __attribute__((weak)) void pico_rtos_handle_stack_overflow(pico_rtos_task_t *tas
 
 // Initialize the RTOS
 bool pico_rtos_init(void) {
-    // Initialize mutex for scheduler
-    critical_section_init(&scheduler_cs);
-    
-    // Initialize context switching system
-    pico_rtos_context_switch_init();
-    
-    // Initialize idle task
-    if (!pico_rtos_init_idle_task()) {
+    // Initialize error reporting system first
+    if (!pico_rtos_error_init()) {
+        PICO_RTOS_LOG_CORE_ERROR("Failed to initialize error reporting system");
         return false;
     }
     
+    PICO_RTOS_LOG_CORE_INFO("Initializing Pico-RTOS v%s", version_string);
+    
+    // Initialize mutex for scheduler
+    critical_section_init(&scheduler_cs);
+    PICO_RTOS_LOG_CORE_DEBUG("Scheduler critical section initialized");
+    
+    // Initialize context switching system
+    pico_rtos_context_switch_init();
+    PICO_RTOS_LOG_CORE_DEBUG("Context switching system initialized");
+    
+    // Initialize idle task
+    if (!pico_rtos_init_idle_task()) {
+        PICO_RTOS_LOG_CORE_ERROR("Failed to initialize idle task");
+        return false;
+    }
+    PICO_RTOS_LOG_CORE_DEBUG("Idle task initialized");
+    
     // Initialize system timer for tick generation
     pico_rtos_init_system_timer();
+    PICO_RTOS_LOG_CORE_INFO("System timer initialized with %lu Hz tick rate", PICO_RTOS_TICK_RATE_HZ);
     
+    PICO_RTOS_LOG_CORE_INFO("Pico-RTOS initialization complete");
     return true;
 }
 
 // Start the RTOS scheduler
 void pico_rtos_start(void) {
     if (!scheduler_running && task_list != NULL) {
+        PICO_RTOS_LOG_CORE_INFO("Starting RTOS scheduler");
         scheduler_running = true;
         
         // Find the highest priority task to start with
@@ -215,6 +248,10 @@ void pico_rtos_start(void) {
         }
         
         if (highest_priority_task != NULL) {
+            PICO_RTOS_LOG_CORE_INFO("Starting first task: %s (priority %lu)", 
+                                   highest_priority_task->name ? highest_priority_task->name : "unnamed",
+                                   highest_priority_task->priority);
+            
             // Set current task and update stack pointer
             current_task = highest_priority_task;
             current_task->state = PICO_RTOS_TASK_STATE_RUNNING;
@@ -222,10 +259,19 @@ void pico_rtos_start(void) {
             
             // Start the first task using assembly function
             pico_rtos_start_first_task();
+        } else {
+            PICO_RTOS_LOG_CORE_ERROR("No ready tasks found to start");
         }
         
         // We should never reach here unless scheduler is stopped
+        PICO_RTOS_LOG_CORE_WARN("Scheduler stopped unexpectedly");
         scheduler_running = false;
+    } else {
+        if (scheduler_running) {
+            PICO_RTOS_LOG_CORE_WARN("Scheduler already running");
+        } else {
+            PICO_RTOS_LOG_CORE_ERROR("No tasks available to start");
+        }
     }
 }
 
@@ -241,6 +287,11 @@ uint32_t pico_rtos_get_tick_count(void) {
 // Get system uptime in milliseconds
 uint32_t pico_rtos_get_uptime_ms(void) {
     return pico_rtos_get_tick_count(); // Use the thread-safe version
+}
+
+// Get the system tick rate in Hz
+uint32_t pico_rtos_get_tick_rate_hz(void) {
+    return PICO_RTOS_TICK_RATE_HZ;
 }
 
 // Get the RTOS version string
@@ -293,8 +344,9 @@ void pico_rtos_interrupt_exit(void) {
 
 // Initialize the system timer for tick generation
 void pico_rtos_init_system_timer(void) {
-    // Configure a timer with a 1ms tick
-    add_alarm_in_ms(1, (alarm_callback_t)pico_rtos_tick_handler, NULL, true);
+    // Configure a timer with configurable tick period
+    uint32_t tick_period_us = PICO_RTOS_TICK_PERIOD_US;
+    add_alarm_in_us(tick_period_us, (alarm_callback_t)pico_rtos_tick_handler, NULL, true);
 }
 
 // Handle system tick
@@ -336,7 +388,8 @@ static void pico_rtos_tick_handler(void) {
     pico_rtos_interrupt_exit();
     
     // Re-add the alarm for the next tick
-    add_alarm_in_ms(1, (alarm_callback_t)pico_rtos_tick_handler, NULL, true);
+    uint32_t tick_period_us = PICO_RTOS_TICK_PERIOD_US;
+    add_alarm_in_us(tick_period_us, (alarm_callback_t)pico_rtos_tick_handler, NULL, true);
 }
 
 // Schedule the next task to run
@@ -739,5 +792,36 @@ void pico_rtos_get_system_stats(pico_rtos_system_stats_t *stats) {
     stats->idle_counter = idle_task_counter;
     stats->system_uptime = system_tick_count;
     
+    pico_rtos_exit_critical();
+}
+
+// =============================================================================
+// IDLE HOOK MANAGEMENT FUNCTIONS
+// =============================================================================
+
+/**
+ * @brief Set a user-defined idle hook function
+ * 
+ * The idle hook function will be called whenever the system is idle
+ * (no tasks are ready to run). This allows applications to implement
+ * custom power management or background processing during idle periods.
+ * 
+ * @param hook Pointer to the idle hook function, or NULL to clear
+ */
+void pico_rtos_set_idle_hook(pico_rtos_idle_hook_t hook) {
+    pico_rtos_enter_critical();
+    idle_hook_function = hook;
+    pico_rtos_exit_critical();
+}
+
+/**
+ * @brief Clear the user-defined idle hook function
+ * 
+ * After calling this function, the system will revert to the default
+ * idle behavior (using __wfi() to save power).
+ */
+void pico_rtos_clear_idle_hook(void) {
+    pico_rtos_enter_critical();
+    idle_hook_function = NULL;
     pico_rtos_exit_critical();
 }
