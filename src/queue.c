@@ -1,10 +1,22 @@
 #include "pico_rtos/queue.h"
+#include "pico_rtos/error.h"
 #include "pico_rtos.h"
 #include "pico/critical_section.h"
 #include <string.h>
 
 bool pico_rtos_queue_init(pico_rtos_queue_t *queue, void *buffer, size_t item_size, size_t max_items) {
-    if (queue == NULL || buffer == NULL || item_size == 0 || max_items == 0) {
+    if (queue == NULL || buffer == NULL) {
+        PICO_RTOS_REPORT_ERROR(PICO_RTOS_ERROR_INVALID_POINTER, 0);
+        return false;
+    }
+    
+    if (item_size == 0) {
+        PICO_RTOS_REPORT_ERROR(PICO_RTOS_ERROR_QUEUE_INVALID_ITEM_SIZE, item_size);
+        return false;
+    }
+    
+    if (max_items == 0) {
+        PICO_RTOS_REPORT_ERROR(PICO_RTOS_ERROR_QUEUE_INVALID_SIZE, max_items);
         return false;
     }
     
@@ -25,6 +37,7 @@ bool pico_rtos_queue_init(pico_rtos_queue_t *queue, void *buffer, size_t item_si
 
 bool pico_rtos_queue_send(pico_rtos_queue_t *queue, const void *item, uint32_t timeout) {
     if (queue == NULL || item == NULL) {
+        PICO_RTOS_REPORT_ERROR(PICO_RTOS_ERROR_INVALID_POINTER, 0);
         return false;
     }
 

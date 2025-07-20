@@ -4,7 +4,7 @@ This user guide provides an overview of the Pico-RTOS features and how to use th
 
 ## Introduction
 
-Pico-RTOS is a production-ready, lightweight real-time operating system specifically designed for the Raspberry Pi Pico board. Version 0.2.0 provides comprehensive features including:
+Pico-RTOS is a production-ready, lightweight real-time operating system specifically designed for the Raspberry Pi Pico board. Version 0.2.1 provides comprehensive features including:
 
 - Complete ARM Cortex-M0+ context switching
 - Priority inheritance to prevent priority inversion
@@ -12,6 +12,70 @@ Pico-RTOS is a production-ready, lightweight real-time operating system specific
 - Memory management with tracking and leak detection
 - Real-time system monitoring and diagnostics
 - Thread-safe operations throughout
+- Configurable system tick frequency for different timing requirements
+- Enhanced error reporting system with detailed error codes and history
+- Optional debug logging system with configurable levels and subsystems
+- Comprehensive examples demonstrating hardware integration patterns
+
+## Configuration Options
+
+Pico-RTOS v0.2.1 provides extensive configuration options to customize the system for your specific needs. These options can be set through CMake configuration or by defining them before including the RTOS headers.
+
+### System Tick Frequency
+
+The system tick frequency determines the timing resolution and affects system overhead:
+
+```cmake
+# CMake configuration options
+set(PICO_RTOS_TICK_RATE_HZ "1000" CACHE STRING "System tick frequency in Hz")
+set_property(CACHE PICO_RTOS_TICK_RATE_HZ PROPERTY STRINGS "100;250;500;1000;2000")
+```
+
+Available predefined frequencies:
+- 100 Hz (10ms tick period) - Low overhead, coarse timing
+- 250 Hz (4ms tick period) - Balanced performance
+- 500 Hz (2ms tick period) - Good timing resolution
+- 1000 Hz (1ms tick period) - Default, excellent timing
+- 2000 Hz (0.5ms tick period) - High resolution, higher overhead
+
+### Feature Configuration
+
+Enable or disable specific features based on your requirements:
+
+```cmake
+# Debug and development features
+option(PICO_RTOS_ENABLE_LOGGING "Enable debug logging system" OFF)
+option(PICO_RTOS_ENABLE_ERROR_HISTORY "Enable error history tracking" ON)
+set(PICO_RTOS_ERROR_HISTORY_SIZE "10" CACHE STRING "Number of errors to keep in history")
+
+# System monitoring and protection
+option(PICO_RTOS_ENABLE_STACK_CHECKING "Enable stack overflow checking" ON)
+option(PICO_RTOS_ENABLE_MEMORY_TRACKING "Enable memory usage tracking" ON)
+option(PICO_RTOS_ENABLE_RUNTIME_STATS "Enable runtime statistics collection" ON)
+
+# System limits
+set(PICO_RTOS_MAX_TASKS "16" CACHE STRING "Maximum number of tasks")
+set(PICO_RTOS_MAX_TIMERS "8" CACHE STRING "Maximum number of software timers")
+```
+
+### Runtime Configuration
+
+Query system configuration at runtime:
+
+```c
+// Get current tick frequency
+uint32_t tick_rate = pico_rtos_get_tick_rate_hz();
+printf("System tick rate: %lu Hz\n", tick_rate);
+
+// Check if features are enabled
+#if PICO_RTOS_ENABLE_LOGGING
+printf("Debug logging is enabled\n");
+#endif
+
+#if PICO_RTOS_ENABLE_ERROR_HISTORY
+printf("Error history size: %d entries\n", PICO_RTOS_ERROR_HISTORY_SIZE);
+#endif
+```
 
 ## Getting Started
 
@@ -138,6 +202,228 @@ The timer callback function should have the following signature:
 void timer_callback(void *param)
 ```
 
+## Error Handling and Reporting
+
+Pico-RTOS v0.2.1 includes a comprehensive error reporting system with detailed error codes and optional error history tracking.
+
+### Error Codes
+
+The system provides specific error codes organized by category:
+
+```c
+#include "pico_rtos/error.h"
+
+// Task-related errors (100-199)
+PICO_RTOS_ERROR_TASK_INVALID_PRIORITY
+PICO_RTOS_ERROR_TASK_STACK_OVERFLOW
+PICO_RTOS_ERROR_TASK_INVALID_STATE
+
+// Memory-related errors (200-299)
+PICO_RTOS_ERROR_OUT_OF_MEMORY
+PICO_RTOS_ERROR_INVALID_POINTER
+PICO_RTOS_ERROR_MEMORY_CORRUPTION
+
+// Synchronization errors (300-399)
+PICO_RTOS_ERROR_MUTEX_TIMEOUT
+PICO_RTOS_ERROR_SEMAPHORE_TIMEOUT
+PICO_RTOS_ERROR_QUEUE_FULL
+
+// System errors (400-499)
+PICO_RTOS_ERROR_SYSTEM_NOT_INITIALIZED
+PICO_RTOS_ERROR_INVALID_CONFIGURATION
+```
+
+### Error Reporting
+
+Report errors with context information:
+
+```c
+// Report an error with context
+PICO_RTOS_REPORT_ERROR(PICO_RTOS_ERROR_TASK_INVALID_PRIORITY, task_priority);
+
+// Get error description
+const char *desc = pico_rtos_get_error_description(PICO_RTOS_ERROR_OUT_OF_MEMORY);
+printf("Error: %s\n", desc);
+
+// Get last error information
+pico_rtos_error_info_t error_info;
+if (pico_rtos_get_last_error(&error_info)) {
+    printf("Last error: %s at %s:%d\n", 
+           error_info.description, error_info.file, error_info.line);
+}
+```
+
+### Error History
+
+When enabled, the system maintains a history of errors for debugging:
+
+```c
+#if PICO_RTOS_ENABLE_ERROR_HISTORY
+// Get error history
+pico_rtos_error_info_t errors[10];
+size_t count;
+if (pico_rtos_get_error_history(errors, 10, &count)) {
+    printf("Found %zu errors in history:\n", count);
+    for (size_t i = 0; i < count; i++) {
+        printf("  %lu: %s\n", errors[i].timestamp, errors[i].description);
+    }
+}
+
+// Get error statistics
+pico_rtos_error_stats_t stats;
+pico_rtos_get_error_stats(&stats);
+printf("Total errors: %lu, Task errors: %lu, Memory errors: %lu\n",
+       stats.total_errors, stats.task_errors, stats.memory_errors);
+#endif
+```
+
+## Debug Logging
+
+The optional debug logging system provides configurable logging with minimal overhead when disabled.
+
+### Enabling Logging
+
+Enable logging through CMake configuration:
+
+```cmake
+option(PICO_RTOS_ENABLE_LOGGING "Enable debug logging system" ON)
+```
+
+### Log Levels
+
+Configure logging verbosity:
+
+```c
+#include "pico_rtos/logging.h"
+
+// Set log level (only messages at or below this level are processed)
+pico_rtos_log_set_level(PICO_RTOS_LOG_LEVEL_INFO);
+
+// Available levels:
+// PICO_RTOS_LOG_LEVEL_NONE   - No logging
+// PICO_RTOS_LOG_LEVEL_ERROR  - Error conditions only
+// PICO_RTOS_LOG_LEVEL_WARN   - Warnings and errors
+// PICO_RTOS_LOG_LEVEL_INFO   - Informational messages, warnings, and errors
+// PICO_RTOS_LOG_LEVEL_DEBUG  - All messages including debug information
+```
+
+### Subsystem Filtering
+
+Enable logging for specific RTOS subsystems:
+
+```c
+// Enable logging for specific subsystems
+pico_rtos_log_enable_subsystem(PICO_RTOS_LOG_SUBSYSTEM_TASK | 
+                               PICO_RTOS_LOG_SUBSYSTEM_MUTEX);
+
+// Disable logging for specific subsystems
+pico_rtos_log_disable_subsystem(PICO_RTOS_LOG_SUBSYSTEM_TIMER);
+
+// Available subsystems:
+// PICO_RTOS_LOG_SUBSYSTEM_CORE      - Core scheduler functions
+// PICO_RTOS_LOG_SUBSYSTEM_TASK      - Task management
+// PICO_RTOS_LOG_SUBSYSTEM_MUTEX     - Mutex operations
+// PICO_RTOS_LOG_SUBSYSTEM_QUEUE     - Queue operations
+// PICO_RTOS_LOG_SUBSYSTEM_TIMER     - Timer operations
+// PICO_RTOS_LOG_SUBSYSTEM_MEMORY    - Memory management
+// PICO_RTOS_LOG_SUBSYSTEM_SEMAPHORE - Semaphore operations
+```
+
+### Using Logging Macros
+
+Use logging macros in your application:
+
+```c
+// General logging macros
+PICO_RTOS_LOG_ERROR(PICO_RTOS_LOG_SUBSYSTEM_TASK, "Task creation failed: %s", task_name);
+PICO_RTOS_LOG_WARN(PICO_RTOS_LOG_SUBSYSTEM_MEMORY, "Memory usage high: %lu bytes", usage);
+PICO_RTOS_LOG_INFO(PICO_RTOS_LOG_SUBSYSTEM_CORE, "System initialized successfully");
+PICO_RTOS_LOG_DEBUG(PICO_RTOS_LOG_SUBSYSTEM_QUEUE, "Queue operation: send item %d", item);
+
+// Convenience macros for common subsystems
+PICO_RTOS_LOG_TASK_ERROR("Failed to create task: %s", name);
+PICO_RTOS_LOG_MUTEX_DEBUG("Mutex acquired by task %d", task_id);
+PICO_RTOS_LOG_MEMORY_WARN("Low memory: %lu bytes remaining", free_memory);
+```
+
+### Custom Log Output
+
+Implement custom log output handling:
+
+```c
+// Custom log output function
+void my_log_output(const pico_rtos_log_entry_t *entry) {
+    printf("[%lu] %s:%s - %s\n",
+           entry->timestamp,
+           pico_rtos_log_level_to_string(entry->level),
+           pico_rtos_log_subsystem_to_string(entry->subsystem),
+           entry->message);
+}
+
+// Initialize logging with custom output
+pico_rtos_log_init(my_log_output);
+
+// Or use built-in output functions
+pico_rtos_log_init(pico_rtos_log_default_output);    // Full format
+pico_rtos_log_init(pico_rtos_log_compact_output);    // Compact format
+```
+
+## Examples and Learning Resources
+
+Pico-RTOS v0.2.1 includes comprehensive examples demonstrating real-world usage patterns:
+
+### Hardware Interrupt Handling
+
+The `examples/hardware_interrupt/` example demonstrates:
+- Proper interrupt service routine implementation with RTOS integration
+- Safe communication between interrupt context and task context using queues
+- Interrupt priority configuration and management
+- Maintaining system responsiveness during interrupt processing
+
+```c
+// Key concepts from the hardware interrupt example
+void gpio_interrupt_handler(uint gpio, uint32_t events) {
+    // RTOS-aware interrupt handling
+    pico_rtos_interrupt_enter();
+    
+    // Send interrupt data to handler task via queue
+    interrupt_event_t event = {
+        .timestamp = pico_rtos_get_tick_count(),
+        .gpio_pin = gpio,
+        .event_type = events
+    };
+    
+    // Safe queue send from interrupt context
+    pico_rtos_queue_send(&interrupt_queue, &event, PICO_RTOS_NO_WAIT);
+    
+    pico_rtos_interrupt_exit();
+}
+```
+
+### Multi-Task Communication Patterns
+
+The `examples/task_communication/` example shows:
+- Queue-based producer-consumer patterns
+- Semaphore-based resource sharing
+- Task notification lightweight messaging
+- Proper error handling and timeout management
+
+### Power Management
+
+The `examples/power_management/` example demonstrates:
+- Idle task hooks for power optimization
+- Integration with Pico SDK sleep modes
+- Wake-up event handling and task resumption
+- Power consumption measurement techniques
+
+### Performance Benchmarking
+
+The `examples/performance_benchmark/` example provides:
+- Context switch timing measurement
+- Interrupt latency measurement
+- Synchronization primitive overhead analysis
+- Standardized benchmark output for comparison
+
 For more detailed information on the Pico-RTOS API, refer to the [API Reference](api_reference.md).
 
 ## Best Practices
@@ -157,8 +443,7 @@ For more information and examples, refer to the [Examples](examples/) directory 
 Happy coding with Pico-RTOS!
 
 ---
-## Pri
-ority Management
+## Priority Management
 
 Pico-RTOS uses priority-based preemptive scheduling. Higher priority tasks preempt lower priority tasks. Tasks with the same priority use round-robin scheduling.
 
@@ -367,4 +652,12 @@ If migrating from FreeRTOS or other RTOSes:
 
 ## Conclusion
 
-Pico-RTOS v0.2.0 provides a production-ready RTOS with comprehensive features for embedded development on Raspberry Pi Pico. The combination of real-time capabilities, safety features, and monitoring tools makes it suitable for professional embedded applications.
+Pico-RTOS v0.2.1 builds upon the solid foundation of v0.2.0 with enhanced developer experience through comprehensive examples, improved debugging capabilities, and flexible configuration options. The combination of real-time capabilities, safety features, monitoring tools, and extensive documentation makes it an excellent choice for both learning and professional embedded development on Raspberry Pi Pico.
+
+Key improvements in v0.2.1:
+- Configurable system tick frequency for different timing requirements
+- Enhanced error reporting with detailed codes and optional history tracking
+- Optional debug logging system with zero overhead when disabled
+- Comprehensive examples demonstrating real-world integration patterns
+- Improved build system with extensive configuration options
+- Better documentation and learning resources
