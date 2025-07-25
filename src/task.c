@@ -48,7 +48,7 @@ bool pico_rtos_task_create(pico_rtos_task_t *task, const char *name,
     task->block_reason = PICO_RTOS_BLOCK_REASON_NONE;
     
     // Initialize critical section for this task
-    critical_section_init(&task->cs);
+    pico_rtos_critical_section_init(&task->cs);
     
     // Setup task stack
     if (!pico_rtos_setup_task_stack(task)) {

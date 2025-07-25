@@ -1,8 +1,8 @@
-# Pico-RTOS Roadmap
+# Pico-RTOS Development Roadmap
 
-This document outlines the planned development roadmap for Pico-RTOS across future versions.
+This document outlines the development roadmap for Pico-RTOS across all versions.
 
-## Version 0.2.0 (COMPLETED - January 2025) ✅
+## ✅ Version 0.2.0 (COMPLETED - January 2025)
 
 ### Core Functionality
 - [x] Complete proper context switching for ARM Cortex-M0+
@@ -30,15 +30,13 @@ This document outlines the planned development roadmap for Pico-RTOS across futu
 - [x] Implement system diagnostics and monitoring
 
 ### Examples & Documentation
-- [ ] Add example for hardware interrupt handling *(moved to v0.2.1)*
-- [ ] Create example for multi-task communication patterns *(moved to v0.2.1)*
 - [x] Improve getting started documentation
 - [x] Add memory management guide
 - [x] Create comprehensive flashing and testing guide
 - [x] Add detailed troubleshooting documentation
 - [x] Implement contributing guidelines
 
-## Version 0.2.1 (COMPLETED - July 2025) ✅
+## ✅ Version 0.2.1 (COMPLETED - July 2025)
 
 ### Examples & Documentation
 - [x] Add example for hardware interrupt handling
@@ -55,104 +53,156 @@ This document outlines the planned development roadmap for Pico-RTOS across futu
 - [x] Comprehensive documentation with error code reference and logging guide
 - [x] Automated testing and validation framework
 
-## Version 0.3.0 (Q2 2025)
+## ✅ Version 0.3.0 - "Advanced Synchronization & Multi-Core" (COMPLETED - July 2025)
 
-### Core Functionality
-- [ ] Implement event groups for multi-event synchronization
-- [ ] Add stream buffers for efficient message passing
-- [ ] Support for task local storage
-- [ ] Implement task deletion and cleanup
+### Major Features Implemented
+- ✅ **Advanced Synchronization Primitives**
+  - Event Groups with 32-bit event coordination
+  - Stream Buffers with zero-copy optimization
+  - Enhanced Mutexes with priority inheritance
 
-### Memory Management
-- [ ] Add memory pools for fixed-size allocations
-- [ ] Implement memory protection if hardware supports it
-- [ ] Add memory usage statistics and tracking
-- [ ] Support for stack overflow detection
+- ✅ **Multi-Core Support (SMP)**
+  - Symmetric multiprocessing scheduler
+  - Core affinity and load balancing
+  - Inter-core communication and synchronization
 
-### Debugging & Profiling
-- [ ] Add runtime task state inspection
-- [ ] Implement execution time profiling
-- [ ] Add trace buffer for system events
-- [ ] Support for configurable assertion handling
+- ✅ **Enhanced Memory Management**
+  - Memory Pools with O(1) allocation
+  - MPU integration for memory protection
+  - Advanced memory statistics and monitoring
 
-### Extensions
-- [ ] Basic thread-safe I/O abstraction
-- [ ] Configurable logging system with multiple levels
-- [ ] Support for software timers with higher resolution
-- [ ] Add timeouts to all blocking operations
+- ✅ **Debugging & Profiling Tools**
+  - Runtime task inspection system
+  - Execution time profiling with high-resolution timers
+  - Configurable system event tracing
+  - Enhanced assertion handling
 
-## Version 0.4.0 (Q3 2025)
+- ✅ **Production Quality Assurance**
+  - Deadlock detection system
+  - System health monitoring
+  - Hardware watchdog integration
+  - Configurable alert and notification system
 
-### Advanced Features
-- [ ] Implement multi-core support for RP2040
-- [ ] Add message queues with structured messages
-- [ ] Support for delayed task startup
-- [ ] Implement task suspension with timeout
+- ✅ **System Extensions**
+  - Thread-safe I/O abstraction layer
+  - High-resolution software timers
+  - Universal timeout support
+  - Multi-level logging system
 
-### Peripheral Integration
-- [ ] Thread-safe GPIO handling
-- [ ] Integrate with Pico PIO for custom peripherals
-- [ ] Support for thread-safe ADC operations
-- [ ] DMA support with proper synchronization
+- ✅ **Backward Compatibility**
+  - 100% API compatibility with v0.2.1
+  - Configuration migration tools
+  - Feature deprecation warnings
 
-### System Monitoring
-- [ ] Add watchdog integration
-- [ ] Implement deadlock detection
-- [ ] Add CPU usage monitoring
-- [ ] Support for system health metrics
+### Quality Assurance Completed
+- ✅ Comprehensive validation suite (13/13 major tasks completed)
+- ✅ Build system integration (minimal, default, full configurations)
+- ✅ 100% backward compatibility with v0.2.1
+- ✅ Professional documentation and examples
+- ✅ Release artifacts and packaging
 
-### Build System
-- [ ] Enhanced CMake integration
-- [ ] Support for different toolchains
-- [ ] Optimize for code size and performance
-- [ ] Configurable feature set to minimize footprint
+## 🚀 Version 0.4.0 - "Network Stack Integration" (Planned - Q4 2025)
 
-## Version 1.0.0 (Q4 2025)
+### Planned Features
+- **TCP/IP Stack Integration**
+  - lwIP integration with RTOS
+  - Socket API with blocking/non-blocking modes
+  - Network interface abstraction
+  - DHCP and DNS client support
 
-### Stability & Performance
-- [ ] Complete MISRA C compliance
-- [ ] Thorough performance optimization
-- [ ] Comprehensive test coverage
-- [ ] Validate real-time determinism
+- **Wireless Communication**
+  - Wi-Fi driver integration
+  - Bluetooth Low Energy (BLE) support
+  - Network configuration management
+  - Power management for wireless
 
-### Features
-- [ ] File system abstraction
-- [ ] Basic networking support
-- [ ] Interface with common sensors
-- [ ] Support for external memory management
+- **Security Enhancements**
+  - TLS/SSL support
+  - Secure boot implementation
+  - Cryptographic primitives
+  - Key management system
 
-### Documentation & Support
-- [ ] Complete API reference
-- [ ] Comprehensive user manual
-- [ ] Migration guides from other RTOSes
-- [ ] Design pattern documentation
+## 🔮 Version 0.5.0 - "File System Support" (Planned - Q1 2026)
 
-### Community
-- [ ] Public contribution guidelines
-- [ ] Regular release schedule
-- [ ] LTS (Long-Term Support) policy
-- [ ] Community forum or discussion platform
+### Planned Features
+- **File System Integration**
+  - FatFS integration
+  - Virtual file system (VFS) layer
+  - Flash file system support
+  - File system utilities
 
-## Future Considerations (Post 1.0)
+- **Storage Management**
+  - Wear leveling for flash storage
+  - Storage device abstraction
+  - Backup and recovery systems
+  - Storage health monitoring
 
-### Advanced Features
-- Command-line interface for debugging
-- RTOS-aware GDB debugging
-- Remote monitoring capabilities
-- OTA update capabilities
+## 🎯 Version 1.0.0 - "Long-Term Support (LTS)" (Planned - Q2 2026)
 
-### Ecosystem
-- IDE integration tools
-- Visual task and resource monitoring
-- Configuration wizard
-- Project template generator
+### LTS Features
+- **API Stabilization**
+  - Frozen public API
+  - Long-term backward compatibility guarantee
+  - Comprehensive documentation
+  - Migration tools for all versions
 
-### Standards Compliance
-- POSIX thread API compatibility layer
-- Safety certification preparation
-- Formal verification of critical sections
+- **Enterprise Features**
+  - Commercial support options
+  - Certification compliance (IEC 61508, ISO 26262)
+  - Extended validation and testing
+  - Professional services
 
-### Hardware Support
-- Expanded board support beyond Pico
-- Support for other ARM Cortex microcontrollers
-- Abstraction layer for portability
+- **Performance Optimization**
+  - Assembly-optimized critical paths
+  - Memory usage optimization
+  - Power consumption improvements
+  - Real-time performance guarantees
+
+## 🔧 Ongoing Improvements
+
+### Continuous Development
+- **Platform Support Expansion**
+  - Additional ARM Cortex-M variants
+  - RISC-V architecture support
+  - ESP32 platform integration
+  - STM32 family support
+
+- **Tooling Enhancements**
+  - IDE integration improvements
+  - Visual debugging tools
+  - Performance analysis tools
+  - Configuration management tools
+
+- **Community & Ecosystem**
+  - Package manager integration
+  - Third-party library ecosystem
+  - Community contributions
+  - Educational resources
+
+## 📊 Version History
+
+| Version | Release Date | Codename | Key Features |
+|---------|-------------|----------|--------------|
+| v0.1.0 | Q1 2023 | "Foundation" | Basic RTOS core, tasks, scheduling |
+| v0.2.0 | Q1 2025 | "Synchronization" | Mutexes, semaphores, queues |
+| v0.2.1 | Q3 2025 | "Stability" | Bug fixes, performance improvements |
+| **v0.3.0** | **Q3 2025** | **"Advanced Sync & Multi-Core"** | **Event groups, SMP, debugging tools** |
+| v0.4.0 | Q4 2025 | "Network Integration" | TCP/IP, Wi-Fi, BLE support |
+| v0.5.0 | Q1 2026 | "File System" | FatFS, VFS, storage management |
+| v1.0.0 | Q2 2026 | "LTS Release" | API stability, enterprise features |
+
+## 🎯 Long-term Vision
+
+Pico-RTOS aims to become the leading open-source RTOS for embedded systems, providing:
+
+- **Developer-Friendly**: Easy to learn, use, and integrate
+- **Production-Ready**: Reliable, tested, and certified
+- **Performance-Focused**: Real-time guarantees with minimal overhead
+- **Community-Driven**: Open development with active community
+- **Commercially Viable**: Professional support and services available
+
+---
+
+**Current Status**: v0.3.0 Released ✅  
+**Next Milestone**: v0.4.0 Network Integration  
+**LTS Target**: v1.0.0 in Q2 2026

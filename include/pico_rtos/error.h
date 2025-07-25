@@ -70,6 +70,9 @@ typedef enum {
     PICO_RTOS_ERROR_TIMER_INVALID_PERIOD = 330,
     PICO_RTOS_ERROR_TIMER_NOT_RUNNING = 331,
     PICO_RTOS_ERROR_TIMER_ALREADY_RUNNING = 332,
+    PICO_RTOS_ERROR_EVENT_GROUP_INVALID = 340,
+    PICO_RTOS_ERROR_EVENT_GROUP_TIMEOUT = 341,
+    PICO_RTOS_ERROR_EVENT_GROUP_DELETED = 342,
     
     // System errors (400-499)
     PICO_RTOS_ERROR_SYSTEM_NOT_INITIALIZED = 400,
@@ -333,5 +336,239 @@ void pico_rtos_set_error_callback(pico_rtos_error_callback_t callback);
  * @return Pointer to current callback function, or NULL if none set
  */
 pico_rtos_error_callback_t pico_rtos_get_error_callback(void);
+
+// =============================================================================
+// ASSERTION SYSTEM
+// =============================================================================
+
+/**
+ * @brief Enable enhanced assertion handling
+ * 
+ * When disabled, assertions compile to standard assert() behavior.
+ */
+#ifndef PICO_RTOS_ENABLE_ENHANCED_ASSERTIONS
+#define PICO_RTOS_ENABLE_ENHANCED_ASSERTIONS 1
+#endif
+
+/**
+ * @brief Enable configurable assertion handlers
+ * 
+ * When enabled, allows custom assertion handlers to be registered.
+ */
+#ifndef PICO_RTOS_ASSERTION_HANDLER_CONFIGURABLE
+#define PICO_RTOS_ASSERTION_HANDLER_CONFIGURABLE 0
+#endif
+
+#if PICO_RTOS_ENABLE_ENHANCED_ASSERTIONS
+
+/**
+ * @brief Assertion failure actions
+ */
+typedef enum {
+    PICO_RTOS_ASSERT_ACTION_HALT,        ///< Halt system execution
+    PICO_RTOS_ASSERT_ACTION_CONTINUE,    ///< Continue execution after logging
+    PICO_RTOS_ASSERT_ACTION_CALLBACK,    ///< Call user-defined callback
+    PICO_RTOS_ASSERT_ACTION_RESTART      ///< Restart the system
+} pico_rtos_assert_action_t;
+
+/**
+ * @brief Assertion context information
+ */
+typedef struct {
+    const char *expression;          ///< Failed assertion expression
+    const char *file;                ///< Source file where assertion failed
+    int line;                        ///< Line number where assertion failed
+    const char *function;            ///< Function name where assertion failed
+    uint32_t timestamp;              ///< System tick when assertion failed
+    uint32_t task_id;                ///< ID of task where assertion failed
+    const char *message;             ///< Optional custom message
+} pico_rtos_assert_info_t;
+
+/**
+ * @brief Assertion statistics
+ */
+typedef struct {
+    uint32_t total_assertions;       ///< Total number of assertions checked
+    uint32_t failed_assertions;      ///< Number of failed assertions
+    uint32_t continued_assertions;   ///< Number of assertions that continued execution
+    uint32_t halted_assertions;      ///< Number of assertions that halted system
+    pico_rtos_assert_info_t last_failure; ///< Information about last failed assertion
+} pico_rtos_assert_stats_t;
+
+#if PICO_RTOS_ASSERTION_HANDLER_CONFIGURABLE
+
+/**
+ * @brief Assertion handler function type
+ * 
+ * User-defined function that gets called when an assertion fails.
+ * The handler can decide what action to take based on the assertion context.
+ * 
+ * @param assert_info Pointer to assertion context information
+ * @return Action to take (halt, continue, etc.)
+ */
+typedef pico_rtos_assert_action_t (*pico_rtos_assert_handler_t)(const pico_rtos_assert_info_t *assert_info);
+
+/**
+ * @brief Set custom assertion handler
+ * 
+ * Registers a custom assertion handler function. When an assertion fails,
+ * this handler will be called to determine what action to take.
+ * 
+ * @param handler Pointer to handler function, or NULL to use default behavior
+ */
+void pico_rtos_set_assert_handler(pico_rtos_assert_handler_t handler);
+
+/**
+ * @brief Get current assertion handler
+ * 
+ * @return Pointer to current assertion handler, or NULL if using default
+ */
+pico_rtos_assert_handler_t pico_rtos_get_assert_handler(void);
+
+#endif // PICO_RTOS_ASSERTION_HANDLER_CONFIGURABLE
+
+/**
+ * @brief Set default assertion action
+ * 
+ * Sets the default action to take when an assertion fails.
+ * 
+ * @param action Default action to take
+ */
+void pico_rtos_set_assert_action(pico_rtos_assert_action_t action);
+
+/**
+ * @brief Get current default assertion action
+ * 
+ * @return Current default assertion action
+ */
+pico_rtos_assert_action_t pico_rtos_get_assert_action(void);
+
+/**
+ * @brief Handle assertion failure
+ * 
+ * Internal function called when an assertion fails. This function
+ * captures context information and takes appropriate action.
+ * 
+ * @param expression Failed assertion expression
+ * @param file Source file where assertion failed
+ * @param line Line number where assertion failed
+ * @param function Function name where assertion failed
+ * @param message Optional custom message
+ */
+void pico_rtos_handle_assert_failure(const char *expression,
+                                   const char *file,
+                                   int line,
+                                   const char *function,
+                                   const char *message);
+
+/**
+ * @brief Get assertion statistics
+ * 
+ * @param stats Pointer to structure to fill with assertion statistics
+ */
+void pico_rtos_get_assert_stats(pico_rtos_assert_stats_t *stats);
+
+/**
+ * @brief Reset assertion statistics
+ * 
+ * Clears all assertion counters and statistics.
+ */
+void pico_rtos_reset_assert_stats(void);
+
+// =============================================================================
+// ASSERTION MACROS
+// =============================================================================
+
+/**
+ * @brief Enhanced assertion macro with detailed context capture
+ * 
+ * This macro provides enhanced assertion functionality with detailed
+ * context information and configurable failure handling.
+ * 
+ * @param expr Expression to evaluate
+ */
+#define PICO_RTOS_ASSERT(expr) \
+    do { \
+        if (!(expr)) { \
+            pico_rtos_handle_assert_failure(#expr, __FILE__, __LINE__, __func__, NULL); \
+        } \
+    } while(0)
+
+/**
+ * @brief Enhanced assertion macro with custom message
+ * 
+ * @param expr Expression to evaluate
+ * @param msg Custom message to include with assertion failure
+ */
+#define PICO_RTOS_ASSERT_MSG(expr, msg) \
+    do { \
+        if (!(expr)) { \
+            pico_rtos_handle_assert_failure(#expr, __FILE__, __LINE__, __func__, msg); \
+        } \
+    } while(0)
+
+/**
+ * @brief Assertion that always fails with a message
+ * 
+ * @param msg Message to display
+ */
+#define PICO_RTOS_ASSERT_FAIL(msg) \
+    pico_rtos_handle_assert_failure("ASSERT_FAIL", __FILE__, __LINE__, __func__, msg)
+
+/**
+ * @brief Compile-time assertion
+ * 
+ * @param expr Expression to evaluate at compile time
+ * @param msg Message to display if assertion fails
+ */
+#define PICO_RTOS_STATIC_ASSERT(expr, msg) \
+    _Static_assert(expr, msg)
+
+/**
+ * @brief Parameter validation assertion
+ * 
+ * Used for validating function parameters. Can be disabled in release builds.
+ * 
+ * @param expr Expression to evaluate
+ */
+#ifndef NDEBUG
+#define PICO_RTOS_ASSERT_PARAM(expr) PICO_RTOS_ASSERT(expr)
+#else
+#define PICO_RTOS_ASSERT_PARAM(expr) ((void)0)
+#endif
+
+/**
+ * @brief Internal consistency assertion
+ * 
+ * Used for checking internal system state. Always enabled.
+ * 
+ * @param expr Expression to evaluate
+ */
+#define PICO_RTOS_ASSERT_INTERNAL(expr) PICO_RTOS_ASSERT(expr)
+
+#else // PICO_RTOS_ENABLE_ENHANCED_ASSERTIONS
+
+// When enhanced assertions are disabled, fall back to standard assert
+#include <assert.h>
+
+#define PICO_RTOS_ASSERT(expr) assert(expr)
+#define PICO_RTOS_ASSERT_MSG(expr, msg) assert(expr)
+#define PICO_RTOS_ASSERT_FAIL(msg) assert(0)
+#define PICO_RTOS_STATIC_ASSERT(expr, msg) _Static_assert(expr, msg)
+#define PICO_RTOS_ASSERT_PARAM(expr) assert(expr)
+#define PICO_RTOS_ASSERT_INTERNAL(expr) assert(expr)
+
+// Stub functions for disabled assertions
+#define pico_rtos_set_assert_action(action) ((void)0)
+#define pico_rtos_get_assert_action() (PICO_RTOS_ASSERT_ACTION_HALT)
+#define pico_rtos_get_assert_stats(stats) ((void)0)
+#define pico_rtos_reset_assert_stats() ((void)0)
+
+#if PICO_RTOS_ASSERTION_HANDLER_CONFIGURABLE
+#define pico_rtos_set_assert_handler(handler) ((void)0)
+#define pico_rtos_get_assert_handler() (NULL)
+#endif
+
+#endif // PICO_RTOS_ENABLE_ENHANCED_ASSERTIONS
 
 #endif // PICO_RTOS_ERROR_H

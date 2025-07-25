@@ -1,6 +1,7 @@
 #ifndef PICO_RTOS_H
 #define PICO_RTOS_H
 
+// Core RTOS components (v0.2.1 compatibility)
 #include "pico_rtos/config.h"
 #include "pico_rtos/error.h"
 #include "pico_rtos/logging.h"
@@ -9,14 +10,85 @@
 #include "pico_rtos/semaphore.h"
 #include "pico_rtos/task.h"
 #include "pico_rtos/timer.h"
+
+// v0.3.0 Advanced Synchronization Primitives
+#ifdef PICO_RTOS_ENABLE_EVENT_GROUPS
+#include "pico_rtos/event_group.h"
+#endif
+
+#ifdef PICO_RTOS_ENABLE_STREAM_BUFFERS
+#include "pico_rtos/stream_buffer.h"
+#endif
+
+// v0.3.0 Enhanced Memory Management
+#ifdef PICO_RTOS_ENABLE_MEMORY_POOLS
+#include "pico_rtos/memory_pool.h"
+#endif
+
+#ifdef PICO_RTOS_ENABLE_MPU_SUPPORT
+#include "pico_rtos/mpu.h"
+#endif
+
+// v0.3.0 Debugging and Profiling Tools
+#ifdef PICO_RTOS_ENABLE_TASK_INSPECTION
+#include "pico_rtos/debug.h"
+#endif
+
+#ifdef PICO_RTOS_ENABLE_EXECUTION_PROFILING
+#include "pico_rtos/profiler.h"
+#endif
+
+#ifdef PICO_RTOS_ENABLE_SYSTEM_TRACING
+#include "pico_rtos/trace.h"
+#endif
+
+// v0.3.0 Multi-Core Support
+#ifdef PICO_RTOS_ENABLE_MULTI_CORE
+#include "pico_rtos/smp.h"
+#endif
+
+// v0.3.0 Advanced System Extensions
+#ifdef PICO_RTOS_ENABLE_IO_ABSTRACTION
+#include "pico_rtos/io.h"
+#endif
+
+#ifdef PICO_RTOS_ENABLE_HIRES_TIMERS
+#include "pico_rtos/hires_timer.h"
+#endif
+
+#ifdef PICO_RTOS_ENABLE_UNIVERSAL_TIMEOUTS
+#include "pico_rtos/timeout.h"
+#endif
+
+// v0.3.0 Production Quality Assurance
+#ifdef PICO_RTOS_ENABLE_DEADLOCK_DETECTION
+#include "pico_rtos/deadlock.h"
+#endif
+
+#ifdef PICO_RTOS_ENABLE_SYSTEM_HEALTH_MONITORING
+#include "pico_rtos/health.h"
+#endif
+
+#ifdef PICO_RTOS_ENABLE_WATCHDOG_INTEGRATION
+#include "pico_rtos/watchdog.h"
+#endif
+
+#ifdef PICO_RTOS_ENABLE_ALERT_SYSTEM
+#include "pico_rtos/alerts.h"
+#endif
+
+// v0.3.0 Backward Compatibility
+#include "pico_rtos/deprecation.h"
 #include <stddef.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 /**
  * @brief Version information for Pico-RTOS
  */
 #define PICO_RTOS_VERSION_MAJOR 0
-#define PICO_RTOS_VERSION_MINOR 2
-#define PICO_RTOS_VERSION_PATCH 1
+#define PICO_RTOS_VERSION_MINOR 3
+#define PICO_RTOS_VERSION_PATCH 0
 
 /**
  * @brief Initialize the RTOS
@@ -103,6 +175,11 @@ uint32_t pico_rtos_get_idle_counter(void);
 typedef void (*pico_rtos_idle_hook_t)(void);
 void pico_rtos_set_idle_hook(pico_rtos_idle_hook_t hook);
 void pico_rtos_clear_idle_hook(void);
+
+// Debug system accessor functions
+pico_rtos_task_t *pico_rtos_debug_get_current_task(void);
+pico_rtos_task_t *pico_rtos_debug_get_task_list(void);
+uint32_t pico_rtos_debug_get_system_tick_count(void);
 
 // Interrupt handling
 void pico_rtos_interrupt_enter(void);

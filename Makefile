@@ -1,4 +1,4 @@
-# Pico-RTOS Makefile
+# Pico-RTOS v0.3.0 Makefile
 # Provides convenient targets for building and configuring Pico-RTOS
 
 # Default build directory
@@ -24,7 +24,7 @@ all: configure build
 # Help target
 .PHONY: help
 help:
-	@echo "Pico-RTOS Build System"
+	@echo "Pico-RTOS v0.3.0 Build System"
 	@echo ""
 	@echo "Configuration targets:"
 	@echo "  menuconfig     - Interactive configuration menu (ncurses)"
@@ -36,6 +36,10 @@ help:
 	@echo "Build targets:"
 	@echo "  configure      - Generate build configuration from .config"
 	@echo "  build          - Build the project"
+	@echo "  build-gcc      - Build with GCC toolchain"
+	@echo "  build-clang    - Build with Clang toolchain"
+	@echo "  build-debug    - Build in Debug mode"
+	@echo "  build-release  - Build in Release mode"
 	@echo "  clean          - Clean build directory"
 	@echo "  rebuild        - Clean and rebuild"
 	@echo "  examples       - Build examples only"
@@ -89,6 +93,10 @@ savedefconfig:
 showconfig: install-deps-check
 	@$(PYTHON) scripts/menuconfig.py --config-file $(CONFIG_FILE) --show-config
 
+# Toolchain options
+TOOLCHAIN ?= 
+BUILD_TYPE ?= Release
+
 # Build targets
 .PHONY: configure
 configure: $(CMAKE_CONFIG_FILE)
@@ -105,9 +113,33 @@ $(CONFIG_FILE):
 
 .PHONY: build
 build: configure
-	@echo "Building Pico-RTOS..."
-	@mkdir -p $(BUILD_DIR)
-	@cd $(BUILD_DIR) && cmake -C ../$(CMAKE_CONFIG_FILE) .. && make -j$(shell nproc 2>/dev/null || echo 4)
+	@echo "Building Pico-RTOS v0.3.0..."
+	@if [ -x scripts/build.sh ]; then \
+		scripts/build.sh $(if $(filter Debug,$(BUILD_TYPE)),--debug) \
+			$(if $(TOOLCHAIN),--toolchain $(TOOLCHAIN)) \
+			--examples --tests; \
+	else \
+		mkdir -p $(BUILD_DIR); \
+		cd $(BUILD_DIR) && cmake -C ../$(CMAKE_CONFIG_FILE) \
+			-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) .. && \
+		make -j$(shell nproc 2>/dev/null || echo 4); \
+	fi
+
+.PHONY: build-gcc
+build-gcc:
+	@$(MAKE) build TOOLCHAIN=arm-none-eabi-gcc
+
+.PHONY: build-clang
+build-clang:
+	@$(MAKE) build TOOLCHAIN=arm-none-eabi-clang
+
+.PHONY: build-debug
+build-debug:
+	@$(MAKE) build BUILD_TYPE=Debug
+
+.PHONY: build-release
+build-release:
+	@$(MAKE) build BUILD_TYPE=Release
 
 .PHONY: examples
 examples: configure
@@ -217,6 +249,17 @@ quick-start: dev-setup defconfig build
 	@echo ""
 	@echo "For more options, run: make help"
 
+# Test targets
+.PHONY: test-build-system
+test-build-system:
+	@echo "Running build system tests..."
+	$(PYTHON) tests/build_system_test.py
+
+.PHONY: build-info
+build-info:
+	@echo "Getting build system information..."
+	$(PYTHON) scripts/build.py info
+
 # Debug targets
 .PHONY: debug-config
 debug-config: configure
@@ -225,6 +268,10 @@ debug-config: configure
 	@echo "CMAKE_CONFIG_FILE: $(CMAKE_CONFIG_FILE)"
 	@echo "HEADER_CONFIG_FILE: $(HEADER_CONFIG_FILE)"
 	@echo "BUILD_DIR: $(BUILD_DIR)"
+	@echo "TOOLCHAIN: $(TOOLCHAIN)"
+	@echo "BUILD_TYPE: $(BUILD_TYPE)"
+	@echo ""
+	@$(MAKE) build-info
 	@echo ""
 	@if [ -f $(CONFIG_FILE) ]; then \
 		echo "Configuration file exists:"; \

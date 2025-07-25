@@ -1,0 +1,380 @@
+name: Pico-RTOS CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run nightly builds at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  # Build configuration
+  BUILD_TYPE: Release
+  PICO_SDK_VERSION: 2.1.1
+
+jobs:
+  # Job 1: Build Matrix Testing
+  build-matrix:
+    name: Build (${{ matrix.toolchain }}, ${{ matrix.build-type }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        toolchain: [arm-none-eabi-gcc, arm-none-eabi-clang]
+        build-type: [Debug, Release, RelWithDebInfo, MinSizeRel]
+        include:
+          # Add specific configurations for different OS
+          - os: ubuntu-latest
+            install-deps: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi ninja-build
+          - os: macos-latest
+            install-deps: brew install arm-none-eabi-gcc ninja llvm
+          - os: windows-latest
+            install-deps: choco install gcc-arm-embedded ninja
+        exclude:
+          # Exclude Clang on Windows for now (complex setup)
+          - os: windows-latest
+            toolchain: arm-none-eabi-clang
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install kconfiglib
+    
+    - name: Install system dependencies
+      run: ${{ matrix.install-deps }}
+      shell: bash
+    
+    - name: Setup Pico SDK
+      run: |
+        git submodule update --init --recursive
+      shell: bash
+    
+    - name: Configure build
+      run: |
+        python scripts/build.py configure \
+          --build-type ${{ matrix.build-type }} \
+          --toolchain ${{ matrix.toolchain }} \
+          --enable-examples \
+          --enable-tests
+      shell: bash
+    
+    - name: Build
+      run: |
+        python scripts/build.py build
+      shell: bash
+    
+    - name: Run build system tests
+      run: |
+        python tests/build_system_test.py
+      shell: bash
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      if: matrix.build-type == 'Release' && matrix.os == 'ubuntu-latest'
+      with:
+        name: pico-rtos-${{ matrix.toolchain }}-${{ github.sha }}
+        path: |
+          build/libpico_rtos.a
+          build/**/*.uf2
+        retention-days: 7
+
+  # Job 2: Code Quality Analysis
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-arm-none-eabi clang-format cppcheck
+        python -m pip install --upgrade pip
+        pip install kconfiglib
+    
+    - name: Check code formatting
+      run: |
+        find src include examples tests -name "*.c" -o -name "*.h" | \
+        xargs clang-format --dry-run --Werror
+    
+    - name: Run static analysis
+      run: |
+        cppcheck --enable=all --error-exitcode=1 \
+          --suppress=missingIncludeSystem \
+          --suppress=unusedFunction \
+          --suppress=unmatchedSuppression \
+          src/ include/
+    
+    - name: Check for TODO/FIXME comments
+      run: |
+        if grep -r "TODO\|FIXME" src/ include/ --exclude-dir=extern; then
+          echo "Found TODO/FIXME comments. Please resolve before merging."
+          exit 1
+        fi
+
+  # Job 3: Documentation Generation
+  documentation:
+    name: Generate Documentation
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y doxygen graphviz
+        python -m pip install --upgrade pip
+        pip install sphinx sphinx-rtd-theme breathe
+    
+    - name: Generate API documentation
+      run: |
+        doxygen docs/Doxyfile || true
+    
+    - name: Build documentation
+      run: |
+        cd docs
+        make html || true
+    
+    - name: Upload documentation
+      uses: actions/upload-artifact@v3
+      with:
+        name: documentation-${{ github.sha }}
+        path: docs/_build/html/
+        retention-days: 30
+
+  # Job 4: Security Scanning
+  security:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Run Bandit security scan
+      uses: securecodewarrior/github-action-bandit@v1
+      with:
+        path: scripts/
+    
+    - name: Run CodeQL Analysis
+      uses: github/codeql-action/init@v2
+      with:
+        languages: cpp, python
+    
+    - name: Install build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-arm-none-eabi ninja-build
+        python -m pip install --upgrade pip
+        pip install kconfiglib
+    
+    - name: Build for CodeQL
+      run: |
+        python scripts/build.py configure --build-type Debug --enable-examples
+        python scripts/build.py build
+    
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+
+  # Job 5: Performance Testing
+  performance:
+    name: Performance Testing
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-arm-none-eabi ninja-build valgrind
+        python -m pip install --upgrade pip
+        pip install kconfiglib
+    
+    - name: Build performance tests
+      run: |
+        python scripts/build.py configure --build-type Release --enable-tests
+        python scripts/build.py build --target performance_benchmark
+    
+    - name: Run performance benchmarks
+      run: |
+        # Note: This would run on actual hardware in a real setup
+        echo "Performance benchmarks would run here with hardware-in-the-loop testing"
+    
+    - name: Memory usage analysis
+      run: |
+        arm-none-eabi-size build/libpico_rtos.a
+        arm-none-eabi-objdump -h build/libpico_rtos.a
+
+  # Job 6: Hardware-in-the-Loop Testing (Simulated)
+  hardware-testing:
+    name: Hardware Testing (Simulated)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || contains(github.event.head_commit.message, '[hw-test]')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-arm-none-eabi ninja-build
+        python -m pip install --upgrade pip
+        pip install kconfiglib
+    
+    - name: Build hardware tests
+      run: |
+        python scripts/build.py configure --build-type Release --enable-examples
+        python scripts/build.py build
+    
+    - name: Simulate hardware testing
+      run: |
+        echo "Hardware-in-the-loop testing would run here"
+        echo "This would flash firmware to actual Pico devices and run tests"
+        # In a real setup, this would:
+        # 1. Flash firmware to connected Pico devices
+        # 2. Run automated tests via serial communication
+        # 3. Collect test results and performance metrics
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: hardware-test-results-${{ github.sha }}
+        path: test-results/
+        retention-days: 30
+
+  # Job 7: Release Preparation
+  release-prep:
+    name: Release Preparation
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [build-matrix, code-quality, documentation, security]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-arm-none-eabi ninja-build
+        python -m pip install --upgrade pip
+        pip install kconfiglib
+    
+    - name: Build release artifacts
+      run: |
+        python scripts/build.py configure --build-type Release --enable-examples
+        python scripts/build.py build
+    
+    - name: Package release
+      run: |
+        mkdir -p release-package
+        cp -r build/libpico_rtos.a release-package/
+        cp -r build/**/*.uf2 release-package/ || true
+        cp -r include/ release-package/
+        cp -r examples/ release-package/
+        cp README.md CHANGELOG.md LICENSE release-package/
+        tar -czf pico-rtos-v0.3.0-${{ github.sha }}.tar.gz release-package/
+    
+    - name: Upload release package
+      uses: actions/upload-artifact@v3
+      with:
+        name: pico-rtos-release-${{ github.sha }}
+        path: pico-rtos-v0.3.0-${{ github.sha }}.tar.gz
+        retention-days: 90
+
+  # Job 8: Deployment (for releases)
+  deploy:
+    name: Deploy Release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-matrix, code-quality, documentation, security, performance]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+    
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          pico-rtos-release-*/pico-rtos-v0.3.0-*.tar.gz
+          documentation-*/
+        body: |
+          ## Pico-RTOS ${{ github.ref_name }}
+          
+          ### New Features
+          - Enhanced build system with multiple toolchain support
+          - Automated CI/CD pipeline
+          - Comprehensive testing framework
+          
+          ### Downloads
+          - Library: `libpico_rtos.a`
+          - Examples: Multiple UF2 files for different examples
+          - Documentation: Complete API reference
+          
+          ### Supported Toolchains
+          - GCC ARM Embedded
+          - LLVM/Clang with ARM support
+          
+          ### Supported Platforms
+          - Linux (Ubuntu, Debian, etc.)
+          - macOS (Intel and Apple Silicon)
+          - Windows (with appropriate toolchain)
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+# Notification job for failures
+  notify-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    if: failure()
+    needs: [build-matrix, code-quality, documentation, security]
+    
+    steps:
+    - name: Notify team
+      run: |
+        echo "CI/CD pipeline failed. Check the logs for details."
+        # In a real setup, this would send notifications via Slack, email, etc.

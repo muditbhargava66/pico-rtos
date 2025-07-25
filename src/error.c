@@ -431,3 +431,128 @@ pico_rtos_error_callback_t pico_rtos_get_error_callback(void) {
     
     return error_system.callback;
 }
+
+// =============================================================================
+// ASSERTION SYSTEM IMPLEMENTATION
+// =============================================================================
+
+#if PICO_RTOS_ENABLE_ENHANCED_ASSERTIONS
+
+/**
+ * @brief Assertion system state
+ */
+static struct {
+    pico_rtos_assert_action_t default_action;
+    pico_rtos_assert_stats_t stats;
+    
+#if PICO_RTOS_ASSERTION_HANDLER_CONFIGURABLE
+    pico_rtos_assert_handler_t handler;
+#endif
+} assert_system = {
+    .default_action = PICO_RTOS_ASSERT_ACTION_HALT,
+    .stats = {0}
+};
+
+void pico_rtos_set_assert_action(pico_rtos_assert_action_t action) {
+    assert_system.default_action = action;
+}
+
+pico_rtos_assert_action_t pico_rtos_get_assert_action(void) {
+    return assert_system.default_action;
+}
+
+#if PICO_RTOS_ASSERTION_HANDLER_CONFIGURABLE
+
+void pico_rtos_set_assert_handler(pico_rtos_assert_handler_t handler) {
+    assert_system.handler = handler;
+}
+
+pico_rtos_assert_handler_t pico_rtos_get_assert_handler(void) {
+    return assert_system.handler;
+}
+
+#endif // PICO_RTOS_ASSERTION_HANDLER_CONFIGURABLE
+
+void pico_rtos_handle_assert_failure(const char *expression,
+                                   const char *file,
+                                   int line,
+                                   const char *function,
+                                   const char *message) {
+    // Update assertion statistics
+    assert_system.stats.total_assertions++;
+    assert_system.stats.failed_assertions++;
+    
+    // Create assertion context
+    pico_rtos_assert_info_t assert_info = {
+        .expression = expression,
+        .file = file,
+        .line = line,
+        .function = function,
+        .timestamp = pico_rtos_get_tick_count(),
+        .task_id = get_current_task_id(),
+        .message = message
+    };
+    
+    // Store information about last failure
+    assert_system.stats.last_failure = assert_info;
+    
+    // Determine action to take
+    pico_rtos_assert_action_t action = assert_system.default_action;
+    
+#if PICO_RTOS_ASSERTION_HANDLER_CONFIGURABLE
+    // Call custom handler if registered
+    if (assert_system.handler) {
+        action = assert_system.handler(&assert_info);
+    }
+#endif
+    
+    // Report as system error
+    PICO_RTOS_REPORT_ERROR(PICO_RTOS_ERROR_CRITICAL_SECTION_VIOLATION, (uint32_t)line);
+    
+    // Take appropriate action
+    switch (action) {
+        case PICO_RTOS_ASSERT_ACTION_HALT:
+            assert_system.stats.halted_assertions++;
+            // Disable interrupts and halt
+            pico_rtos_enter_critical();
+            while (1) {
+                // Halt execution
+                __asm volatile("wfi");
+            }
+            break;
+            
+        case PICO_RTOS_ASSERT_ACTION_CONTINUE:
+            assert_system.stats.continued_assertions++;
+            // Just return and continue execution
+            break;
+            
+        case PICO_RTOS_ASSERT_ACTION_CALLBACK:
+            // Action already handled by custom handler
+            break;
+            
+        case PICO_RTOS_ASSERT_ACTION_RESTART:
+            assert_system.stats.halted_assertions++;
+            // Trigger system restart
+            // Note: This would need platform-specific implementation
+            // For now, just halt
+            pico_rtos_enter_critical();
+            while (1) {
+                __asm volatile("wfi");
+            }
+            break;
+    }
+}
+
+void pico_rtos_get_assert_stats(pico_rtos_assert_stats_t *stats) {
+    if (!stats) {
+        return;
+    }
+    
+    *stats = assert_system.stats;
+}
+
+void pico_rtos_reset_assert_stats(void) {
+    memset(&assert_system.stats, 0, sizeof(assert_system.stats));
+}
+
+#endif // PICO_RTOS_ENABLE_ENHANCED_ASSERTIONS
