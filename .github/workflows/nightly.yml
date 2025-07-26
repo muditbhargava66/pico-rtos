@@ -23,7 +23,7 @@ jobs:
             install: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi cmake
           - name: "macOS Latest"
             os: macos-latest
-            install: brew install arm-gcc-bin cmake
+            install-deps: brew install arm-none-eabi-gcc cmake
     
     steps:
     - name: Checkout code
