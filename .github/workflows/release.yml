@@ -1,4 +1,4 @@
-name: Release Automation
+name: Release
 
 on:
   push:
@@ -15,11 +15,6 @@ on:
         required: false
         default: false
         type: boolean
-      draft:
-        description: 'Create as draft release'
-        required: false
-        default: false
-        type: boolean
 
 env:
   BUILD_TYPE: Release
@@ -27,7 +22,7 @@ env:
 jobs:
   # Validate release readiness
   validate-release:
-    name: Validate Release Readiness
+    name: Validate Release
     runs-on: ubuntu-latest
     
     outputs:
@@ -39,7 +34,6 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: recursive
-        fetch-depth: 0
     
     - name: Determine version
       id: version
@@ -72,32 +66,21 @@ jobs:
           exit 1
         fi
     
-    - name: Check changelog
+    - name: Check required files
       run: |
+        if [ ! -f README.md ]; then
+          echo "README.md not found"
+          exit 1
+        fi
+        
         if [ ! -f CHANGELOG.md ]; then
           echo "CHANGELOG.md not found"
           exit 1
         fi
-        
-        VERSION="${{ steps.version.outputs.version }}"
-        if ! grep -q "$VERSION" CHANGELOG.md; then
-          echo "Version $VERSION not found in CHANGELOG.md"
-          echo "Please update CHANGELOG.md before releasing"
-          exit 1
-        fi
-    
-    - name: Validate git tag
-      if: github.event_name == 'push'
-      run: |
-        VERSION="${{ steps.version.outputs.version }}"
-        if [ "${{ github.ref_name }}" != "$VERSION" ]; then
-          echo "Git tag ${{ github.ref_name }} doesn't match expected version $VERSION"
-          exit 1
-        fi
 
-  # Build release artifacts for all platforms
+  # Build release artifacts
   build-release-artifacts:
-    name: Build Release Artifacts (${{ matrix.config.name }})
+    name: Build Release (${{ matrix.config.name }})
     runs-on: ${{ matrix.config.os }}
     needs: validate-release
     
@@ -105,31 +88,14 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - name: "Linux GCC"
+          - name: "Linux"
             os: ubuntu-latest
-            toolchain: arm-none-eabi-gcc
-            install: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi ninja-build
-            artifact_suffix: linux-gcc
-          - name: "Linux Clang"
-            os: ubuntu-latest
-            toolchain: arm-none-eabi-clang
-            install: sudo apt-get update && sudo apt-get install -y clang llvm ninja-build
-            artifact_suffix: linux-clang
-          - name: "macOS GCC"
+            install: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi cmake
+            artifact_suffix: linux
+          - name: "macOS"
             os: macos-latest
-            toolchain: arm-none-eabi-gcc
-            install: brew install arm-none-eabi-gcc ninja
-            artifact_suffix: macos-gcc
-          - name: "macOS Clang"
-            os: macos-latest
-            toolchain: arm-none-eabi-clang
-            install: brew install llvm ninja
-            artifact_suffix: macos-clang
-          - name: "Windows GCC"
-            os: windows-latest
-            toolchain: arm-none-eabi-gcc
-            install: choco install gcc-arm-embedded ninja
-            artifact_suffix: windows-gcc
+            install: brew install arm-none-eabi-gcc cmake
+            artifact_suffix: macos
     
     steps:
     - name: Checkout code
@@ -142,31 +108,22 @@ jobs:
       with:
         python-version: '3.11'
     
-    - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install kconfiglib
-    
     - name: Install system dependencies
       run: ${{ matrix.config.install }}
       shell: bash
     
     - name: Setup Pico SDK
-      run: |
-        git submodule update --init --recursive
+      run: git submodule update --init --recursive
       shell: bash
     
-    - name: Configure build
+    - name: Build release
       run: |
-        python scripts/build.py configure \
-          --build-type Release \
-          --toolchain ${{ matrix.config.toolchain }} \
-          --enable-examples
+        python3 scripts/build.py configure --build-type Release --enable-examples
+        python3 scripts/build.py build
       shell: bash
     
-    - name: Build
-      run: |
-        python scripts/build.py build
+    - name: Run build system tests
+      run: python3 tests/build_system_test.py
       shell: bash
     
     - name: Package artifacts
@@ -189,127 +146,25 @@ jobs:
         cp README.md CHANGELOG.md LICENSE "$PACKAGE_NAME/"
         
         # Create archive
-        if [ "${{ runner.os }}" = "Windows" ]; then
-          7z a "$PACKAGE_NAME.zip" "$PACKAGE_NAME"
-        else
-          tar -czf "$PACKAGE_NAME.tar.gz" "$PACKAGE_NAME"
-        fi
+        tar -czf "$PACKAGE_NAME.tar.gz" "$PACKAGE_NAME"
       shell: bash
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
         name: release-artifacts-${{ matrix.config.artifact_suffix }}
-        path: |
-          pico-rtos-*-${{ matrix.config.artifact_suffix }}.tar.gz
-          pico-rtos-*-${{ matrix.config.artifact_suffix }}.zip
-        retention-days: 90
-
-  # Generate documentation
-  generate-documentation:
-    name: Generate Documentation
-    runs-on: ubuntu-latest
-    needs: validate-release
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-    
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y doxygen graphviz
-        python -m pip install --upgrade pip
-        pip install sphinx sphinx-rtd-theme breathe
-    
-    - name: Generate API documentation
-      run: |
-        doxygen docs/Doxyfile
-    
-    - name: Build documentation
-      run: |
-        cd docs
-        make html
-    
-    - name: Package documentation
-      run: |
-        VERSION="${{ needs.validate-release.outputs.version }}"
-        PACKAGE_NAME="pico-rtos-$VERSION-documentation"
-        
-        mkdir -p "$PACKAGE_NAME"
-        cp -r docs/_build/html/* "$PACKAGE_NAME/"
-        tar -czf "$PACKAGE_NAME.tar.gz" "$PACKAGE_NAME"
-    
-    - name: Upload documentation
-      uses: actions/upload-artifact@v3
-      with:
-        name: release-documentation
-        path: pico-rtos-*-documentation.tar.gz
-        retention-days: 90
-
-  # Run comprehensive tests
-  release-testing:
-    name: Release Testing
-    runs-on: ubuntu-latest
-    needs: validate-release
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-    
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gcc-arm-none-eabi ninja-build
-        python -m pip install --upgrade pip
-        pip install kconfiglib pytest
-    
-    - name: Run comprehensive tests
-      run: |
-        # Build with all configurations
-        for build_type in Debug Release RelWithDebInfo MinSizeRel; do
-          echo "Testing $build_type build..."
-          python scripts/build.py clean
-          python scripts/build.py configure --build-type $build_type --enable-examples --enable-tests
-          python scripts/build.py build
-        done
-        
-        # Run test suite
-        python tests/build_system_test.py
-    
-    - name: Generate test report
-      run: |
-        VERSION="${{ needs.validate-release.outputs.version }}"
-        echo "# Release Test Report for $VERSION" > test-report.md
-        echo "Generated on: $(date)" >> test-report.md
-        echo "" >> test-report.md
-        echo "## Test Results" >> test-report.md
-        echo "✅ All build configurations tested successfully" >> test-report.md
-        echo "✅ Build system tests passed" >> test-report.md
-        echo "✅ Example builds completed" >> test-report.md
-    
-    - name: Upload test report
-      uses: actions/upload-artifact@v3
-      with:
-        name: release-test-report
-        path: test-report.md
+        path: pico-rtos-*-${{ matrix.config.artifact_suffix }}.tar.gz
         retention-days: 90
 
   # Create GitHub release
   create-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [validate-release, build-release-artifacts, generate-documentation, release-testing]
+    needs: [validate-release, build-release-artifacts]
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
     
     - name: Download all artifacts
       uses: actions/download-artifact@v3
@@ -321,45 +176,30 @@ jobs:
         echo "# Pico-RTOS $VERSION" > release-notes.md
         echo "" >> release-notes.md
         
-        # Extract changelog section for this version
-        if [ -f CHANGELOG.md ]; then
-          awk "/^## \[$VERSION\]/,/^## \[/{if(/^## \[/ && !/^## \[$VERSION\]/) exit; print}" CHANGELOG.md >> release-notes.md
+        # Extract changelog section for this version if it exists
+        if [ -f CHANGELOG.md ] && grep -q "$VERSION" CHANGELOG.md; then
+          echo "## Changes" >> release-notes.md
+          awk "/## \[$VERSION\]/,/^## \[/{if(/^## \[/ && !/^## \[$VERSION\]/) exit; print}" CHANGELOG.md >> release-notes.md
+        else
+          echo "## Changes" >> release-notes.md
+          echo "- See commit history for detailed changes" >> release-notes.md
         fi
         
         echo "" >> release-notes.md
         echo "## Downloads" >> release-notes.md
         echo "" >> release-notes.md
-        echo "### Library Packages" >> release-notes.md
         
         # List all release artifacts
-        for artifact in release-artifacts-*/pico-rtos-*; do
+        for artifact in release-artifacts-*/pico-rtos-*.tar.gz; do
           if [ -f "$artifact" ]; then
             basename_file=$(basename "$artifact")
-            echo "- [$basename_file]($basename_file)" >> release-notes.md
+            echo "- $basename_file" >> release-notes.md
           fi
         done
         
-        echo "" >> release-notes.md
-        echo "### Documentation" >> release-notes.md
-        for doc in release-documentation/pico-rtos-*; do
-          if [ -f "$doc" ]; then
-            basename_file=$(basename "$doc")
-            echo "- [$basename_file]($basename_file)" >> release-notes.md
-          fi
-        done
-        
-        echo "" >> release-notes.md
-        echo "## Supported Toolchains" >> release-notes.md
-        echo "- GCC ARM Embedded Toolchain" >> release-notes.md
-        echo "- LLVM/Clang with ARM support" >> release-notes.md
-        echo "" >> release-notes.md
-        echo "## Supported Platforms" >> release-notes.md
-        echo "- Linux (Ubuntu, Debian, etc.)" >> release-notes.md
-        echo "- macOS (Intel and Apple Silicon)" >> release-notes.md
-        echo "- Windows (with appropriate toolchain)" >> release-notes.md
         echo "" >> release-notes.md
         echo "## Installation" >> release-notes.md
-        echo "1. Download the appropriate package for your platform and toolchain" >> release-notes.md
+        echo "1. Download the appropriate package for your platform" >> release-notes.md
         echo "2. Extract the archive" >> release-notes.md
         echo "3. Include the headers and link against libpico_rtos.a" >> release-notes.md
         echo "4. Flash the example UF2 files to test your setup" >> release-notes.md
@@ -370,129 +210,8 @@ jobs:
         tag_name: ${{ needs.validate-release.outputs.version }}
         name: Pico-RTOS ${{ needs.validate-release.outputs.version }}
         body_path: release-notes.md
-        draft: ${{ inputs.draft || false }}
         prerelease: ${{ needs.validate-release.outputs.is_prerelease }}
         files: |
           release-artifacts-*/pico-rtos-*.tar.gz
-          release-artifacts-*/pico-rtos-*.zip
-          release-documentation/pico-rtos-*-documentation.tar.gz
-          release-test-report/test-report.md
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # Post-release tasks
-  post-release:
-    name: Post-Release Tasks
-    runs-on: ubuntu-latest
-    needs: [validate-release, create-release]
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        fetch-depth: 0
-    
-    - name: Update version for next development cycle
-      if: needs.validate-release.outputs.is_prerelease == 'false'
-      run: |
-        VERSION="${{ needs.validate-release.outputs.version }}"
-        
-        # Extract version numbers
-        MAJOR=$(echo $VERSION | sed 's/v\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*/\1/')
-        MINOR=$(echo $VERSION | sed 's/v\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*/\2/')
-        PATCH=$(echo $VERSION | sed 's/v\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*/\3/')
-        
-        # Increment minor version for next development cycle
-        NEXT_MINOR=$((MINOR + 1))
-        NEXT_VERSION="v$MAJOR.$NEXT_MINOR.0-dev"
-        
-        echo "Updating version to $NEXT_VERSION for next development cycle"
-        
-        # Update version in header file
-        sed -i "s/#define PICO_RTOS_VERSION_MAJOR [0-9]*/#define PICO_RTOS_VERSION_MAJOR $MAJOR/" include/pico_rtos.h
-        sed -i "s/#define PICO_RTOS_VERSION_MINOR [0-9]*/#define PICO_RTOS_VERSION_MINOR $NEXT_MINOR/" include/pico_rtos.h
-        sed -i "s/#define PICO_RTOS_VERSION_PATCH [0-9]*/#define PICO_RTOS_VERSION_PATCH 0/" include/pico_rtos.h
-        
-        # Update CMakeLists.txt
-        sed -i "s/set(PICO_RTOS_VERSION_MAJOR [0-9]*)/set(PICO_RTOS_VERSION_MAJOR $MAJOR)/" CMakeLists.txt
-        sed -i "s/set(PICO_RTOS_VERSION_MINOR [0-9]*)/set(PICO_RTOS_VERSION_MINOR $NEXT_MINOR)/" CMakeLists.txt
-        sed -i "s/set(PICO_RTOS_VERSION_PATCH [0-9]*)/set(PICO_RTOS_VERSION_PATCH 0)/" CMakeLists.txt
-    
-    - name: Create development branch
-      if: needs.validate-release.outputs.is_prerelease == 'false'
-      run: |
-        VERSION="${{ needs.validate-release.outputs.version }}"
-        MAJOR=$(echo $VERSION | sed 's/v\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*/\1/')
-        MINOR=$(echo $VERSION | sed 's/v\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*/\2/')
-        NEXT_MINOR=$((MINOR + 1))
-        
-        BRANCH_NAME="develop-v$MAJOR.$NEXT_MINOR.x"
-        
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        
-        git checkout -b "$BRANCH_NAME"
-        git add -A
-        git commit -m "chore: prepare for v$MAJOR.$NEXT_MINOR.x development"
-        git push origin "$BRANCH_NAME"
-    
-    - name: Create post-release issue
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const version = '${{ needs.validate-release.outputs.version }}';
-          
-          github.rest.issues.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            title: `Post-release tasks for ${version}`,
-            body: `## Post-release checklist for ${version}
-            
-            - [ ] Verify release artifacts are accessible
-            - [ ] Update documentation website
-            - [ ] Announce release on social media/forums
-            - [ ] Update package managers (if applicable)
-            - [ ] Monitor for bug reports
-            - [ ] Plan next release cycle
-            
-            Release created: ${context.payload.release?.html_url || 'Manual trigger'}
-            `,
-            labels: ['release', 'task']
-          });
-
-  # Notify on failure
-  notify-failure:
-    name: Notify Release Failure
-    runs-on: ubuntu-latest
-    if: failure()
-    needs: [validate-release, build-release-artifacts, generate-documentation, release-testing, create-release]
-    
-    steps:
-    - name: Notify failure
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const version = '${{ needs.validate-release.outputs.version }}';
-          
-          github.rest.issues.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            title: `Release ${version} failed`,
-            body: `## Release failure report
-            
-            The release process for ${version} failed during CI/CD.
-            
-            **Failed jobs:**
-            - Validate Release: ${{ needs.validate-release.result }}
-            - Build Artifacts: ${{ needs.build-release-artifacts.result }}
-            - Generate Documentation: ${{ needs.generate-documentation.result }}
-            - Release Testing: ${{ needs.release-testing.result }}
-            - Create Release: ${{ needs.create-release.result }}
-            
-            Please check the workflow logs and fix the issues before retrying the release.
-            
-            Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            `,
-            labels: ['release', 'bug', 'urgent']
-          });

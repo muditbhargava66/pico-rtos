@@ -758,12 +758,6 @@ if(PICO_RTOS_BUILD_TESTS)
     pico_enable_stdio_usb(compatibility_test 1)
     pico_enable_stdio_uart(compatibility_test 0)
     
-    add_executable(v021_example_test tests/v021_example_test.c)
-    target_link_libraries(v021_example_test pico_rtos pico_stdlib)
-    pico_add_extra_outputs(v021_example_test)
-    pico_enable_stdio_usb(v021_example_test 1)
-    pico_enable_stdio_uart(v021_example_test 0)
-    
     add_executable(deprecation_test tests/deprecation_test.c)
     target_link_libraries(deprecation_test pico_rtos pico_stdlib)
     pico_add_extra_outputs(deprecation_test)

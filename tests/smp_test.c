@@ -5,116 +5,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-// Mock Pico SDK functions for testing
-static uint32_t mock_core_num = 0;
-uint32_t get_core_num(void) { return mock_core_num; }
-void multicore_launch_core1(void (*entry)(void)) { /* Mock implementation */ }
-void multicore_fifo_push_blocking(uint32_t data) { /* Mock implementation */ }
-void sleep_ms(uint32_t ms) { /* Mock implementation */ }
-void __wfi(void) { /* Mock implementation */ }
-
-// Mock critical section
-typedef struct {
-    int dummy;
-} critical_section_t;
-
-void critical_section_init(critical_section_t *cs) { (void)cs; }
-void critical_section_enter_blocking(critical_section_t *cs) { (void)cs; }
-void critical_section_exit(critical_section_t *cs) { (void)cs; }
-
-// Mock RTOS types and functions
-typedef enum {
-    PICO_RTOS_TASK_STATE_READY,
-    PICO_RTOS_TASK_STATE_RUNNING,
-    PICO_RTOS_TASK_STATE_BLOCKED,
-    PICO_RTOS_TASK_STATE_SUSPENDED,
-    PICO_RTOS_TASK_STATE_TERMINATED
-} pico_rtos_task_state_t;
-
-typedef enum {
-    PICO_RTOS_BLOCK_REASON_NONE,
-    PICO_RTOS_BLOCK_REASON_DELAY
-} pico_rtos_block_reason_t;
-
-typedef void (*pico_rtos_task_function_t)(void *param);
-
-typedef struct pico_rtos_task {
-    const char *name;
-    pico_rtos_task_function_t function;
-    void *param;
-    uint32_t stack_size;
-    uint32_t priority;
-    uint32_t original_priority;
-    pico_rtos_task_state_t state;
-    uint32_t *stack_ptr;
-    uint32_t *stack_base;
-    uint32_t delay_until;
-    bool auto_delete;
-    pico_rtos_block_reason_t block_reason;
-    void *blocking_object;
-    struct pico_rtos_task *next;
-    critical_section_t cs;
-    
-    // SMP-specific fields
-    uint32_t core_affinity;
-    uint32_t assigned_core;
-    uint64_t cpu_time_us;
-    uint32_t context_switch_count;
-    uint32_t stack_high_water_mark;
-    uint32_t migration_count;
-    bool migration_pending;
-    uint32_t last_run_core;
-    void *task_local_storage[4];
-} pico_rtos_task_t;
-
-// Mock RTOS functions
-static pico_rtos_task_t *current_task = NULL;
-static uint32_t tick_count = 0;
-
-bool pico_rtos_init(void) { return true; }
-bool pico_rtos_task_create(pico_rtos_task_t *task, const char *name, 
-                          pico_rtos_task_function_t function, void *param, 
-                          uint32_t stack_size, uint32_t priority) {
-    if (!task) return false;
-    memset(task, 0, sizeof(pico_rtos_task_t));
-    task->name = name;
-    task->function = function;
-    task->param = param;
-    task->stack_size = stack_size;
-    task->priority = priority;
-    task->state = PICO_RTOS_TASK_STATE_READY;
-    return true;
-}
-void pico_rtos_task_delete(pico_rtos_task_t *task) { (void)task; }
-void pico_rtos_task_delay(uint32_t ms) { (void)ms; }
-pico_rtos_task_t *pico_rtos_get_current_task(void) { return current_task; }
-uint32_t pico_rtos_get_tick_count(void) { return tick_count; }
-uint32_t *pico_rtos_init_task_stack(uint32_t *stack_base, uint32_t stack_size, 
-                                   pico_rtos_task_function_t function, void *param) {
-    (void)stack_base; (void)stack_size; (void)function; (void)param;
-    return stack_base;
-}
-
-// Task assignment strategies (matching the SMP header)
-typedef enum {
-    PICO_RTOS_ASSIGN_ROUND_ROBIN,
-    PICO_RTOS_ASSIGN_LEAST_LOADED,
-    PICO_RTOS_ASSIGN_PRIORITY_BASED,
-    PICO_RTOS_ASSIGN_AFFINITY_FIRST
-} pico_rtos_task_assignment_strategy_t;
-
-// Mock SMP functions for testing
-void pico_rtos_smp_set_assignment_strategy(pico_rtos_task_assignment_strategy_t strategy) { (void)strategy; }
-pico_rtos_task_assignment_strategy_t pico_rtos_smp_get_assignment_strategy(void) { return PICO_RTOS_ASSIGN_LEAST_LOADED; }
-bool pico_rtos_smp_add_new_task(pico_rtos_task_t *task) { (void)task; return true; }
-bool pico_rtos_smp_get_load_balance_stats(uint32_t *total_migrations, uint32_t *last_balance_time, uint32_t *balance_cycles) {
-    if (total_migrations) *total_migrations = 0;
-    if (last_balance_time) *last_balance_time = 0;
-    if (balance_cycles) *balance_cycles = 0;
-    return true;
-}
-
-// Include the SMP header after mocks
+// Include the actual SMP header to get real types
 #include "pico_rtos/smp.h"
 
 // Test configuration
@@ -608,16 +499,16 @@ static void test_error_handling(void) {
 // =============================================================================
 
 int main(void) {
-    stdio_init_all();
+    // Initialize stdio (will use real implementation)
     
     printf("\n");
     printf("========================================\n");
     printf("    Pico-RTOS SMP Foundation Tests\n");
     printf("========================================\n");
     
-    // Initialize the base RTOS system first
-    if (!pico_rtos_init()) {
-        printf("FATAL: Failed to initialize Pico-RTOS\n");
+    // Initialize the SMP system for testing
+    if (!pico_rtos_smp_init()) {
+        printf("FATAL: Failed to initialize Pico-RTOS SMP\n");
         return 1;
     }
     

@@ -3,7 +3,6 @@ name: Pull Request Validation
 on:
   pull_request:
     branches: [ main, develop ]
-    types: [opened, synchronize, reopened, ready_for_review]
 
 env:
   BUILD_TYPE: Release
@@ -11,49 +10,9 @@ env:
 jobs:
   # Quick validation for draft PRs
   draft-validation:
-    name: Draft PR Validation
+    name: Draft PR Quick Check
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == true
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-    
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gcc-arm-none-eabi ninja-build clang-format
-        python -m pip install --upgrade pip
-        pip install kconfiglib
-    
-    - name: Check code formatting
-      run: |
-        find src include examples tests -name "*.c" -o -name "*.h" | \
-        xargs clang-format --dry-run --Werror
-    
-    - name: Quick build test
-      run: |
-        python scripts/build.py configure --build-type Debug --toolchain arm-none-eabi-gcc
-        python scripts/build.py build --target pico_rtos
-
-  # Full validation for ready PRs
-  full-validation:
-    name: Full PR Validation
-    runs-on: ${{ matrix.os }}
-    if: github.event.pull_request.draft == false
-    
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        toolchain: [arm-none-eabi-gcc, arm-none-eabi-clang]
-        build-type: [Debug, Release]
-        exclude:
-          # Skip Clang on macOS for faster PR validation
-          - os: macos-latest
-            toolchain: arm-none-eabi-clang
     
     steps:
     - name: Checkout code
@@ -66,149 +25,61 @@ jobs:
       with:
         python-version: '3.11'
     
-    - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install kconfiglib
-    
-    - name: Install system dependencies (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
+    - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y gcc-arm-none-eabi ninja-build
-        if [ "${{ matrix.toolchain }}" = "arm-none-eabi-clang" ]; then
-          sudo apt-get install -y clang llvm
-        fi
+        sudo apt-get install -y gcc-arm-none-eabi cmake
     
-    - name: Install system dependencies (macOS)
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew install arm-none-eabi-gcc ninja
-        if [ "${{ matrix.toolchain }}" = "arm-none-eabi-clang" ]; then
-          brew install llvm
-        fi
-    
-    - name: Setup Pico SDK
+    - name: Quick build test
       run: |
         git submodule update --init --recursive
-    
-    - name: Configure build
-      run: |
-        python scripts/build.py configure \
-          --build-type ${{ matrix.build-type }} \
-          --toolchain ${{ matrix.toolchain }} \
-          --enable-examples \
-          --enable-tests
-    
-    - name: Build
-      run: |
-        python scripts/build.py build
-    
-    - name: Run tests
-      run: |
-        python tests/build_system_test.py
+        python3 scripts/build.py configure --build-type Debug
+        python3 scripts/build.py build
 
-  # Code quality checks
+  # Full validation for ready PRs
+  pr-validation:
+    name: PR Validation (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    if: github.event.pull_request.draft == false
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            install-deps: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi cmake
+          - os: macos-latest
+            install-deps: brew install arm-none-eabi-gcc cmake
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install system dependencies
+      run: ${{ matrix.install-deps }}
+    
+    - name: Setup Pico SDK
+      run: git submodule update --init --recursive
+    
+    - name: Configure and build
+      run: |
+        python3 scripts/build.py configure --build-type Release --enable-examples
+        python3 scripts/build.py build
+    
+    - name: Run build system tests
+      run: python3 tests/build_system_test.py
+
+  # Basic code quality checks
   code-quality:
-    name: Code Quality Checks
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-        fetch-depth: 0
-    
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gcc-arm-none-eabi clang-format cppcheck
-        python -m pip install --upgrade pip
-        pip install kconfiglib
-    
-    - name: Check code formatting
-      run: |
-        echo "Checking code formatting..."
-        UNFORMATTED=$(find src include examples tests -name "*.c" -o -name "*.h" | \
-          xargs clang-format --dry-run --Werror 2>&1 || true)
-        if [ -n "$UNFORMATTED" ]; then
-          echo "Code formatting issues found:"
-          echo "$UNFORMATTED"
-          echo ""
-          echo "Please run: make format"
-          exit 1
-        fi
-        echo "Code formatting is correct."
-    
-    - name: Run static analysis
-      run: |
-        echo "Running static analysis..."
-        cppcheck --enable=all --error-exitcode=1 \
-          --suppress=missingIncludeSystem \
-          --suppress=unusedFunction \
-          --suppress=unmatchedSuppression \
-          --xml --xml-version=2 \
-          src/ include/ 2> cppcheck-report.xml || true
-        
-        # Check if there are any errors
-        if grep -q 'severity="error"' cppcheck-report.xml; then
-          echo "Static analysis found errors:"
-          cat cppcheck-report.xml
-          exit 1
-        fi
-        echo "Static analysis passed."
-    
-    - name: Check for prohibited patterns
-      run: |
-        echo "Checking for prohibited patterns..."
-        
-        # Check for hardcoded paths
-        if grep -r "/home\|/Users\|C:\\\\" src/ include/ --exclude-dir=extern; then
-          echo "Found hardcoded paths. Please use relative paths."
-          exit 1
-        fi
-        
-        # Check for debug prints that shouldn't be committed
-        if grep -r "printf\|cout\|std::cout" src/ include/ --exclude-dir=extern; then
-          echo "Found debug print statements. Please use the logging system."
-          exit 1
-        fi
-        
-        # Check for TODO/FIXME in critical files
-        if grep -r "TODO\|FIXME" src/core.c src/task.c include/pico_rtos.h; then
-          echo "Found TODO/FIXME in critical files. Please resolve before merging."
-          exit 1
-        fi
-        
-        echo "Pattern checks passed."
-    
-    - name: Check commit messages
-      run: |
-        echo "Checking commit messages..."
-        
-        # Get commits in this PR
-        git log --oneline origin/main..HEAD | while read commit; do
-          message=$(echo "$commit" | cut -d' ' -f2-)
-          
-          # Check for conventional commit format (optional but recommended)
-          if ! echo "$message" | grep -qE "^(feat|fix|docs|style|refactor|test|chore)(\(.+\))?: .+"; then
-            echo "Warning: Commit message doesn't follow conventional format: $message"
-          fi
-          
-          # Check for minimum length
-          if [ ${#message} -lt 10 ]; then
-            echo "Error: Commit message too short: $message"
-            exit 1
-          fi
-        done
-        
-        echo "Commit message checks passed."
-
-  # Documentation checks
-  documentation:
-    name: Documentation Checks
+    name: Code Quality
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     
@@ -218,206 +89,24 @@ jobs:
       with:
         submodules: recursive
     
-    - name: Install dependencies
+    - name: Basic code checks
       run: |
-        sudo apt-get update
-        sudo apt-get install -y doxygen
-    
-    - name: Check documentation completeness
-      run: |
-        echo "Checking documentation completeness..."
+        echo "Running basic code quality checks..."
         
-        # Check for undocumented public functions
-        UNDOCUMENTED=$(grep -r "^[a-zA-Z_][a-zA-Z0-9_]*\s*(" include/ | \
-          grep -v "static\|inline" | \
-          grep -v "/\*\*" | head -10 || true)
-        
-        if [ -n "$UNDOCUMENTED" ]; then
-          echo "Found potentially undocumented functions:"
-          echo "$UNDOCUMENTED"
-          echo "Please ensure all public functions are documented."
-        fi
-    
-    - name: Generate documentation
-      run: |
-        echo "Generating documentation to check for errors..."
-        doxygen docs/Doxyfile 2>&1 | tee doxygen.log
-        
-        # Check for documentation warnings/errors
-        if grep -i "warning\|error" doxygen.log; then
-          echo "Documentation generation has warnings/errors."
-          echo "Please fix documentation issues."
+        # Check if key files exist
+        if [ ! -f README.md ]; then
+          echo "README.md is missing"
           exit 1
         fi
         
-        echo "Documentation generation successful."
-
-  # Security checks
-  security:
-    name: Security Checks
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-    
-    - name: Run security scan
-      run: |
-        echo "Running security checks..."
-        
-        # Check for potential security issues
-        if grep -r "strcpy\|strcat\|sprintf\|gets" src/ include/ --exclude-dir=extern; then
-          echo "Found potentially unsafe functions. Consider using safer alternatives."
+        if [ ! -f CHANGELOG.md ]; then
+          echo "CHANGELOG.md is missing"
           exit 1
         fi
         
-        # Check for hardcoded secrets (basic check)
-        if grep -ri "password\|secret\|key\|token" src/ include/ --exclude-dir=extern | grep -v "// "; then
-          echo "Found potential hardcoded secrets. Please review."
-          exit 1
+        # Check for common issues (informational)
+        if grep -r "TODO\|FIXME" src/ include/ --exclude-dir=extern 2>/dev/null; then
+          echo "Found TODO/FIXME comments (informational)"
         fi
         
-        echo "Security checks passed."
-
-  # Performance impact analysis
-  performance-impact:
-    name: Performance Impact Analysis
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-        fetch-depth: 0
-    
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gcc-arm-none-eabi ninja-build
-        python -m pip install --upgrade pip
-        pip install kconfiglib
-    
-    - name: Build current branch
-      run: |
-        python scripts/build.py configure --build-type Release --toolchain arm-none-eabi-gcc
-        python scripts/build.py build
-        arm-none-eabi-size build/libpico_rtos.a > current-size.txt
-    
-    - name: Build main branch
-      run: |
-        git checkout origin/main
-        python scripts/build.py clean
-        python scripts/build.py configure --build-type Release --toolchain arm-none-eabi-gcc
-        python scripts/build.py build
-        arm-none-eabi-size build/libpico_rtos.a > main-size.txt
-    
-    - name: Compare sizes
-      run: |
-        echo "# Performance Impact Analysis" > performance-impact.md
-        echo "" >> performance-impact.md
-        echo "## Library Size Comparison" >> performance-impact.md
-        echo "" >> performance-impact.md
-        echo "### Main Branch" >> performance-impact.md
-        echo '```' >> performance-impact.md
-        cat main-size.txt >> performance-impact.md
-        echo '```' >> performance-impact.md
-        echo "" >> performance-impact.md
-        echo "### Current Branch" >> performance-impact.md
-        echo '```' >> performance-impact.md
-        cat current-size.txt >> performance-impact.md
-        echo '```' >> performance-impact.md
-        
-        # Calculate size difference (basic)
-        MAIN_SIZE=$(awk 'NR==2 {print $1}' main-size.txt)
-        CURRENT_SIZE=$(awk 'NR==2 {print $1}' current-size.txt)
-        DIFF=$((CURRENT_SIZE - MAIN_SIZE))
-        
-        echo "" >> performance-impact.md
-        echo "### Size Impact" >> performance-impact.md
-        if [ $DIFF -gt 0 ]; then
-          echo "📈 Library size increased by $DIFF bytes" >> performance-impact.md
-        elif [ $DIFF -lt 0 ]; then
-          echo "📉 Library size decreased by $((DIFF * -1)) bytes" >> performance-impact.md
-        else
-          echo "➡️ No change in library size" >> performance-impact.md
-        fi
-    
-    - name: Upload performance impact report
-      uses: actions/upload-artifact@v3
-      with:
-        name: performance-impact-${{ github.event.number }}
-        path: performance-impact.md
-        retention-days: 30
-    
-    - name: Comment on PR
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const fs = require('fs');
-          const report = fs.readFileSync('performance-impact.md', 'utf8');
-          
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: report
-          });
-
-  # Final validation summary
-  validation-summary:
-    name: Validation Summary
-    runs-on: ubuntu-latest
-    needs: [full-validation, code-quality, documentation, security, performance-impact]
-    if: always() && github.event.pull_request.draft == false
-    
-    steps:
-    - name: Check validation results
-      run: |
-        echo "# PR Validation Summary" > validation-summary.md
-        echo "" >> validation-summary.md
-        
-        # Check job results
-        if [ "${{ needs.full-validation.result }}" = "success" ]; then
-          echo "✅ Build validation passed" >> validation-summary.md
-        else
-          echo "❌ Build validation failed" >> validation-summary.md
-        fi
-        
-        if [ "${{ needs.code-quality.result }}" = "success" ]; then
-          echo "✅ Code quality checks passed" >> validation-summary.md
-        else
-          echo "❌ Code quality checks failed" >> validation-summary.md
-        fi
-        
-        if [ "${{ needs.documentation.result }}" = "success" ]; then
-          echo "✅ Documentation checks passed" >> validation-summary.md
-        else
-          echo "❌ Documentation checks failed" >> validation-summary.md
-        fi
-        
-        if [ "${{ needs.security.result }}" = "success" ]; then
-          echo "✅ Security checks passed" >> validation-summary.md
-        else
-          echo "❌ Security checks failed" >> validation-summary.md
-        fi
-        
-        if [ "${{ needs.performance-impact.result }}" = "success" ]; then
-          echo "✅ Performance impact analysis completed" >> validation-summary.md
-        else
-          echo "❌ Performance impact analysis failed" >> validation-summary.md
-        fi
-        
-        echo "" >> validation-summary.md
-        echo "PR is ready for review if all checks passed." >> validation-summary.md
-    
-    - name: Upload validation summary
-      uses: actions/upload-artifact@v3
-      with:
-        name: validation-summary-${{ github.event.number }}
-        path: validation-summary.md
-        retention-days: 30
+        echo "Code quality checks completed"

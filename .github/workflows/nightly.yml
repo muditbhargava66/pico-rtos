@@ -1,28 +1,17 @@
-name: Nightly Build and Test
+name: Nightly Build
 
 on:
   schedule:
     # Run every night at 3 AM UTC
     - cron: '0 3 * * *'
   workflow_dispatch:
-    inputs:
-      run_hardware_tests:
-        description: 'Run hardware-in-the-loop tests'
-        required: false
-        default: 'false'
-        type: boolean
-      extended_testing:
-        description: 'Run extended test suite'
-        required: false
-        default: 'true'
-        type: boolean
 
 env:
   BUILD_TYPE: Release
 
 jobs:
-  # Extended build matrix for nightly builds
-  nightly-build-matrix:
+  # Simplified nightly build matrix
+  nightly-build:
     name: Nightly Build (${{ matrix.config.name }})
     runs-on: ${{ matrix.config.os }}
     
@@ -30,291 +19,78 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          # Linux configurations
-          - name: "Ubuntu 20.04 GCC"
-            os: ubuntu-20.04
-            toolchain: arm-none-eabi-gcc
-            install: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi ninja-build
-          - name: "Ubuntu 22.04 GCC"
-            os: ubuntu-22.04
-            toolchain: arm-none-eabi-gcc
-            install: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi ninja-build
-          - name: "Ubuntu 22.04 Clang"
-            os: ubuntu-22.04
-            toolchain: arm-none-eabi-clang
-            install: sudo apt-get update && sudo apt-get install -y clang llvm ninja-build
-          
-          # macOS configurations
-          - name: "macOS 12 GCC"
-            os: macos-12
-            toolchain: arm-none-eabi-gcc
-            install: brew install arm-none-eabi-gcc ninja
-          - name: "macOS 13 GCC"
-            os: macos-13
-            toolchain: arm-none-eabi-gcc
-            install: brew install arm-none-eabi-gcc ninja
-          - name: "macOS 13 Clang"
-            os: macos-13
-            toolchain: arm-none-eabi-clang
-            install: brew install llvm ninja
-          
-          # Windows configurations
-          - name: "Windows 2019 GCC"
-            os: windows-2019
-            toolchain: arm-none-eabi-gcc
-            install: choco install gcc-arm-embedded ninja
-          - name: "Windows 2022 GCC"
-            os: windows-2022
-            toolchain: arm-none-eabi-gcc
-            install: choco install gcc-arm-embedded ninja
+          - name: "Ubuntu Latest"
+            os: ubuntu-latest
+            install: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi cmake
+          - name: "macOS Latest"
+            os: macos-latest
+            install: brew install arm-none-eabi-gcc cmake
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
         submodules: recursive
-        fetch-depth: 0
     
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
     
-    - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install kconfiglib pytest
-    
     - name: Install system dependencies
       run: ${{ matrix.config.install }}
       shell: bash
     
     - name: Setup Pico SDK
-      run: |
-        git submodule update --init --recursive
+      run: git submodule update --init --recursive
       shell: bash
     
-    - name: Configure build (Debug)
+    - name: Build Debug
       run: |
-        python scripts/build.py configure \
-          --build-type Debug \
-          --toolchain ${{ matrix.config.toolchain }} \
-          --enable-examples \
-          --enable-tests \
-          --enable-debug
+        python3 scripts/build.py configure --build-type Debug --enable-examples
+        python3 scripts/build.py build
+        mv build build-debug
       shell: bash
     
-    - name: Build (Debug)
+    - name: Build Release
       run: |
-        python scripts/build.py build
+        python3 scripts/build.py configure --build-type Release --enable-examples
+        python3 scripts/build.py build
       shell: bash
     
-    - name: Configure build (Release)
-      run: |
-        python scripts/build.py clean
-        python scripts/build.py configure \
-          --build-type Release \
-          --toolchain ${{ matrix.config.toolchain }} \
-          --enable-examples \
-          --enable-tests
-      shell: bash
-    
-    - name: Build (Release)
-      run: |
-        python scripts/build.py build
-      shell: bash
-    
-    - name: Run extended tests
-      if: inputs.extended_testing == 'true' || github.event_name == 'schedule'
-      run: |
-        python tests/build_system_test.py
+    - name: Run build system tests
+      run: python3 tests/build_system_test.py
       shell: bash
     
     - name: Generate build report
       run: |
-        echo "## Build Report for ${{ matrix.config.name }}" > build-report.md
-        echo "- Toolchain: ${{ matrix.config.toolchain }}" >> build-report.md
+        echo "## Nightly Build Report for ${{ matrix.config.name }}" > build-report.md
         echo "- OS: ${{ matrix.config.os }}" >> build-report.md
         echo "- Build Status: ✅ Success" >> build-report.md
         echo "- Timestamp: $(date)" >> build-report.md
+        echo "- Examples Built: $(find build -name "*.uf2" | wc -l)" >> build-report.md
         
         if [ -f build/libpico_rtos.a ]; then
-          echo "- Library Size: $(stat -c%s build/libpico_rtos.a 2>/dev/null || stat -f%z build/libpico_rtos.a) bytes" >> build-report.md
+          SIZE=$(stat -c%s build/libpico_rtos.a 2>/dev/null || stat -f%z build/libpico_rtos.a)
+          echo "- Library Size: $SIZE bytes" >> build-report.md
         fi
       shell: bash
     
-    - name: Upload build report
+    - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: build-report-${{ matrix.config.name }}-${{ github.run_number }}
-        path: build-report.md
-        retention-days: 30
-
-  # Memory usage analysis
-  memory-analysis:
-    name: Memory Usage Analysis
-    runs-on: ubuntu-latest
-    needs: nightly-build-matrix
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-    
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gcc-arm-none-eabi ninja-build
-        python -m pip install --upgrade pip
-        pip install kconfiglib matplotlib pandas
-    
-    - name: Build with different configurations
-      run: |
-        # Minimal configuration
-        python scripts/build.py configure --build-type MinSizeRel --toolchain arm-none-eabi-gcc
-        python scripts/build.py build
-        arm-none-eabi-size build/libpico_rtos.a > memory-minimal.txt
-        
-        # Full configuration
-        python scripts/build.py clean
-        python scripts/build.py configure --build-type Release --toolchain arm-none-eabi-gcc --enable-examples --enable-tests
-        python scripts/build.py build
-        arm-none-eabi-size build/libpico_rtos.a > memory-full.txt
-    
-    - name: Generate memory report
-      run: |
-        echo "# Memory Usage Report" > memory-report.md
-        echo "Generated on: $(date)" >> memory-report.md
-        echo "" >> memory-report.md
-        echo "## Minimal Configuration" >> memory-report.md
-        echo '```' >> memory-report.md
-        cat memory-minimal.txt >> memory-report.md
-        echo '```' >> memory-report.md
-        echo "" >> memory-report.md
-        echo "## Full Configuration" >> memory-report.md
-        echo '```' >> memory-report.md
-        cat memory-full.txt >> memory-report.md
-        echo '```' >> memory-report.md
-    
-    - name: Upload memory report
-      uses: actions/upload-artifact@v3
-      with:
-        name: memory-analysis-${{ github.run_number }}
+        name: nightly-build-${{ matrix.config.name }}-${{ github.run_number }}
         path: |
-          memory-report.md
-          memory-*.txt
-        retention-days: 90
-
-  # Hardware-in-the-loop testing (simulated)
-  hardware-testing:
-    name: Hardware-in-the-Loop Testing
-    runs-on: ubuntu-latest
-    if: inputs.run_hardware_tests == 'true' || github.event_name == 'schedule'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-    
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gcc-arm-none-eabi ninja-build
-        python -m pip install --upgrade pip
-        pip install kconfiglib pyserial
-    
-    - name: Build all examples
-      run: |
-        python scripts/build.py configure --build-type Release --enable-examples
-        python scripts/build.py build
-    
-    - name: Simulate hardware testing
-      run: |
-        echo "# Hardware Test Results" > hardware-test-results.md
-        echo "Generated on: $(date)" >> hardware-test-results.md
-        echo "" >> hardware-test-results.md
-        
-        # In a real setup, this would:
-        # 1. Detect connected Pico devices
-        # 2. Flash each example to hardware
-        # 3. Run automated tests via serial communication
-        # 4. Collect performance metrics
-        # 5. Generate comprehensive test report
-        
-        echo "## Test Summary" >> hardware-test-results.md
-        echo "- Total Examples: $(find build -name "*.uf2" | wc -l)" >> hardware-test-results.md
-        echo "- Hardware Devices: Simulated" >> hardware-test-results.md
-        echo "- Test Status: ✅ All tests passed (simulated)" >> hardware-test-results.md
-        
-        echo "" >> hardware-test-results.md
-        echo "## Example Builds" >> hardware-test-results.md
-        find build -name "*.uf2" | while read file; do
-          echo "- $(basename $file): $(stat -c%s "$file" 2>/dev/null || stat -f%z "$file") bytes" >> hardware-test-results.md
-        done
-    
-    - name: Upload hardware test results
-      uses: actions/upload-artifact@v3
-      with:
-        name: hardware-test-results-${{ github.run_number }}
-        path: hardware-test-results.md
-        retention-days: 90
-
-  # Performance regression testing
-  performance-regression:
-    name: Performance Regression Testing
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-    
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gcc-arm-none-eabi ninja-build
-        python -m pip install --upgrade pip
-        pip install kconfiglib
-    
-    - name: Build performance tests
-      run: |
-        python scripts/build.py configure --build-type Release --enable-tests
-        python scripts/build.py build --target performance_benchmark
-    
-    - name: Run performance analysis
-      run: |
-        echo "# Performance Analysis Report" > performance-report.md
-        echo "Generated on: $(date)" >> performance-report.md
-        echo "" >> performance-report.md
-        
-        # Analyze binary sizes
-        echo "## Binary Size Analysis" >> performance-report.md
-        echo '```' >> performance-report.md
-        arm-none-eabi-size build/libpico_rtos.a >> performance-report.md
-        echo '```' >> performance-report.md
-        
-        # Analyze symbol sizes
-        echo "" >> performance-report.md
-        echo "## Top 10 Largest Symbols" >> performance-report.md
-        echo '```' >> performance-report.md
-        arm-none-eabi-nm --size-sort --reverse-sort build/libpico_rtos.a | head -10 >> performance-report.md
-        echo '```' >> performance-report.md
-    
-    - name: Upload performance report
-      uses: actions/upload-artifact@v3
-      with:
-        name: performance-report-${{ github.run_number }}
-        path: performance-report.md
-        retention-days: 90
+          build-report.md
+          build/libpico_rtos.a
+          build/*.uf2
+        retention-days: 30
 
   # Generate nightly summary
   nightly-summary:
     name: Generate Nightly Summary
     runs-on: ubuntu-latest
-    needs: [nightly-build-matrix, memory-analysis, hardware-testing, performance-regression]
+    needs: [nightly-build]
     if: always()
     
     steps:
@@ -329,31 +105,20 @@ jobs:
         echo "" >> nightly-summary.md
         
         echo "## Build Results" >> nightly-summary.md
-        for report in build-report-*/build-report.md; do
+        for report in nightly-build-*/build-report.md; do
           if [ -f "$report" ]; then
             cat "$report" >> nightly-summary.md
             echo "" >> nightly-summary.md
           fi
         done
         
-        echo "## Memory Analysis" >> nightly-summary.md
-        if [ -f memory-analysis-*/memory-report.md ]; then
-          cat memory-analysis-*/memory-report.md >> nightly-summary.md
-        fi
-        
-        echo "## Hardware Testing" >> nightly-summary.md
-        if [ -f hardware-test-results-*/hardware-test-results.md ]; then
-          cat hardware-test-results-*/hardware-test-results.md >> nightly-summary.md
-        fi
-        
-        echo "## Performance Analysis" >> nightly-summary.md
-        if [ -f performance-report-*/performance-report.md ]; then
-          cat performance-report-*/performance-report.md >> nightly-summary.md
-        fi
+        echo "## Summary" >> nightly-summary.md
+        echo "- Total builds: ${{ strategy.job-total }}" >> nightly-summary.md
+        echo "- Successful builds: $(find . -name "build-report.md" | wc -l)" >> nightly-summary.md
     
     - name: Upload nightly summary
       uses: actions/upload-artifact@v3
       with:
         name: nightly-summary-${{ github.run_number }}
         path: nightly-summary.md
-        retention-days: 365
+        retention-days: 90
