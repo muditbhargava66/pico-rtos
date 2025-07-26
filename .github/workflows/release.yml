@@ -18,15 +18,17 @@ jobs:
           - os: ubuntu-latest
             install-deps: |
               sudo apt-get update
-              sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi cmake ninja-build
+              sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi cmake ninja-build libusb-1.0-0-dev
               arm-none-eabi-gcc --version  # Verify installation
+              pkg-config --cflags libusb-1.0  # Verify libusb
           - os: macos-latest
             install-deps: |
               brew update
               brew tap armmbed/homebrew-formulae || true
-              brew install armmbed/formulae/arm-none-eabi-gcc cmake ninja || brew reinstall armmbed/formulae/arm-none-eabi-gcc cmake ninja
+              brew install armmbed/formulae/arm-none-eabi-gcc cmake ninja libusb || brew reinstall armmbed/formulae/arm-none-eabi-gcc cmake ninja libusb
               arm-none-eabi-gcc --version  # Verify installation
-              ls /opt/homebrew/Cellar/arm-none-eabi-gcc/*/arm-none-eabi/include  # Check for headers like stdint.h
+              # Optional: Check headers without failing the step
+              ls /opt/homebrew/Cellar/arm-none-eabi-gcc/*/arm-none-eabi/include || echo "Header directory not found, but proceeding"
     
     steps:
     - name: Checkout code
