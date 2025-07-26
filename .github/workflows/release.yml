@@ -11,18 +11,22 @@ jobs:
     runs-on: ${{ matrix.os }}
     
     strategy:
+      fail-fast: false  # Prevent automatic cancellation of other matrix jobs if one fails
       matrix:
         os: [ubuntu-latest, macos-latest]
         include:
           - os: ubuntu-latest
-            install-deps: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi cmake ninja-build
+            install-deps: |
+              sudo apt-get update
+              sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi cmake ninja-build
+              arm-none-eabi-gcc --version  # Verify installation
           - os: macos-latest
             install-deps: |
               brew update
               brew tap armmbed/homebrew-formulae || true
               brew install armmbed/formulae/arm-none-eabi-gcc cmake ninja || brew reinstall armmbed/formulae/arm-none-eabi-gcc cmake ninja
               arm-none-eabi-gcc --version  # Verify installation
-              ls /opt/homebrew/arm-none-eabi/include  # Check for headers like stdint.h
+              ls /opt/homebrew/Cellar/arm-none-eabi-gcc/*/arm-none-eabi/include  # Check for headers like stdint.h
     
     steps:
     - name: Checkout code
