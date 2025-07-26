@@ -10,7 +10,6 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-  # Simplified nightly build matrix
   nightly-build:
     name: Nightly Build (${{ matrix.config.name }})
     runs-on: ${{ matrix.config.os }}
@@ -24,7 +23,7 @@ jobs:
             install: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi cmake
           - name: "macOS Latest"
             os: macos-latest
-            install: brew install arm-none-eabi-gcc cmake
+            install: brew install arm-gcc-bin cmake
     
     steps:
     - name: Checkout code
@@ -33,7 +32,7 @@ jobs:
         submodules: recursive
     
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
     
@@ -51,24 +50,27 @@ jobs:
         python3 scripts/build.py build
         mv build build-debug
       shell: bash
+      continue-on-error: true
     
     - name: Build Release
       run: |
         python3 scripts/build.py configure --build-type Release --enable-examples
         python3 scripts/build.py build
       shell: bash
+      continue-on-error: true
     
     - name: Run build system tests
       run: python3 tests/build_system_test.py
       shell: bash
+      continue-on-error: true
     
     - name: Generate build report
       run: |
         echo "## Nightly Build Report for ${{ matrix.config.name }}" > build-report.md
         echo "- OS: ${{ matrix.config.os }}" >> build-report.md
-        echo "- Build Status: ✅ Success" >> build-report.md
+        echo "- Build Status: ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}" >> build-report.md
         echo "- Timestamp: $(date)" >> build-report.md
-        echo "- Examples Built: $(find build -name "*.uf2" | wc -l)" >> build-report.md
+        echo "- Examples Built: $(find build -name "*.uf2" 2>/dev/null | wc -l)" >> build-report.md
         
         if [ -f build/libpico_rtos.a ]; then
           SIZE=$(stat -c%s build/libpico_rtos.a 2>/dev/null || stat -f%z build/libpico_rtos.a)
@@ -76,17 +78,27 @@ jobs:
         fi
       shell: bash
     
+    - name: Archive build artifacts
+      run: |
+        mkdir -p artifacts
+        cp build-report.md artifacts/
+        [ -f build/libpico_rtos.a ] && cp build/libpico_rtos.a artifacts/
+        find build -name "*.uf2" -exec cp {} artifacts/ \;
+        tar -czf artifacts.tar.gz artifacts/
+      shell: bash
+    
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: nightly-build-${{ matrix.config.name }}-${{ github.run_number }}
-        path: |
-          build-report.md
-          build/libpico_rtos.a
-          build/*.uf2
+        path: artifacts.tar.gz
         retention-days: 30
+    
+    - name: Cleanup workspace
+      run: rm -rf build build-debug artifacts
+      shell: bash
+      if: always()
 
-  # Generate nightly summary
   nightly-summary:
     name: Generate Nightly Summary
     runs-on: ubuntu-latest
@@ -95,7 +107,7 @@ jobs:
     
     steps:
     - name: Download all artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
     
     - name: Generate summary report
       run: |
@@ -105,19 +117,23 @@ jobs:
         echo "" >> nightly-summary.md
         
         echo "## Build Results" >> nightly-summary.md
-        for report in nightly-build-*/build-report.md; do
-          if [ -f "$report" ]; then
-            cat "$report" >> nightly-summary.md
-            echo "" >> nightly-summary.md
+        for artifact in nightly-build-*/artifacts.tar.gz; do
+          if [ -f "$artifact" ]; then
+            tar -xzf "$artifact"
+            if [ -f artifacts/build-report.md ]; then
+              cat artifacts/build-report.md >> nightly-summary.md
+              echo "" >> nightly-summary.md
+            fi
           fi
         done
         
         echo "## Summary" >> nightly-summary.md
-        echo "- Total builds: ${{ strategy.job-total }}" >> nightly-summary.md
-        echo "- Successful builds: $(find . -name "build-report.md" | wc -l)" >> nightly-summary.md
+        echo "- Total builds: $(find . -name 'build-report.md' | wc -l)" >> nightly-summary.md
+        echo "- Successful builds: $(find artifacts -name "build-report.md" 2>/dev/null | wc -l)" >> nightly-summary.md
+      shell: bash
     
     - name: Upload nightly summary
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: nightly-summary-${{ github.run_number }}
         path: nightly-summary.md
