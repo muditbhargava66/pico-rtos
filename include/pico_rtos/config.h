@@ -138,6 +138,69 @@
 #define PICO_RTOS_ENABLE_ERROR_HISTORY 1
 #endif
 
+// =============================================================================
+// MULTI-CORE (SMP) CONFIGURATION
+// =============================================================================
+
+/**
+ * @brief Enable multi-core support
+ * 
+ * When enabled, the system includes multi-core specific fields in task structures
+ * and provides SMP functionality. When disabled, single-core mode with zero overhead.
+ */
+#ifndef PICO_RTOS_ENABLE_MULTI_CORE
+#define PICO_RTOS_ENABLE_MULTI_CORE 1
+#endif
+
+/**
+ * @brief Enable Symmetric Multi-Processing (SMP) support
+ * 
+ * When enabled, the system supports task scheduling across both RP2040 cores.
+ * When disabled, the system operates in single-core mode with zero overhead.
+ */
+#ifndef PICO_RTOS_ENABLE_SMP
+#define PICO_RTOS_ENABLE_SMP PICO_RTOS_ENABLE_MULTI_CORE
+#endif
+
+/**
+ * @brief Maximum tasks per core in SMP mode
+ * 
+ * This limits the number of tasks that can be assigned to each core.
+ * Total system tasks = PICO_RTOS_MAX_TASKS_PER_CORE * 2
+ */
+#ifndef PICO_RTOS_MAX_TASKS_PER_CORE
+#define PICO_RTOS_MAX_TASKS_PER_CORE 8
+#endif
+
+/**
+ * @brief Load balancing threshold percentage
+ * 
+ * When the load difference between cores exceeds this threshold,
+ * the load balancer will attempt to migrate tasks.
+ */
+#ifndef PICO_RTOS_SMP_LOAD_BALANCE_THRESHOLD
+#define PICO_RTOS_SMP_LOAD_BALANCE_THRESHOLD 25
+#endif
+
+/**
+ * @brief Enable SMP load balancing
+ * 
+ * When enabled, the system automatically balances task load between cores.
+ * When disabled, tasks stay on their initially assigned cores.
+ */
+#ifndef PICO_RTOS_ENABLE_SMP_LOAD_BALANCING
+#define PICO_RTOS_ENABLE_SMP_LOAD_BALANCING 1
+#endif
+
+/**
+ * @brief Task-local storage slots per task
+ * 
+ * Number of task-local storage slots available for each task in SMP mode.
+ */
+#ifndef PICO_RTOS_SMP_TLS_SLOTS
+#define PICO_RTOS_SMP_TLS_SLOTS 4
+#endif
+
 /**
  * @brief Size of error history buffer
  * 

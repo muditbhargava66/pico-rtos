@@ -1,9 +1,290 @@
-# Changelog
+# Pico-RTOS Changelog
 
 All notable changes to Pico-RTOS will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.3.0] - 2025-07-26 - **ADVANCED SYNCHRONIZATION & MULTI-CORE** 🚀
+
+### 🎯 Major Features
+
+#### Advanced Synchronization Primitives
+- **Event Groups**: 32-bit event coordination with any/all semantics
+  - `pico_rtos_event_group_t` with O(1) bit manipulation
+  - Support for "wait any" and "wait all" event patterns
+  - Atomic event setting/clearing with proper synchronization
+  - Comprehensive statistics and monitoring APIs
+  - Zero-copy event notification for high-performance scenarios
+
+- **Stream Buffers**: Efficient variable-length message passing
+  - Circular buffer management with head/tail pointers
+  - Zero-copy optimization for messages larger than threshold (configurable)
+  - Thread-safe send/receive operations with timeout support
+  - Direct buffer access APIs for high-performance data streaming
+  - Variable-length message support with automatic size handling
+
+#### Enhanced Memory Management
+- **Memory Pools**: O(1) deterministic memory allocation
+  - Fixed-size block allocation with predictable performance
+  - Free list management with proper linkage and validation
+  - Block corruption detection and comprehensive error handling
+  - Runtime pool inspection and debugging capabilities
+  - Allocation tracking with peak usage monitoring and fragmentation metrics
+
+- **Memory Protection Unit (MPU) Support**: Hardware memory protection
+  - MPU region configuration for supported ARM Cortex-M variants
+  - Memory protection violation handlers with detailed diagnostics
+  - Stack overflow detection using hardware MPU capabilities
+  - Task isolation and memory permission management
+  - Conditional compilation support for MPU-enabled/disabled builds
+
+#### Comprehensive Debugging and Profiling Tools
+- **Runtime Task Inspection**: Non-intrusive task monitoring
+  - Task state collection without affecting real-time behavior
+  - Stack usage monitoring with high-water mark tracking
+  - Task execution statistics and performance metrics
+  - Real-time task state visualization and debugging support
+
+- **Execution Time Profiling**: High-resolution performance analysis
+  - Hardware timer-based profiling using RP2040 capabilities
+  - Function entry/exit hooks with minimal overhead
+  - Statistical analysis (min/max/average execution times)
+  - Performance regression detection and benchmarking
+
+- **System Event Tracing**: Configurable event logging
+  - Circular trace buffer with configurable overflow behavior
+  - Trace event generation hooks throughout the RTOS
+  - Real-time system behavior analysis and debugging
+  - Trace buffer integrity validation and performance monitoring
+
+- **Enhanced Assertion Handling**: Advanced debugging support
+  - Assertion macros with detailed context capture
+  - Configurable assertion handlers (halt/continue/callback)
+  - Assertion statistics and failure tracking
+  - Enhanced debugging information for development and testing
+
+#### Multi-Core Support (SMP)
+- **Symmetric Multiprocessing Scheduler**: RP2040 dual-core support
+  - Per-core state management and independent task lists
+  - Core affinity support for deterministic task placement
+  - Task migration between cores with load balancing
+  - Inter-core synchronization using RP2040 hardware primitives
+
+- **Load Balancing**: Automatic workload distribution
+  - Task assignment algorithms for optimal core utilization
+  - Configurable load balancing thresholds and policies
+  - CPU usage tracking per core and per task
+  - Dynamic task migration based on system load
+
+- **Inter-Core Communication**: High-performance IPC
+  - Inter-core communication channels using hardware FIFOs
+  - Thread-safe operation of all synchronization primitives across cores
+  - Core failure detection and graceful degradation to single-core
+  - Watchdog-based core health monitoring and recovery
+
+#### Advanced System Extensions
+- **Thread-Safe I/O Abstraction**: Unified peripheral access
+  - Device abstraction APIs with automatic serialization
+  - Device-specific handle management with proper cleanup
+  - Concurrent I/O access protection and resource management
+
+- **High-Resolution Software Timers**: Microsecond precision
+  - Timer management using RP2040 hardware timer capabilities
+  - Precise timing with drift compensation and calibration
+  - Microsecond-resolution APIs for time-critical applications
+
+- **Universal Timeout Support**: Consistent timeout handling
+  - Timeout parameter handling for all blocking operations
+  - Timeout accuracy and proper cleanup on expiration
+  - Timeout statistics and monitoring capabilities
+
+- **Multi-Level Logging System**: Enhanced debugging
+  - Extended logging system with additional levels and filtering
+  - Log message formatting and output redirection
+  - Runtime log level configuration and subsystem filtering
+  - Performance-optimized logging with minimal overhead
+
+#### Production-Grade Quality Assurance
+- **Deadlock Detection System**: Runtime deadlock prevention
+  - Resource dependency tracking and cycle detection
+  - Configurable deadlock detection with detailed reporting
+  - Automatic deadlock resolution and recovery mechanisms
+
+- **System Health Monitoring**: Comprehensive system metrics
+  - CPU usage tracking per core and per task
+  - Memory usage monitoring with leak detection
+  - System health metrics collection and reporting
+  - Real-time performance monitoring and alerting
+
+- **Hardware Watchdog Integration**: System reliability
+  - Watchdog timer configuration and management
+  - Automatic watchdog feeding during normal operation
+  - Watchdog timeout handlers with system recovery
+  - Hardware-based system reliability and fault tolerance
+
+- **Configurable Alert System**: Proactive monitoring
+  - Threshold-based alerting for system metrics
+  - Callback-based notification system for critical events
+  - Alert escalation and acknowledgment mechanisms
+  - Customizable alert policies and response actions
+
+#### Backward Compatibility and Migration Support
+- **100% API Compatibility**: Seamless upgrade from v0.2.1
+  - All existing function signatures remain unchanged
+  - Existing behavior preserved exactly for compatibility
+  - Automatic configuration migration from v0.2.1 settings
+  - Comprehensive compatibility testing with v0.2.1 applications
+
+- **Migration Tools and Documentation**: Smooth transition
+  - Automatic migration from v0.2.1 menuconfig settings
+  - Validation for deprecated configuration options
+  - Step-by-step migration documentation and guides
+  - Troubleshooting guide for common migration issues
+
+- **Feature Deprecation Warnings**: Clear upgrade path
+  - Compile-time warnings for deprecated APIs and configurations
+  - Clear alternatives and migration paths in warning messages
+  - Deprecation timeline and removal schedule
+  - Comprehensive testing for warning generation
+
+### 🛠️ Enhanced Build System and Toolchain Support
+
+#### Multi-Toolchain Support
+- **Extended Toolchain Support**: GCC, Clang, and ARM toolchains
+  - Toolchain-specific optimization flags and configurations
+  - Cross-platform build support (Linux, macOS, Windows)
+  - Automatic toolchain detection and configuration
+
+#### Automated CI/CD Framework
+- **GitHub Actions Integration**: Automated testing and validation
+  - Matrix builds for different configurations and toolchains
+  - Automated hardware-in-the-loop testing capabilities
+  - Comprehensive test reporting and artifact generation
+
+#### Configurable Feature Optimization
+- **Fine-Grained Feature Selection**: Minimal footprint builds
+  - Automatic dependency resolution for selected features
+  - Size optimization profiles (minimal, default, full)
+  - Build validation for feature selection and optimization
+
+### 🧪 Comprehensive Testing and Validation
+
+#### Complete Test Suite
+- **Unit Tests**: All new components fully tested
+  - Event groups with all API functions and edge cases
+  - Stream buffers with various message sizes and patterns
+  - Memory pools with allocation patterns and stress scenarios
+  - Multi-core tests for task distribution and synchronization
+
+#### Integration Testing
+- **Cross-Component Validation**: Component interaction testing
+  - Event groups with multi-core task coordination
+  - Stream buffers with memory pools integration
+  - Profiling and tracing with all synchronization primitives
+  - Cross-component error handling and recovery validation
+
+#### Performance Testing
+- **Regression Prevention**: Automated performance benchmarks
+  - Context switch timing validation with new features
+  - Memory allocation performance testing
+  - Real-time compliance validation and certification
+
+#### Hardware Validation
+- **Real Hardware Testing**: Comprehensive RP2040 validation
+  - Multi-core functionality with real hardware timing
+  - Memory protection and stack overflow detection
+  - Extended runtime stability testing and validation
+
+### 📚 Documentation and Examples
+
+#### Comprehensive API Documentation
+- **Complete Reference**: All new features documented
+  - Event groups with detailed usage examples
+  - Stream buffer APIs with performance characteristics
+  - Memory pool documentation with best practices
+  - Multi-core programming guide with examples
+
+#### Professional Examples
+- **Production-Quality Demonstrations**: Real-world usage patterns
+  - Event group example with multi-event coordination
+  - Stream buffer example with efficient data streaming
+  - Multi-core example with load balancing and IPC
+  - Debugging and profiling example with real-time analysis
+
+#### Migration Documentation
+- **Upgrade Support**: Comprehensive migration resources
+  - Upgrade guide from v0.2.1 to v0.3.0
+  - New configuration options and their impact
+  - Troubleshooting guide for migration issues
+  - Performance tuning guide for new features
+
+### 🔧 Production Scripts and Tools
+
+#### Build System
+- **Production-Ready Scripts**: Complete build automation
+  - `scripts/build.sh`: Unified build script with configuration profiles
+  - `scripts/test.sh`: Comprehensive test runner
+  - `scripts/validate.sh`: System validation and quality checks
+  - `scripts/menuconfig.py`: Enhanced configuration system
+
+#### Configuration Profiles
+- **Optimized Configurations**: Pre-configured build profiles
+  - **Minimal**: Basic RTOS features only (8KB footprint)
+  - **Default**: Standard feature set for typical applications
+  - **Full**: All v0.3.0 features enabled for maximum capability
+
+### ⚡ Performance Improvements
+
+#### Real-Time Performance
+- **Deterministic Behavior**: All operations have bounded execution time
+- **Multi-Core Scaling**: Near-linear performance scaling on dual-core RP2040
+- **Memory Efficiency**: Optimized memory usage with configurable limits
+- **Interrupt Latency**: Minimized interrupt response time
+
+#### Resource Optimization
+- **Configurable Limits**: Fine-tuned resource allocation
+- **Zero-Copy Operations**: Reduced memory copying for large data transfers
+- **O(1) Algorithms**: Constant-time operations for critical paths
+- **Hardware Acceleration**: Leveraged RP2040 hardware features
+
+### 🔒 Security and Reliability
+
+#### Memory Protection
+- **MPU Integration**: Hardware-based memory protection
+- **Stack Overflow Detection**: Enhanced protection mechanisms
+- **Memory Leak Prevention**: Comprehensive tracking and validation
+- **Buffer Overflow Protection**: Bounds checking and validation
+
+#### System Reliability
+- **Deadlock Prevention**: Runtime detection and resolution
+- **Watchdog Integration**: Hardware-based fault tolerance
+- **Health Monitoring**: Proactive system monitoring
+- **Graceful Degradation**: Fault-tolerant operation modes
+
+### 📊 Statistics and Monitoring
+
+#### System Metrics
+- **Real-Time Statistics**: Live system performance monitoring
+- **Resource Usage**: Memory, CPU, and peripheral utilization
+- **Performance Profiling**: Detailed execution time analysis
+- **Health Indicators**: System health and reliability metrics
+
+### 🔄 Migration from v0.2.1
+
+#### Automatic Migration
+- **Configuration Migration**: Automatic settings conversion
+- **API Compatibility**: 100% backward compatibility maintained
+- **Build System**: Seamless integration with existing projects
+- **Documentation**: Step-by-step migration guide
+
+#### New Features Available
+- All v0.3.0 features are optional and can be enabled incrementally
+- Existing applications continue to work without modification
+- New features can be adopted gradually as needed
+- Performance improvements are automatic with no code changes required
+
+---
 
 ## [0.2.1] - 2025-07-21 - **ENHANCED DEVELOPER EXPERIENCE** 🎨
 

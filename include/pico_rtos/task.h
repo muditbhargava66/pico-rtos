@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "pico/critical_section.h"
+#include "platform.h"
 #include "types.h"
 
 
@@ -26,7 +26,20 @@ typedef struct pico_rtos_task {
     pico_rtos_block_reason_t block_reason;
     struct pico_rtos_block_object *blocking_object;
     struct pico_rtos_task *next;  // For linked list of tasks
-    critical_section_t cs;
+    pico_rtos_critical_section_t cs;
+    
+    // SMP-specific fields (v0.3.0)
+#ifdef PICO_RTOS_ENABLE_MULTI_CORE
+    uint32_t core_affinity;                     // Core affinity setting (pico_rtos_core_affinity_t)
+    uint32_t assigned_core;                     // Currently assigned core
+    uint64_t cpu_time_us;                       // Total CPU time in microseconds
+    uint32_t context_switch_count;              // Number of context switches for this task
+    uint32_t stack_high_water_mark;             // Peak stack usage
+    uint32_t migration_count;                   // Number of times task was migrated
+    bool migration_pending;                     // Task is pending migration
+    uint32_t last_run_core;                     // Last core this task ran on
+    void *task_local_storage[4];                // Task-local storage slots
+#endif
 } pico_rtos_task_t;
 
 /**

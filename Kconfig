@@ -1,7 +1,7 @@
-# Pico-RTOS Configuration
+# Pico-RTOS v0.3.0 Configuration
 # This file defines the configuration options for Pico-RTOS using Kconfig syntax
 
-mainmenu "Pico-RTOS Configuration"
+mainmenu "Pico-RTOS v0.3.0 Configuration"
 
 menu "Build Options"
 
@@ -48,108 +48,359 @@ choice TICK_RATE
     help
       Select the system tick frequency in Hz. Higher frequencies provide
       better timing resolution but increase system overhead. Lower
-      frequencies reduce overhead but provide coarser timing.
+      frequencies reduce overhead but provide coarser timing resolution.
 
 config TICK_RATE_100
-    bool "100 Hz (10ms tick period)"
-    help
-      Low overhead, coarse timing resolution.
-      Suitable for applications with relaxed timing requirements.
+    bool "100 Hz (10ms tick)"
 
 config TICK_RATE_250
-    bool "250 Hz (4ms tick period)"
-    help
-      Balanced performance between overhead and timing resolution.
-      Good for most general-purpose applications.
+    bool "250 Hz (4ms tick)"
 
 config TICK_RATE_500
-    bool "500 Hz (2ms tick period)"
-    help
-      Good timing resolution with moderate overhead.
-      Suitable for applications requiring precise timing.
+    bool "500 Hz (2ms tick)"
 
 config TICK_RATE_1000
-    bool "1000 Hz (1ms tick period)"
-    help
-      Excellent timing resolution (default).
-      Standard configuration for most real-time applications.
+    bool "1000 Hz (1ms tick)"
 
 config TICK_RATE_2000
-    bool "2000 Hz (0.5ms tick period)"
-    help
-      High resolution timing with higher system overhead.
-      Use only when sub-millisecond precision is required.
+    bool "2000 Hz (0.5ms tick)"
+
+config TICK_RATE_CUSTOM
+    bool "Custom frequency"
 
 endchoice
 
-config TICK_RATE_HZ
-    int
-    default 100 if TICK_RATE_100
-    default 250 if TICK_RATE_250
-    default 500 if TICK_RATE_500
-    default 1000 if TICK_RATE_1000
-    default 2000 if TICK_RATE_2000
-
-endmenu
-
-menu "System Resources"
+config TICK_RATE_CUSTOM_VALUE
+    int "Custom tick frequency (Hz)"
+    depends on TICK_RATE_CUSTOM
+    range 10 10000
+    default 1000
+    help
+      Custom system tick frequency in Hz. Must be between 10 and 10000.
 
 config MAX_TASKS
-    int "Maximum number of concurrent tasks"
+    int "Maximum number of tasks"
     range 1 64
     default 16
     help
-      Maximum number of tasks that can exist simultaneously in the system.
-      Each task consumes memory for its control block and stack.
-      Higher values increase memory usage but allow more concurrent tasks.
-      
-      Recommended values:
-      - Small applications: 4-8 tasks
-      - Medium applications: 8-16 tasks
-      - Large applications: 16-32 tasks
-      
-      Values above 32 may impact performance and consume significant memory.
+      Maximum number of tasks that can be created. Each task consumes
+      memory for its control block and stack. Adjust based on your
+      application needs and available memory.
 
 config MAX_TIMERS
     int "Maximum number of software timers"
     range 1 32
     default 8
     help
-      Maximum number of software timers that can be active simultaneously.
-      Software timers are used for periodic callbacks and one-shot events.
-      Each timer consumes memory for its control structure.
-      
-      Recommended values:
-      - Simple applications: 4-8 timers
-      - Complex applications: 8-16 timers
+      Maximum number of software timers that can be created. Timers
+      are used for delayed execution and periodic callbacks.
 
-config TASK_STACK_SIZE_DEFAULT
+config DEFAULT_TASK_STACK_SIZE
     int "Default task stack size (bytes)"
     range 256 8192
     default 1024
     help
-      Default stack size allocated for tasks when not explicitly specified.
-      Stack size must be sufficient for:
-      - Local variables
-      - Function call overhead
-      - Interrupt handling (if interrupts occur during task execution)
-      
-      Recommended values:
-      - Simple tasks: 512-1024 bytes
-      - Complex tasks: 1024-2048 bytes
-      - Tasks with large local variables: 2048+ bytes
-      
-      Stack overflow protection will detect insufficient stack sizes.
+      Default stack size for tasks in bytes. Individual tasks can
+      override this value. Stack size should be sufficient for the
+      task's local variables and function call depth.
 
-config IDLE_STACK_SIZE
+config IDLE_TASK_STACK_SIZE
     int "Idle task stack size (bytes)"
     range 128 1024
     default 256
     help
-      Stack size for the idle task. The idle task runs when no other
-      tasks are ready and handles system cleanup operations.
-      
-      Increase this value if you use idle hooks that require more stack space.
+      Stack size for the idle task in bytes. The idle task runs when
+      no other tasks are ready and typically has minimal stack
+      requirements.
+
+endmenu
+
+menu "v0.3.0 Advanced Synchronization"
+
+config ENABLE_EVENT_GROUPS
+    bool "Enable Event Groups"
+    default y
+    help
+      Enable event groups for multi-event synchronization. Event groups
+      allow tasks to wait for multiple events simultaneously using
+      bit-based synchronization patterns.
+
+config MAX_EVENT_GROUPS
+    int "Maximum number of event groups"
+    depends on ENABLE_EVENT_GROUPS
+    range 1 16
+    default 8
+    help
+      Maximum number of event groups that can be created.
+
+config ENABLE_STREAM_BUFFERS
+    bool "Enable Stream Buffers"
+    default y
+    help
+      Enable stream buffers for efficient variable-length message passing.
+      Stream buffers provide zero-copy operations for high-performance
+      data streaming between tasks.
+
+config MAX_STREAM_BUFFERS
+    int "Maximum number of stream buffers"
+    depends on ENABLE_STREAM_BUFFERS
+    range 1 16
+    default 4
+    help
+      Maximum number of stream buffers that can be created.
+
+config STREAM_BUFFER_ZERO_COPY_THRESHOLD
+    int "Zero-copy threshold (bytes)"
+    depends on ENABLE_STREAM_BUFFERS
+    range 32 1024
+    default 128
+    help
+      Minimum message size for zero-copy operations. Messages larger
+      than this threshold will use zero-copy semantics when possible.
+
+endmenu
+
+menu "v0.3.0 Enhanced Memory Management"
+
+config ENABLE_MEMORY_POOLS
+    bool "Enable Memory Pools"
+    default y
+    help
+      Enable memory pools for O(1) deterministic memory allocation.
+      Memory pools provide fixed-size block allocation with predictable
+      performance characteristics.
+
+config MAX_MEMORY_POOLS
+    int "Maximum number of memory pools"
+    depends on ENABLE_MEMORY_POOLS
+    range 1 16
+    default 4
+    help
+      Maximum number of memory pools that can be created.
+
+config MEMORY_POOL_STATISTICS
+    bool "Enable memory pool statistics"
+    depends on ENABLE_MEMORY_POOLS
+    default y
+    help
+      Enable collection of memory pool usage statistics including
+      allocation counts, peak usage, and fragmentation metrics.
+
+config ENABLE_MPU_SUPPORT
+    bool "Enable Memory Protection Unit (MPU) support"
+    default n
+    help
+      Enable Memory Protection Unit support for memory protection
+      and stack overflow detection. Requires hardware MPU support.
+
+config MPU_STACK_GUARD_SIZE
+    int "Stack guard size (bytes)"
+    depends on ENABLE_MPU_SUPPORT
+    range 32 256
+    default 64
+    help
+      Size of the stack guard region for overflow detection.
+
+endmenu
+
+menu "v0.3.0 Debugging and Profiling"
+
+config ENABLE_TASK_INSPECTION
+    bool "Enable runtime task inspection"
+    default y
+    help
+      Enable runtime task state inspection and monitoring. Provides
+      APIs to examine task states, stack usage, and execution statistics
+      without affecting real-time behavior.
+
+config ENABLE_EXECUTION_PROFILING
+    bool "Enable execution time profiling"
+    default y
+    help
+      Enable high-resolution execution time profiling using hardware
+      timers. Provides function-level timing analysis with minimal
+      overhead.
+
+config PROFILING_BUFFER_SIZE
+    int "Profiling buffer size (entries)"
+    depends on ENABLE_EXECUTION_PROFILING
+    range 16 256
+    default 64
+    help
+      Number of profiling entries to store in the circular buffer.
+
+config ENABLE_SYSTEM_TRACING
+    bool "Enable system event tracing"
+    default y
+    help
+      Enable system event tracing with configurable trace buffer.
+      Records system events for debugging and analysis.
+
+config TRACE_BUFFER_SIZE
+    int "Trace buffer size (events)"
+    depends on ENABLE_SYSTEM_TRACING
+    range 32 512
+    default 128
+    help
+      Number of trace events to store in the circular buffer.
+
+config ENABLE_ENHANCED_ASSERTIONS
+    bool "Enable enhanced assertion handling"
+    default y
+    help
+      Enable enhanced assertion handling with detailed context capture
+      and configurable assertion handlers.
+
+endmenu
+
+menu "v0.3.0 Multi-Core Support"
+
+config ENABLE_MULTI_CORE
+    bool "Enable multi-core support (SMP)"
+    default n
+    help
+      Enable symmetric multiprocessing (SMP) support for RP2040.
+      Allows tasks to run on multiple CPU cores simultaneously.
+
+config ENABLE_LOAD_BALANCING
+    bool "Enable load balancing"
+    depends on ENABLE_MULTI_CORE
+    default y
+    help
+      Enable automatic load balancing between CPU cores to optimize
+      performance and resource utilization.
+
+config LOAD_BALANCE_THRESHOLD
+    int "Load balancing threshold (%)"
+    depends on ENABLE_LOAD_BALANCING
+    range 10 90
+    default 75
+    help
+      CPU utilization threshold for triggering load balancing.
+
+config ENABLE_CORE_AFFINITY
+    bool "Enable core affinity"
+    depends on ENABLE_MULTI_CORE
+    default y
+    help
+      Enable task binding to specific CPU cores for deterministic
+      execution and cache optimization.
+
+config ENABLE_IPC_CHANNELS
+    bool "Enable inter-core communication channels"
+    depends on ENABLE_MULTI_CORE
+    default y
+    help
+      Enable high-performance inter-core communication using
+      hardware FIFOs and shared memory.
+
+config IPC_CHANNEL_BUFFER_SIZE
+    int "IPC channel buffer size (messages)"
+    depends on ENABLE_IPC_CHANNELS
+    range 4 64
+    default 16
+    help
+      Number of messages that can be buffered in each IPC channel.
+
+endmenu
+
+menu "v0.3.0 System Extensions"
+
+config ENABLE_IO_ABSTRACTION
+    bool "Enable I/O abstraction layer"
+    default n
+    help
+      Enable thread-safe I/O abstraction layer for unified peripheral
+      access with automatic serialization.
+
+config ENABLE_HIRES_TIMERS
+    bool "Enable high-resolution timers"
+    default n
+    help
+      Enable microsecond-resolution software timers using RP2040
+      hardware timer capabilities with drift compensation.
+
+config HIRES_TIMER_RESOLUTION_US
+    int "High-resolution timer resolution (microseconds)"
+    depends on ENABLE_HIRES_TIMERS
+    range 1 1000
+    default 10
+    help
+      Resolution of high-resolution timers in microseconds.
+
+config ENABLE_UNIVERSAL_TIMEOUTS
+    bool "Enable universal timeout support"
+    default y
+    help
+      Enable consistent timeout parameter handling for all blocking
+      operations with timeout statistics and monitoring.
+
+endmenu
+
+menu "v0.3.0 Quality Assurance"
+
+config ENABLE_DEADLOCK_DETECTION
+    bool "Enable deadlock detection"
+    default n
+    help
+      Enable runtime deadlock detection with resource dependency
+      tracking and cycle detection algorithms.
+
+config ENABLE_SYSTEM_HEALTH_MONITORING
+    bool "Enable system health monitoring"
+    default y
+    help
+      Enable comprehensive system health monitoring including CPU
+      usage tracking, memory monitoring, and health metrics collection.
+
+config HEALTH_CHECK_INTERVAL_MS
+    int "Health check interval (milliseconds)"
+    depends on ENABLE_SYSTEM_HEALTH_MONITORING
+    range 100 10000
+    default 1000
+    help
+      Interval between system health checks in milliseconds.
+
+config ENABLE_WATCHDOG_INTEGRATION
+    bool "Enable hardware watchdog integration"
+    default y
+    help
+      Enable hardware watchdog timer integration with automatic
+      feeding and timeout recovery mechanisms.
+
+config WATCHDOG_TIMEOUT_MS
+    int "Watchdog timeout (milliseconds)"
+    depends on ENABLE_WATCHDOG_INTEGRATION
+    range 100 30000
+    default 5000
+    help
+      Hardware watchdog timeout in milliseconds.
+
+config ENABLE_ALERT_SYSTEM
+    bool "Enable configurable alert system"
+    default n
+    help
+      Enable threshold-based alerting for system metrics with
+      callback-based notifications and escalation mechanisms.
+
+endmenu
+
+menu "v0.3.0 Compatibility"
+
+config ENABLE_BACKWARD_COMPATIBILITY
+    bool "Enable backward compatibility with v0.2.1"
+    default y
+    help
+      Enable 100% backward compatibility with v0.2.1 APIs.
+      Maintains all existing function signatures and behavior.
+
+config ENABLE_MIGRATION_WARNINGS
+    bool "Enable migration warnings"
+    depends on ENABLE_BACKWARD_COMPATIBILITY
+    default y
+    help
+      Enable compile-time warnings for deprecated APIs with clear
+      alternatives and migration paths.
 
 endmenu
 
@@ -159,258 +410,84 @@ config ENABLE_STACK_CHECKING
     bool "Enable stack overflow checking"
     default y
     help
-      Enable automatic stack overflow detection using stack canaries.
-      The system periodically checks for stack corruption and calls
-      the stack overflow handler if detected.
-      
-      This feature has minimal performance impact and is highly
-      recommended for development and production builds.
+      Enable runtime stack overflow detection. Adds stack canaries
+      and periodic stack usage monitoring to detect stack overflows
+      before they cause system corruption.
 
 config ENABLE_MEMORY_TRACKING
     bool "Enable memory usage tracking"
     default y
     help
-      Track memory allocations and provide usage statistics.
-      Enables functions like pico_rtos_get_memory_stats() and
-      helps detect memory leaks.
-      
-      Adds small overhead to malloc/free operations but provides
-      valuable debugging information.
+      Enable detailed memory usage tracking including allocation
+      statistics, peak usage monitoring, and leak detection.
 
 config ENABLE_RUNTIME_STATS
     bool "Enable runtime statistics collection"
     default y
     help
-      Collect runtime statistics including task execution times,
-      system load, and performance metrics.
-      
-      Enables comprehensive system monitoring through
-      pico_rtos_get_system_stats().
-
-endmenu
-
-menu "Error Handling"
-
-config ENABLE_ERROR_HISTORY
-    bool "Enable error history tracking"
-    default y
-    help
-      Maintain a circular buffer of recent errors for debugging.
-      Provides detailed error information including timestamps,
-      source locations, and context data.
-      
-      Requires memory tracking to be enabled for optimal operation.
+      Enable collection of runtime statistics including task execution
+      times, context switch counts, and system performance metrics.
 
 config ERROR_HISTORY_SIZE
     int "Error history buffer size"
-    range 5 50
+    range 0 50
     default 10
-    depends on ENABLE_ERROR_HISTORY
     help
-      Number of error entries to keep in the error history buffer.
-      Larger values provide more debugging information but consume
-      more memory.
-      
-      Each entry consumes approximately 64 bytes of memory.
+      Number of recent errors to keep in the error history buffer.
+      Set to 0 to disable error history tracking.
 
 endmenu
 
-menu "Debug Logging"
+menu "Debug and Logging Configuration"
 
-config ENABLE_LOGGING
+config ENABLE_DEBUG_LOGGING
     bool "Enable debug logging system"
     default n
     help
-      Enable the configurable debug logging system.
-      When disabled, all logging macros compile to nothing,
-      providing zero runtime overhead.
-      
-      Enable this for development and debugging builds.
-      Disable for production builds to minimize code size and overhead.
-
-if ENABLE_LOGGING
+      Enable the debug logging system with configurable log levels
+      and subsystem filtering. Useful for development and debugging
+      but may impact performance in production builds.
 
 choice LOG_LEVEL
     prompt "Default log level"
+    depends on ENABLE_DEBUG_LOGGING
     default LOG_LEVEL_INFO
     help
-      Set the default log level. Only messages at or below this
-      level will be processed and output.
-
-config LOG_LEVEL_NONE
-    bool "None - No logging"
+      Select the default log level. Messages below this level
+      will be filtered out at compile time.
 
 config LOG_LEVEL_ERROR
-    bool "Error - Error conditions only"
+    bool "Error only"
 
 config LOG_LEVEL_WARN
-    bool "Warning - Warnings and errors"
+    bool "Warning and above"
 
 config LOG_LEVEL_INFO
-    bool "Info - Informational messages, warnings, and errors"
+    bool "Info and above"
 
 config LOG_LEVEL_DEBUG
-    bool "Debug - All messages including debug information"
+    bool "Debug and above"
+
+config LOG_LEVEL_VERBOSE
+    bool "All messages"
 
 endchoice
 
-config LOG_LEVEL_VALUE
-    int
-    default 0 if LOG_LEVEL_NONE
-    default 1 if LOG_LEVEL_ERROR
-    default 2 if LOG_LEVEL_WARN
-    default 3 if LOG_LEVEL_INFO
-    default 4 if LOG_LEVEL_DEBUG
-
-config LOG_MESSAGE_MAX_LENGTH
-    int "Maximum log message length"
-    range 32 512
-    default 128
+config LOG_BUFFER_SIZE
+    int "Log buffer size (bytes)"
+    depends on ENABLE_DEBUG_LOGGING
+    range 256 4096
+    default 1024
     help
-      Maximum length of formatted log messages in characters.
-      Longer messages will be truncated.
-      
-      Larger values consume more stack space during logging operations.
+      Size of the circular log buffer in bytes. Larger buffers
+      can hold more log messages but consume more memory.
 
-menu "Log Subsystems"
-
-config LOG_SUBSYSTEM_CORE
-    bool "Core scheduler and system functions"
+config ENABLE_LOG_TIMESTAMPS
+    bool "Enable log timestamps"
+    depends on ENABLE_DEBUG_LOGGING
     default y
     help
-      Enable logging for core RTOS functions including scheduler,
-      initialization, and system management.
-
-config LOG_SUBSYSTEM_TASK
-    bool "Task management functions"
-    default y
-    help
-      Enable logging for task creation, deletion, state changes,
-      and task management operations.
-
-config LOG_SUBSYSTEM_MUTEX
-    bool "Mutex operations"
-    default y
-    help
-      Enable logging for mutex lock/unlock operations, timeouts,
-      and priority inheritance events.
-
-config LOG_SUBSYSTEM_QUEUE
-    bool "Queue operations"
-    default y
-    help
-      Enable logging for queue send/receive operations, queue
-      full/empty conditions, and queue management.
-
-config LOG_SUBSYSTEM_TIMER
-    bool "Timer operations"
-    default y
-    help
-      Enable logging for software timer operations including
-      start, stop, expiration, and timer management.
-
-config LOG_SUBSYSTEM_MEMORY
-    bool "Memory management"
-    default y
-    help
-      Enable logging for memory allocation, deallocation,
-      and memory usage statistics.
-
-config LOG_SUBSYSTEM_SEMAPHORE
-    bool "Semaphore operations"
-    default y
-    help
-      Enable logging for semaphore give/take operations,
-      timeouts, and semaphore management.
-
-endmenu
-
-config LOG_SUBSYSTEM_MASK
-    hex
-    default 0xFF if LOG_SUBSYSTEM_CORE && LOG_SUBSYSTEM_TASK && LOG_SUBSYSTEM_MUTEX && LOG_SUBSYSTEM_QUEUE && LOG_SUBSYSTEM_TIMER && LOG_SUBSYSTEM_MEMORY && LOG_SUBSYSTEM_SEMAPHORE
-    default 0x7F if !LOG_SUBSYSTEM_SEMAPHORE && LOG_SUBSYSTEM_CORE && LOG_SUBSYSTEM_TASK && LOG_SUBSYSTEM_MUTEX && LOG_SUBSYSTEM_QUEUE && LOG_SUBSYSTEM_TIMER && LOG_SUBSYSTEM_MEMORY
-    default 0x3F if !LOG_SUBSYSTEM_SEMAPHORE && !LOG_SUBSYSTEM_MEMORY && LOG_SUBSYSTEM_CORE && LOG_SUBSYSTEM_TASK && LOG_SUBSYSTEM_MUTEX && LOG_SUBSYSTEM_QUEUE && LOG_SUBSYSTEM_TIMER
-    default 0x1F if !LOG_SUBSYSTEM_SEMAPHORE && !LOG_SUBSYSTEM_MEMORY && !LOG_SUBSYSTEM_TIMER && LOG_SUBSYSTEM_CORE && LOG_SUBSYSTEM_TASK && LOG_SUBSYSTEM_MUTEX && LOG_SUBSYSTEM_QUEUE
-    default 0x0F if !LOG_SUBSYSTEM_SEMAPHORE && !LOG_SUBSYSTEM_MEMORY && !LOG_SUBSYSTEM_TIMER && !LOG_SUBSYSTEM_QUEUE && LOG_SUBSYSTEM_CORE && LOG_SUBSYSTEM_TASK && LOG_SUBSYSTEM_MUTEX
-    default 0x07 if !LOG_SUBSYSTEM_SEMAPHORE && !LOG_SUBSYSTEM_MEMORY && !LOG_SUBSYSTEM_TIMER && !LOG_SUBSYSTEM_QUEUE && !LOG_SUBSYSTEM_MUTEX && LOG_SUBSYSTEM_CORE && LOG_SUBSYSTEM_TASK
-    default 0x03 if !LOG_SUBSYSTEM_SEMAPHORE && !LOG_SUBSYSTEM_MEMORY && !LOG_SUBSYSTEM_TIMER && !LOG_SUBSYSTEM_QUEUE && !LOG_SUBSYSTEM_MUTEX && !LOG_SUBSYSTEM_TASK && LOG_SUBSYSTEM_CORE
-    default 0x01 if LOG_SUBSYSTEM_CORE && !LOG_SUBSYSTEM_TASK && !LOG_SUBSYSTEM_MUTEX && !LOG_SUBSYSTEM_QUEUE && !LOG_SUBSYSTEM_TIMER && !LOG_SUBSYSTEM_MEMORY && !LOG_SUBSYSTEM_SEMAPHORE
-    default 0x00
-
-endif # ENABLE_LOGGING
-
-endmenu
-
-menu "Advanced Configuration"
-
-config CUSTOM_TICK_RATE
-    bool "Use custom tick rate"
-    default n
-    help
-      Enable this to specify a custom tick rate not available
-      in the predefined options. Use with caution as invalid
-      tick rates may cause system instability.
-
-config CUSTOM_TICK_RATE_VALUE
-    int "Custom tick rate (Hz)"
-    range 10 10000
-    default 1000
-    depends on CUSTOM_TICK_RATE
-    help
-      Custom system tick frequency in Hz.
-      Valid range: 10-10000 Hz
-      
-      Consider the following when choosing a custom tick rate:
-      - Higher rates provide better timing precision
-      - Higher rates increase system overhead
-      - The rate must be achievable by the hardware timer
-      - Common rates are multiples of 100 or 250
-
-config ENABLE_ASSERTIONS
-    bool "Enable runtime assertions"
-    default y if ENABLE_DEBUG
-    default n
-    help
-      Enable runtime assertion checks throughout the RTOS code.
-      Assertions help catch programming errors and invalid states
-      during development but add overhead in production.
-
-config ENABLE_PROFILING
-    bool "Enable performance profiling hooks"
-    default n
-    help
-      Enable hooks for performance profiling and analysis.
-      This allows external profiling tools to monitor RTOS
-      performance characteristics.
-
-endmenu
-
-menu "Hardware Configuration"
-
-config ENABLE_HARDWARE_TIMERS
-    bool "Use hardware timers for system tick"
-    default y
-    help
-      Use hardware timers for generating the system tick interrupt.
-      This provides more accurate timing than software-based approaches.
-
-config TIMER_INTERRUPT_PRIORITY
-    int "System timer interrupt priority"
-    range 0 7
-    default 0
-    help
-      Priority level for the system timer interrupt.
-      Lower values indicate higher priority.
-      
-      The system timer should typically have the highest priority
-      to ensure accurate timing.
-
-config ENABLE_CONTEXT_SWITCH_PROFILING
-    bool "Enable context switch profiling"
-    default n
-    help
-      Enable measurement of context switch timing for performance
-      analysis. This adds minimal overhead but provides valuable
-      performance metrics.
+      Include timestamps in log messages for better debugging
+      and performance analysis.
 
 endmenu

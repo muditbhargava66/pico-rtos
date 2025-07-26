@@ -1,0 +1,112 @@
+name: Pull Request Validation
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  # Quick validation for draft PRs
+  draft-validation:
+    name: Draft PR Quick Check
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == true
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-arm-none-eabi cmake
+    
+    - name: Quick build test
+      run: |
+        git submodule update --init --recursive
+        python3 scripts/build.py configure --build-type Debug
+        python3 scripts/build.py build
+
+  # Full validation for ready PRs
+  pr-validation:
+    name: PR Validation (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    if: github.event.pull_request.draft == false
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            install-deps: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi cmake
+          - os: macos-latest
+            install-deps: brew tap armmbed/homebrew-formulae && brew install armmbed/formulae/arm-none-eabi-gcc cmake ninja
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install system dependencies
+      run: ${{ matrix.install-deps }}
+    
+    - name: Setup Pico SDK
+      run: git submodule update --init --recursive
+    
+    - name: Configure and build
+      run: |
+        python3 scripts/build.py configure --build-type Release --enable-examples
+        python3 scripts/build.py build
+    
+    - name: Run build system tests
+      run: python3 tests/build_system_test.py
+
+  # Basic code quality checks
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Basic code checks
+      run: |
+        echo "Running basic code quality checks..."
+        
+        # Check if key files exist
+        if [ ! -f README.md ]; then
+          echo "README.md is missing"
+          exit 1
+        fi
+        
+        if [ ! -f CHANGELOG.md ]; then
+          echo "CHANGELOG.md is missing"
+          exit 1
+        fi
+        
+        # Check for common issues (informational)
+        if grep -r "TODO\|FIXME" src/ include/ --exclude-dir=extern 2>/dev/null; then
+          echo "Found TODO/FIXME comments (informational)"
+        fi
+        
+        echo "Code quality checks completed"

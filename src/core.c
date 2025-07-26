@@ -11,6 +11,7 @@
 #include "pico_rtos/error.h"
 #include "pico_rtos/logging.h"
 #include "pico_rtos/context_switch.h"
+#include "pico_rtos/deprecation.h"
 
 // Forward declarations (internal functions not exposed in header)
 static void pico_rtos_tick_handler(void);
@@ -27,7 +28,7 @@ static pico_rtos_task_t *task_list = NULL;
 static pico_rtos_timer_t *timer_list = NULL;
 static uint32_t system_tick_count = 0;
 static bool scheduler_running = false;
-static critical_section_t scheduler_cs;
+static pico_rtos_critical_section_t scheduler_cs;
 
 // Idle task variables
 static pico_rtos_task_t idle_task;
@@ -127,7 +128,7 @@ static bool pico_rtos_init_idle_task(void) {
     }
     
     // Initialize critical section
-    critical_section_init(&idle_task.cs);
+    pico_rtos_critical_section_init(&idle_task.cs);
     
     // Add to task list manually (don't use scheduler_add_task to avoid malloc tracking)
     pico_rtos_enter_critical();
@@ -205,7 +206,7 @@ bool pico_rtos_init(void) {
     PICO_RTOS_LOG_CORE_INFO("Initializing Pico-RTOS v%s", version_string);
     
     // Initialize mutex for scheduler
-    critical_section_init(&scheduler_cs);
+    pico_rtos_critical_section_init(&scheduler_cs);
     PICO_RTOS_LOG_CORE_DEBUG("Scheduler critical section initialized");
     
     // Initialize context switching system
@@ -222,6 +223,10 @@ bool pico_rtos_init(void) {
     // Initialize system timer for tick generation
     pico_rtos_init_system_timer();
     PICO_RTOS_LOG_CORE_INFO("System timer initialized with %lu Hz tick rate", PICO_RTOS_TICK_RATE_HZ);
+    
+    // Initialize deprecation warning system
+    pico_rtos_deprecation_init();
+    PICO_RTOS_LOG_CORE_DEBUG("Deprecation warning system initialized");
     
     PICO_RTOS_LOG_CORE_INFO("Pico-RTOS initialization complete");
     return true;
@@ -301,12 +306,12 @@ const char *pico_rtos_get_version_string(void) {
 
 // Enter a critical section
 void pico_rtos_enter_critical(void) {
-    critical_section_enter_blocking(&scheduler_cs);
+    pico_rtos_critical_section_enter_blocking(&scheduler_cs);
 }
 
 // Exit a critical section
 void pico_rtos_exit_critical(void) {
-    critical_section_exit(&scheduler_cs);
+    pico_rtos_critical_section_exit(&scheduler_cs);
 }
 
 // Interrupt-safe context switch request
@@ -824,4 +829,56 @@ void pico_rtos_clear_idle_hook(void) {
     pico_rtos_enter_critical();
     idle_hook_function = NULL;
     pico_rtos_exit_critical();
+}
+
+// =============================================================================
+// DEBUG SYSTEM ACCESSOR FUNCTIONS
+// =============================================================================
+
+/**
+ * @brief Get the current task pointer (for debug system)
+ * 
+ * This function provides access to the current task for the debug system.
+ * It's thread-safe and returns a snapshot of the current task.
+ * 
+ * @return Pointer to current task, or NULL if no task is running
+ */
+pico_rtos_task_t *pico_rtos_debug_get_current_task(void) {
+    pico_rtos_task_t *task;
+    pico_rtos_enter_critical();
+    task = current_task;
+    pico_rtos_exit_critical();
+    return task;
+}
+
+/**
+ * @brief Get the task list head pointer (for debug system)
+ * 
+ * This function provides access to the task list for the debug system.
+ * It's thread-safe and returns a snapshot of the task list head.
+ * 
+ * @return Pointer to first task in the list, or NULL if no tasks exist
+ */
+pico_rtos_task_t *pico_rtos_debug_get_task_list(void) {
+    pico_rtos_task_t *list;
+    pico_rtos_enter_critical();
+    list = task_list;
+    pico_rtos_exit_critical();
+    return list;
+}
+
+/**
+ * @brief Get the current system tick count (for debug system)
+ * 
+ * This function provides access to the system tick count for the debug system.
+ * It's thread-safe and returns a snapshot of the current tick count.
+ * 
+ * @return Current system tick count
+ */
+uint32_t pico_rtos_debug_get_system_tick_count(void) {
+    uint32_t tick_count;
+    pico_rtos_enter_critical();
+    tick_count = system_tick_count;
+    pico_rtos_exit_critical();
+    return tick_count;
 }

@@ -1,136 +1,37 @@
-# Prerequisites
-*.d
+# Pico-RTOS v0.3.0 Production .gitignore
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
-
-# Linker output
-*.ilk
-*.map
-*.exp
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
-
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
-
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
-
-# CMake build directory
+# Build artifacts
 build/
-build_test/
-
-# Visual Studio Code settings
-.vscode/
-
-# Object files
-*.o
-*.obj
-
-# Libraries
-*.lib
-*.a
-
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
-*.exe
-*.out
-*.app
-*.elf
-
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
-
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
-
-# Pico SDK
-pico-sdk/
-
-# Build directories
-build/
+build_*/
 _build/
 cmake-build-*/
 
-# IDE directories
-.vscode/
-.idea/
-*.sublime-*
+# Generated configuration files
+cmake_config.cmake
+include/pico_rtos_config.h
+.config
+.config.old
+.config.tmp
 
-# Generated files
+# Object files and libraries
+*.o
+*.obj
+*.ko
+*.lo
+*.a
+*.lib
+*.la
+
+# Executables and binaries
+*.exe
+*.out
+*.app
 *.elf
 *.bin
 *.uf2
 *.hex
 *.dis
 *.map
-*.a
-*.lib
-
-# Object files
-*.o
-*.obj
-*.ko
-*.lo
-
-# Precompiled headers
-*.gch
-*.pch
-
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
 
 # Shared objects
 *.so
@@ -143,8 +44,13 @@ cmake-build-*/
 *.su
 *.idb
 *.pdb
+*.gch
+*.pch
 
-# Editor backup files
+# IDE and editor files
+.vscode/
+.idea/
+*.sublime-*
 *~
 *.swp
 *.swo
@@ -165,19 +71,33 @@ __pycache__/
 venv/
 env/
 
-# Don't ignore the Pico SDK import script
-!pico_sdk_import.cmake
+# Test and validation reports
+test_report.txt
+validation_report.txt
+*.log
 
-# Don't ignore the SDK submodule and Git modules
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Documentation build artifacts
+docs/_build/
+docs/html/
+docs/latex/
+
+# Package files
+*.tar.gz
+*.zip
+*.7z
+
+# Keep important files
+!pico_sdk_import.cmake
 !extern/
 !extern/pico-sdk/
 !.gitmodules
-
-# Configuration files (generated)
-config/.config
-config/cmake_config.cmake
-include/pico_rtos_config.h
-
-# Menuconfig temporary files
-.config.old
-.config.tmp
+!scripts/*.sh
+!scripts/*.py
+!Kconfig
+!defconfig

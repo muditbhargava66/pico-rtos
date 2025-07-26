@@ -1,0 +1,217 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v0.3.0)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Mark as pre-release'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  # Validate release readiness
+  validate-release:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      is_prerelease: ${{ steps.version.outputs.is_prerelease }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Determine version
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          VERSION="${{ inputs.version }}"
+          IS_PRERELEASE="${{ inputs.prerelease }}"
+        else
+          VERSION="${{ github.ref_name }}"
+          # Check if it's a pre-release (contains alpha, beta, rc)
+          if echo "$VERSION" | grep -qE "(alpha|beta|rc)"; then
+            IS_PRERELEASE="true"
+          else
+            IS_PRERELEASE="false"
+          fi
+        fi
+        
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+        
+        echo "Release version: $VERSION"
+        echo "Is pre-release: $IS_PRERELEASE"
+    
+    - name: Validate version format
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        if ! echo "$VERSION" | grep -qE "^v[0-9]+\.[0-9]+\.[0-9]+"; then
+          echo "Invalid version format: $VERSION"
+          echo "Expected format: vX.Y.Z (e.g., v0.3.0)"
+          exit 1
+        fi
+    
+    - name: Check required files
+      run: |
+        if [ ! -f README.md ]; then
+          echo "README.md not found"
+          exit 1
+        fi
+        
+        if [ ! -f CHANGELOG.md ]; then
+          echo "CHANGELOG.md not found"
+          exit 1
+        fi
+
+  # Build release artifacts
+  build-release-artifacts:
+    name: Build Release (${{ matrix.config.name }})
+    runs-on: ${{ matrix.config.os }}
+    needs: validate-release
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - name: "Linux"
+            os: ubuntu-latest
+            install: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi cmake
+            artifact_suffix: linux
+          - name: "macOS"
+            os: macos-latest
+            install: brew install arm-none-eabi-gcc cmake
+            artifact_suffix: macos
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install system dependencies
+      run: ${{ matrix.config.install }}
+      shell: bash
+    
+    - name: Setup Pico SDK
+      run: git submodule update --init --recursive
+      shell: bash
+    
+    - name: Build release
+      run: |
+        python3 scripts/build.py configure --build-type Release --enable-examples
+        python3 scripts/build.py build
+      shell: bash
+    
+    - name: Run build system tests
+      run: python3 tests/build_system_test.py
+      shell: bash
+    
+    - name: Package artifacts
+      run: |
+        VERSION="${{ needs.validate-release.outputs.version }}"
+        PACKAGE_NAME="pico-rtos-$VERSION-${{ matrix.config.artifact_suffix }}"
+        
+        mkdir -p "$PACKAGE_NAME"
+        
+        # Copy library
+        cp build/libpico_rtos.a "$PACKAGE_NAME/"
+        
+        # Copy headers
+        cp -r include/ "$PACKAGE_NAME/"
+        
+        # Copy examples (UF2 files)
+        find build -name "*.uf2" -exec cp {} "$PACKAGE_NAME/" \; || true
+        
+        # Copy documentation
+        cp README.md CHANGELOG.md LICENSE "$PACKAGE_NAME/"
+        
+        # Create archive
+        tar -czf "$PACKAGE_NAME.tar.gz" "$PACKAGE_NAME"
+      shell: bash
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-artifacts-${{ matrix.config.artifact_suffix }}
+        path: pico-rtos-*-${{ matrix.config.artifact_suffix }}.tar.gz
+        retention-days: 90
+
+  # Create GitHub release
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [validate-release, build-release-artifacts]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+    
+    - name: Generate release notes
+      run: |
+        VERSION="${{ needs.validate-release.outputs.version }}"
+        
+        echo "# Pico-RTOS $VERSION" > release-notes.md
+        echo "" >> release-notes.md
+        
+        # Extract changelog section for this version if it exists
+        if [ -f CHANGELOG.md ] && grep -q "$VERSION" CHANGELOG.md; then
+          echo "## Changes" >> release-notes.md
+          awk "/## \[$VERSION\]/,/^## \[/{if(/^## \[/ && !/^## \[$VERSION\]/) exit; print}" CHANGELOG.md >> release-notes.md
+        else
+          echo "## Changes" >> release-notes.md
+          echo "- See commit history for detailed changes" >> release-notes.md
+        fi
+        
+        echo "" >> release-notes.md
+        echo "## Downloads" >> release-notes.md
+        echo "" >> release-notes.md
+        
+        # List all release artifacts
+        for artifact in release-artifacts-*/pico-rtos-*.tar.gz; do
+          if [ -f "$artifact" ]; then
+            basename_file=$(basename "$artifact")
+            echo "- $basename_file" >> release-notes.md
+          fi
+        done
+        
+        echo "" >> release-notes.md
+        echo "## Installation" >> release-notes.md
+        echo "1. Download the appropriate package for your platform" >> release-notes.md
+        echo "2. Extract the archive" >> release-notes.md
+        echo "3. Include the headers and link against libpico_rtos.a" >> release-notes.md
+        echo "4. Flash the example UF2 files to test your setup" >> release-notes.md
+    
+    - name: Create release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ needs.validate-release.outputs.version }}
+        name: Pico-RTOS ${{ needs.validate-release.outputs.version }}
+        body_path: release-notes.md
+        prerelease: ${{ needs.validate-release.outputs.is_prerelease }}
+        files: |
+          release-artifacts-*/pico-rtos-*.tar.gz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

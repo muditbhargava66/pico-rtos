@@ -1,0 +1,349 @@
+# CMakeLists.txt for Pico-RTOS v0.3.0 Comprehensive Test Suite
+# This file should be included from the main CMakeLists.txt
+# It adds comprehensive test targets to the existing build system
+
+# This file is designed to be included from the main project
+# Check if we're being included properly
+if(NOT DEFINED PICO_RTOS_VERSION_MAJOR)
+    message(WARNING "CMakeLists_comprehensive.txt should be included from the main project")
+endif()
+
+# Common test libraries and includes for comprehensive tests
+set(COMPREHENSIVE_TEST_LIBS
+    pico_rtos
+    pico_stdlib
+    pico_multicore
+    hardware_gpio
+    hardware_timer
+    hardware_watchdog
+    hardware_clocks
+)
+
+set(COMPREHENSIVE_TEST_INCLUDES
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+# Function to create a comprehensive test executable
+function(create_comprehensive_test_executable TEST_NAME SOURCE_FILE)
+    add_executable(${TEST_NAME} ${CMAKE_SOURCE_DIR}/tests/${SOURCE_FILE})
+    
+    target_link_libraries(${TEST_NAME} ${COMPREHENSIVE_TEST_LIBS})
+    target_include_directories(${TEST_NAME} PRIVATE ${COMPREHENSIVE_TEST_INCLUDES})
+    
+    # Enable USB output for test results
+    pico_enable_stdio_usb(${TEST_NAME} 1)
+    pico_enable_stdio_uart(${TEST_NAME} 0)
+    
+    # Create map/bin/hex/uf2 files
+    pico_add_extra_outputs(${TEST_NAME})
+    
+    # Set stack size for comprehensive tests (reduced to fit in memory)
+    target_compile_definitions(${TEST_NAME} PRIVATE
+        PICO_STACK_SIZE=0x1000
+        PICO_CORE1_STACK_SIZE=0x1000
+        PICO_RTOS_COMPREHENSIVE_TESTING=1
+    )
+endfunction()
+
+# =============================================================================
+# COMPREHENSIVE UNIT TESTS
+# =============================================================================
+
+# Enhanced event group tests
+if(PICO_RTOS_ENABLE_EVENT_GROUPS)
+    create_comprehensive_test_executable(comprehensive_event_group_test comprehensive_event_group_test.c)
+endif()
+
+# MPU unit tests
+if(PICO_RTOS_ENABLE_MPU_SUPPORT)
+    create_comprehensive_test_executable(mpu_test mpu_test.c)
+endif()
+
+# Multi-core comprehensive tests
+if(PICO_RTOS_ENABLE_MULTI_CORE)
+    create_comprehensive_test_executable(multicore_comprehensive_test multicore_comprehensive_test.c)
+endif()
+
+# =============================================================================
+# INTEGRATION TESTS
+# =============================================================================
+
+# Component interaction integration tests
+create_comprehensive_test_executable(integration_component_interactions_test integration_component_interactions_test.c)
+
+# =============================================================================
+# PERFORMANCE REGRESSION TESTS
+# =============================================================================
+
+# Performance regression test suite
+create_comprehensive_test_executable(performance_regression_test performance_regression_test.c)
+
+# =============================================================================
+# HARDWARE-IN-THE-LOOP TESTS
+# =============================================================================
+
+# Hardware validation tests
+create_comprehensive_test_executable(hardware_in_the_loop_test hardware_in_the_loop_test.c)
+
+# =============================================================================
+# EXISTING TESTS (Enhanced for v0.3.0)
+# =============================================================================
+
+# Include existing test files that are part of comprehensive testing
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/event_group_test.c")
+    create_comprehensive_test_executable(event_group_test event_group_test.c)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/stream_buffer_test.c")
+    create_comprehensive_test_executable(stream_buffer_test stream_buffer_test.c)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/memory_pool_test.c")
+    create_comprehensive_test_executable(memory_pool_test memory_pool_test.c)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/smp_test.c")
+    create_comprehensive_test_executable(smp_test smp_test.c)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/profiler_test.c")
+    create_comprehensive_test_executable(profiler_test profiler_test.c)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/trace_test.c")
+    create_comprehensive_test_executable(trace_test trace_test.c)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/health_test.c")
+    create_comprehensive_test_executable(health_test health_test.c)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/alerts_test.c")
+    create_comprehensive_test_executable(alerts_test alerts_test.c)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/logging_test.c")
+    create_comprehensive_test_executable(logging_test logging_test.c)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/timeout_test.c")
+    create_comprehensive_test_executable(timeout_test timeout_test.c)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/watchdog_test.c")
+    create_comprehensive_test_executable(watchdog_test watchdog_test.c)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/hires_timer_test.c")
+    create_comprehensive_test_executable(hires_timer_test hires_timer_test.c)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/compatibility_test.c")
+    create_comprehensive_test_executable(compatibility_test compatibility_test.c)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/deprecation_test.c")
+    create_comprehensive_test_executable(deprecation_test deprecation_test.c)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/task8_integration_test.c")
+    create_comprehensive_test_executable(task8_integration_test task8_integration_test.c)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/core_failure_integration_test.c")
+    create_comprehensive_test_executable(core_failure_integration_test core_failure_integration_test.c)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/memory_pool_performance_test.c")
+    create_comprehensive_test_executable(memory_pool_performance_test memory_pool_performance_test.c)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/stream_buffer_performance_test.c")
+    create_comprehensive_test_executable(stream_buffer_performance_test stream_buffer_performance_test.c)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/blocking_performance_test.c")
+    create_comprehensive_test_executable(blocking_performance_test blocking_performance_test.c)
+endif()
+
+# =============================================================================
+# CUSTOM TARGETS FOR TEST CATEGORIES
+# =============================================================================
+
+# Custom target to build all unit tests
+set(UNIT_TEST_TARGETS)
+
+# Add conditional targets based on feature flags
+if(PICO_RTOS_ENABLE_EVENT_GROUPS)
+    list(APPEND UNIT_TEST_TARGETS comprehensive_event_group_test)
+endif()
+
+if(PICO_RTOS_ENABLE_MPU_SUPPORT)
+    list(APPEND UNIT_TEST_TARGETS mpu_test)
+endif()
+
+if(PICO_RTOS_ENABLE_MULTI_CORE)
+    list(APPEND UNIT_TEST_TARGETS multicore_comprehensive_test)
+endif()
+
+# Add existing tests that should always be built
+list(APPEND UNIT_TEST_TARGETS
+    event_group_test
+    stream_buffer_test
+    memory_pool_test
+    smp_test
+    profiler_test
+    trace_test
+    health_test
+    alerts_test
+    logging_test
+    timeout_test
+    watchdog_test
+    hires_timer_test
+    compatibility_test
+    deprecation_test
+)
+
+add_custom_target(unit_tests DEPENDS ${UNIT_TEST_TARGETS})
+
+# Custom target to build all integration tests
+add_custom_target(integration_tests
+    DEPENDS 
+        integration_component_interactions_test
+        task8_integration_test
+        core_failure_integration_test
+)
+
+# Custom target to build all performance tests
+add_custom_target(performance_tests
+    DEPENDS 
+        performance_regression_test
+        memory_pool_performance_test
+        stream_buffer_performance_test
+        blocking_performance_test
+)
+
+# Custom target to build all hardware tests
+add_custom_target(hardware_tests
+    DEPENDS 
+        hardware_in_the_loop_test
+)
+
+# Custom target to build all comprehensive tests
+add_custom_target(comprehensive_tests
+    DEPENDS 
+        unit_tests
+        integration_tests
+        performance_tests
+        hardware_tests
+)
+
+# =============================================================================
+# TEST CONFIGURATION
+# =============================================================================
+
+# Add compile definitions for comprehensive testing
+target_compile_definitions(comprehensive_event_group_test PRIVATE
+    PICO_RTOS_COMPREHENSIVE_TESTING=1
+    PICO_RTOS_ENABLE_STATISTICS=1
+    PICO_RTOS_ENABLE_PROFILING=1
+)
+
+target_compile_definitions(multicore_comprehensive_test PRIVATE
+    PICO_RTOS_COMPREHENSIVE_TESTING=1
+    PICO_RTOS_ENABLE_SMP=1
+    PICO_RTOS_ENABLE_STATISTICS=1
+)
+
+target_compile_definitions(integration_component_interactions_test PRIVATE
+    PICO_RTOS_COMPREHENSIVE_TESTING=1
+    PICO_RTOS_ENABLE_SMP=1
+    PICO_RTOS_ENABLE_STATISTICS=1
+    PICO_RTOS_ENABLE_PROFILING=1
+    PICO_RTOS_ENABLE_TRACING=1
+)
+
+target_compile_definitions(performance_regression_test PRIVATE
+    PICO_RTOS_PERFORMANCE_TESTING=1
+    PICO_RTOS_ENABLE_PROFILING=1
+    PICO_RTOS_ENABLE_STATISTICS=1
+)
+
+target_compile_definitions(hardware_in_the_loop_test PRIVATE
+    PICO_RTOS_HARDWARE_TESTING=1
+    PICO_RTOS_ENABLE_SMP=1
+    PICO_RTOS_ENABLE_MPU=1
+    PICO_RTOS_ENABLE_STATISTICS=1
+)
+
+# =============================================================================
+# INSTALLATION AND PACKAGING
+# =============================================================================
+
+# Install test executables (only if they exist)
+set(COMPREHENSIVE_TEST_TARGETS_TO_INSTALL)
+
+if(TARGET comprehensive_event_group_test)
+    list(APPEND COMPREHENSIVE_TEST_TARGETS_TO_INSTALL comprehensive_event_group_test)
+endif()
+
+if(TARGET mpu_test)
+    list(APPEND COMPREHENSIVE_TEST_TARGETS_TO_INSTALL mpu_test)
+endif()
+
+if(TARGET multicore_comprehensive_test)
+    list(APPEND COMPREHENSIVE_TEST_TARGETS_TO_INSTALL multicore_comprehensive_test)
+endif()
+
+if(TARGET integration_component_interactions_test)
+    list(APPEND COMPREHENSIVE_TEST_TARGETS_TO_INSTALL integration_component_interactions_test)
+endif()
+
+if(TARGET performance_regression_test)
+    list(APPEND COMPREHENSIVE_TEST_TARGETS_TO_INSTALL performance_regression_test)
+endif()
+
+if(TARGET hardware_in_the_loop_test)
+    list(APPEND COMPREHENSIVE_TEST_TARGETS_TO_INSTALL hardware_in_the_loop_test)
+endif()
+
+if(COMPREHENSIVE_TEST_TARGETS_TO_INSTALL)
+    install(TARGETS ${COMPREHENSIVE_TEST_TARGETS_TO_INSTALL}
+        DESTINATION bin/tests
+    )
+endif()
+
+# Test runner script was removed to simplify the test suite
+
+# =============================================================================
+# DOCUMENTATION
+# =============================================================================
+
+# Generate test documentation
+add_custom_target(test_docs
+    COMMAND echo "Generating comprehensive test documentation..."
+    COMMAND echo "Unit Tests: Tests individual components in isolation"
+    COMMAND echo "Integration Tests: Tests component interactions"
+    COMMAND echo "Performance Tests: Validates performance regression"
+    COMMAND echo "Hardware Tests: Validates on actual RP2040 hardware"
+    VERBATIM
+)
+
+# Print build information
+message(STATUS "Pico-RTOS v0.3.0 Comprehensive Test Suite Configuration:")
+message(STATUS "  Unit Tests: ${CMAKE_CURRENT_SOURCE_DIR}")
+message(STATUS "  Integration Tests: Enabled")
+message(STATUS "  Performance Tests: Enabled")
+message(STATUS "  Hardware Tests: Enabled")
+message(STATUS "  Test Runner: run_comprehensive_tests.py")
+message(STATUS "")
+message(STATUS "Build targets:")
+message(STATUS "  make unit_tests        - Build all unit tests")
+message(STATUS "  make integration_tests - Build all integration tests")
+message(STATUS "  make performance_tests - Build all performance tests")
+message(STATUS "  make hardware_tests    - Build all hardware tests")
+message(STATUS "  make comprehensive_tests - Build all tests")
+message(STATUS "")
+message(STATUS "Run tests by building individual test targets")
