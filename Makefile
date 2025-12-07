@@ -77,7 +77,7 @@ defconfig: install-deps-check
 	@echo "Loading default configuration..."
 	$(PYTHON) scripts/menuconfig.py --config-file $(CONFIG_FILE) \
 		--cmake-file $(CMAKE_CONFIG_FILE) --header-file $(HEADER_CONFIG_FILE) \
-		--load-defaults --show-config
+		--defconfig
 
 .PHONY: savedefconfig
 savedefconfig:
@@ -91,7 +91,7 @@ savedefconfig:
 
 .PHONY: showconfig
 showconfig: install-deps-check
-	@$(PYTHON) scripts/menuconfig.py --config-file $(CONFIG_FILE) --show-config
+	@$(PYTHON) scripts/menuconfig.py --config-file $(CONFIG_FILE) --show
 
 # Toolchain options
 TOOLCHAIN ?= 
@@ -105,7 +105,7 @@ $(CMAKE_CONFIG_FILE): $(CONFIG_FILE) scripts/menuconfig.py
 	@echo "Generating build configuration..."
 	$(PYTHON) scripts/menuconfig.py --config-file $(CONFIG_FILE) \
 		--cmake-file $(CMAKE_CONFIG_FILE) --header-file $(HEADER_CONFIG_FILE) \
-		--show-config
+		--generate
 
 $(CONFIG_FILE):
 	@echo "No configuration found. Creating default configuration..."

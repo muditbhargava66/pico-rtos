@@ -11,12 +11,12 @@
 #include "pico_rtos/queue.h"
 #include "pico_rtos/event_group.h"
 
-#ifdef PICO_PLATFORM
+#if PICO_ON_DEVICE
 #include "pico/multicore.h"
 #endif
 
 // Forward declarations for functions that may not be available during testing
-#ifndef PICO_PLATFORM
+#if !PICO_ON_DEVICE
 extern uint32_t pico_rtos_get_tick_count(void);
 extern pico_rtos_task_t *pico_rtos_get_current_task(void);
 extern uint32_t *pico_rtos_init_task_stack(uint32_t *stack_base, uint32_t stack_size, 
@@ -172,6 +172,7 @@ void pico_rtos_smp_start(void) {
     smp_scheduler.cores[0].scheduler_active = true;
     smp_scheduler.cores[0].running_task = &idle_tasks[0];
     
+#if PICO_ON_DEVICE
     // Launch core 1
     multicore_launch_core1(pico_rtos_smp_core1_entry);
     
@@ -186,6 +187,11 @@ void pico_rtos_smp_start(void) {
         PICO_RTOS_LOG_SMP_ERROR("Core 1 failed to start within timeout");
         return;
     }
+#else
+    // In non-device builds (testing), simulate core 1 being ready
+    smp_scheduler.cores[1].scheduler_active = true;
+    smp_scheduler.cores[1].running_task = &idle_tasks[1];
+#endif
     
     // Start health monitoring
     pico_rtos_core_health_start();
@@ -1555,7 +1561,7 @@ void pico_rtos_smp_wake_core(uint32_t target_core) {
     
     // Use RP2040 inter-core FIFO to wake up the other core
     if (target_core != pico_rtos_smp_get_core_id()) {
-#ifdef PICO_PLATFORM
+#if PICO_ON_DEVICE
         multicore_fifo_push_blocking(PICO_RTOS_IPC_MSG_WAKEUP | (target_core << 16));
 #endif
     }
@@ -1625,7 +1631,7 @@ bool pico_rtos_inter_core_cs_enter(pico_rtos_inter_core_cs_t *ics, uint32_t time
         }
         
         // Brief delay before retrying to reduce contention
-#ifdef PICO_PLATFORM
+#if PICO_ON_DEVICE
         sleep_us(10);
 #endif
     }
@@ -1792,7 +1798,7 @@ bool pico_rtos_ipc_send_message(uint32_t target_core,
             pico_rtos_critical_section_exit(&channel->access_cs);
             
             // Use hardware FIFO to notify target core
-#ifdef PICO_PLATFORM
+#if PICO_ON_DEVICE
             multicore_fifo_push_blocking(message->type | (current_core << 16));
 #endif
             
@@ -1815,7 +1821,7 @@ bool pico_rtos_ipc_send_message(uint32_t target_core,
         }
         
         // Brief delay before retrying
-#ifdef PICO_PLATFORM
+#if PICO_ON_DEVICE
         sleep_us(100);
 #endif
     }
@@ -1861,7 +1867,7 @@ bool pico_rtos_ipc_receive_message(pico_rtos_ipc_message_t *message,
         }
         
         // Check hardware FIFO for notifications
-#ifdef PICO_PLATFORM
+#if PICO_ON_DEVICE
         if (multicore_fifo_rvalid()) {
             uint32_t fifo_data = multicore_fifo_pop_blocking();
             // FIFO data contains message type and source core
@@ -1871,7 +1877,7 @@ bool pico_rtos_ipc_receive_message(pico_rtos_ipc_message_t *message,
 #endif
         
         // Brief delay before retrying
-#ifdef PICO_PLATFORM
+#if PICO_ON_DEVICE
         sleep_us(100);
 #endif
     }
@@ -2067,7 +2073,7 @@ bool pico_rtos_sync_barrier_wait(pico_rtos_sync_barrier_t *barrier,
         }
         
         // Brief delay before checking again
-#ifdef PICO_PLATFORM
+#if PICO_ON_DEVICE
         sleep_us(100);
 #endif
     }

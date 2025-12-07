@@ -5,6 +5,20 @@ All notable changes to Pico-RTOS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2025-12-07 - **BUG FIX RELEASE**
+
+### Fixed
+- Fixed compilation error in `smp.c` with implicit declaration of `multicore_launch_core1` ([#3](https://github.com/muditbhargava66/pico-rtos/issues/3))
+  - Replaced non-standard `PICO_PLATFORM` macro with standard Pico SDK `PICO_ON_DEVICE` macro
+  - Added proper guards around multicore hardware functions
+  - Added fallback behavior for non-device builds (testing environments)
+
+- Fixed `make menuconfig` failing with unrecognized arguments error ([#4](https://github.com/muditbhargava66/pico-rtos/issues/4))
+  - Added missing command-line argument support (`--config-file`, `--cmake-file`, `--header-file`)
+  - Fixed configuration file generation to properly iterate over Kconfig symbols
+  - Fixed defconfig file format to use proper `CONFIG_` prefix for kconfiglib compatibility
+  - Added `--show-config` and `--load-defaults` argument aliases for compatibility
+
 ## [0.3.0] - 2025-07-26 - **ADVANCED SYNCHRONIZATION & MULTI-CORE** 🚀
 
 ### 🎯 Major Features

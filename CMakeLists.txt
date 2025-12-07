@@ -57,10 +57,10 @@ endif()
 # Configure features based on profile
 pico_rtos_configure_features()
 
-# Pico-RTOS v0.3.0 - Advanced Synchronization & Multi-Core
+# Pico-RTOS v0.3.1 - Bug fix release
 set(PICO_RTOS_VERSION_MAJOR 0)
 set(PICO_RTOS_VERSION_MINOR 3)
-set(PICO_RTOS_VERSION_PATCH 0)
+set(PICO_RTOS_VERSION_PATCH 1)
 set(PICO_RTOS_VERSION_STRING "${PICO_RTOS_VERSION_MAJOR}.${PICO_RTOS_VERSION_MINOR}.${PICO_RTOS_VERSION_PATCH}")
 
 # Add version information to compile definitions
