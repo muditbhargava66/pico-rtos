@@ -2,14 +2,14 @@
 
 This guide helps you migrate between different versions of Pico-RTOS and adopt new features.
 
-**Current Version**: v0.3.0 "Advanced Synchronization & Multi-Core"
+**Current Version**: v0.3.1 "Advanced Synchronization & Multi-Core"
 
 ## 🔄 Migration Overview
 
 ### Supported Migration Paths
-- **v0.2.1 → v0.3.0**: Seamless upgrade with 100% backward compatibility
-- **v0.2.0 → v0.3.0**: Direct upgrade supported
-- **v0.1.x → v0.3.0**: Upgrade via v0.2.1 recommended
+- **v0.2.1 → v0.3.1**: Seamless upgrade with 100% backward compatibility
+- **v0.2.0 → v0.3.1**: Direct upgrade supported
+- **v0.1.x → v0.3.1**: Upgrade via v0.2.1 recommended
 
 ### Migration Philosophy
 - **Zero Breaking Changes**: All existing code continues to work
@@ -19,7 +19,7 @@ This guide helps you migrate between different versions of Pico-RTOS and adopt n
 
 ---
 
-## 🚀 Migrating to v0.3.0
+## 🚀 Migrating to v0.3.1
 
 ### Prerequisites
 - Existing Pico-RTOS v0.2.1 or v0.2.0 project
@@ -31,9 +31,9 @@ This guide helps you migrate between different versions of Pico-RTOS and adopt n
 
 #### Update Git Repository
 ```bash
-# Update to v0.3.0
+# Update to v0.3.1
 git fetch origin
-git checkout v0.3.0
+git checkout v0.3.1
 
 # Update submodules if using
 git submodule update --init --recursive
@@ -44,7 +44,7 @@ Your existing CMakeLists.txt will continue to work. Optionally update version re
 
 ```cmake
 # Optional: Update version reference
-set(PICO_RTOS_VERSION "0.3.0")
+set(PICO_RTOS_VERSION "0.3.1")
 
 # Your existing configuration continues to work
 set(PICO_RTOS_MAX_TASKS 16)
@@ -103,7 +103,7 @@ make build 2>&1 | grep -i deprecat
 
 ### Step 4: Optional Feature Adoption
 
-You can now optionally adopt v0.3.0 features:
+You can now optionally adopt v0.3.1 features:
 
 #### Enable New Synchronization Features
 ```cmake
@@ -130,7 +130,7 @@ set(PICO_RTOS_ENABLE_SYSTEM_TRACING ON)
 
 ---
 
-## 🆕 New Features in v0.3.0
+## 🆕 New Features in v0.3.1
 
 ### Advanced Synchronization Primitives
 
@@ -163,7 +163,7 @@ void wait_for_events() {
 }
 ```
 
-**After (v0.3.0):**
+**After (v0.3.1):**
 ```c
 // Clean event group implementation
 pico_rtos_event_group_t events;
@@ -207,7 +207,7 @@ void init_messaging() {
 }
 ```
 
-**After (v0.3.0):**
+**After (v0.3.1):**
 ```c
 // Variable-length stream buffer
 pico_rtos_stream_buffer_t stream;
@@ -285,7 +285,7 @@ printf("Function took %lu microseconds\n", stats.execution_time_us);
 
 ### New Configuration Options
 
-#### v0.3.0 Feature Toggles
+#### v0.3.1 Feature Toggles
 ```cmake
 # Advanced Synchronization
 PICO_RTOS_ENABLE_EVENT_GROUPS=ON
@@ -354,7 +354,7 @@ make build ENABLE_DEBUG_FEATURES=ON
 
 #### New Test Targets
 ```bash
-# Run v0.3.0 specific tests
+# Run v0.3.1 specific tests
 make test-event-groups
 make test-stream-buffers
 make test-multi-core
@@ -485,7 +485,7 @@ make debug-config
 
 ### Memory Usage
 
-#### v0.3.0 Memory Impact
+#### v0.3.1 Memory Impact
 - **Event Groups**: ~32 bytes per group
 - **Stream Buffers**: Buffer size + ~64 bytes overhead
 - **Memory Pools**: Pool size + ~48 bytes overhead
@@ -529,10 +529,10 @@ printf("CPU Usage: Core 0: %lu%%, Core 1: %lu%%\n",
 - [ ] Backup your current working project
 - [ ] Document your current configuration
 - [ ] Test your current build and functionality
-- [ ] Review v0.3.0 changelog and new features
+- [ ] Review v0.3.1 changelog and new features
 
 ### Migration Process
-- [ ] Update to v0.3.0 codebase
+- [ ] Update to v0.3.1 codebase
 - [ ] Run configuration migration tool
 - [ ] Verify build compiles successfully
 - [ ] Test existing functionality works
@@ -576,6 +576,6 @@ printf("CPU Usage: Core 0: %lu%%, Core 1: %lu%%\n",
 
 ---
 
-**Migration Guide Version**: v0.3.0  
+**Migration Guide Version**: v0.3.1  
 **Last Updated**: July 25, 2025  
-**Supported Migrations**: v0.2.1→v0.3.0, v0.2.0→v0.3.0
+**Supported Migrations**: v0.2.1→v0.3.1, v0.2.0→v0.3.1

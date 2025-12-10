@@ -1,6 +1,6 @@
 /**
  * @file integration_component_interactions_test.c
- * @brief Integration tests for component interactions in Pico-RTOS v0.3.0
+ * @brief Integration tests for component interactions in Pico-RTOS v0.3.1
  * 
  * Tests complex scenarios combining:
  * - Event groups with multi-core task coordination
@@ -640,7 +640,7 @@ static void test_cross_component_error_handling(void) {
 static void run_integration_tests(void) {
     printf("\n");
     printf("======================================================\n");
-    printf("  Integration Component Interaction Tests (v0.3.0)   \n");
+    printf("  Integration Component Interaction Tests (v0.3.1)   \n");
     printf("======================================================\n");
     
     test_integration_initialization();

@@ -1,10 +1,10 @@
-# Pico-RTOS v0.3.0 API Reference
+# Pico-RTOS v0.3.1 API Reference
 
-This document provides a comprehensive reference for the new features introduced in Pico-RTOS v0.3.0.
+This document provides a comprehensive reference for the new features introduced in Pico-RTOS v0.3.1.
 
-## Version 0.3.0 - Advanced Features and Multi-Core Support
+## Version 0.3.1 - Advanced Features and Multi-Core Support
 
-This API reference covers all new functions available in Pico-RTOS v0.3.0, which builds upon the solid foundation of v0.2.1 with advanced synchronization primitives, comprehensive debugging tools, multi-core support, and enhanced system extensions.
+This API reference covers all new functions available in Pico-RTOS v0.3.1, which builds upon the solid foundation of v0.2.1 with advanced synchronization primitives, comprehensive debugging tools, multi-core support, and enhanced system extensions.
 
 For v0.2.1 API functions, please refer to the main [API Reference](api_reference.md).
 
@@ -308,7 +308,7 @@ if (pico_rtos_memory_pool_free(&my_pool, block)) {
 
 ## Multi-Core Support
 
-Pico-RTOS v0.3.0 provides comprehensive multi-core support for the RP2040's dual-core architecture, including SMP scheduling, task affinity, and inter-core communication.
+Pico-RTOS v0.3.1 provides comprehensive multi-core support for the RP2040's dual-core architecture, including SMP scheduling, task affinity, and inter-core communication.
 
 ### Core Affinity
 
@@ -513,7 +513,7 @@ typedef struct {
 #define PICO_RTOS_VERSION_MAJOR   0
 #define PICO_RTOS_VERSION_MINOR   3
 #define PICO_RTOS_VERSION_PATCH   0
-#define PICO_RTOS_VERSION_STRING  "0.3.0"
+#define PICO_RTOS_VERSION_STRING  "0.3.1"
 ```
 
 ### Feature Availability Macros
@@ -543,4 +543,4 @@ typedef struct {
 
 ## Migration from v0.2.1
 
-All existing v0.2.1 APIs remain unchanged and fully compatible. New v0.3.0 features are additive and optional. See the [Migration Guide](migration_guide_v0.3.0.md) for detailed upgrade instructions.
+All existing v0.2.1 APIs remain unchanged and fully compatible. New v0.3.1 features are additive and optional. See the [Migration Guide](migration_guide_v0.3.1.md) for detailed upgrade instructions.

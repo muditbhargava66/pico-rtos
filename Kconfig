@@ -1,7 +1,7 @@
-# Pico-RTOS v0.3.0 Configuration
+# Pico-RTOS v0.3.1 Configuration
 # This file defines the configuration options for Pico-RTOS using Kconfig syntax
 
-mainmenu "Pico-RTOS v0.3.0 Configuration"
+mainmenu "Pico-RTOS v0.3.1 Configuration"
 
 menu "Build Options"
 
@@ -115,7 +115,7 @@ config IDLE_TASK_STACK_SIZE
 
 endmenu
 
-menu "v0.3.0 Advanced Synchronization"
+menu "v0.3.1 Advanced Synchronization"
 
 config ENABLE_EVENT_GROUPS
     bool "Enable Event Groups"
@@ -160,7 +160,7 @@ config STREAM_BUFFER_ZERO_COPY_THRESHOLD
 
 endmenu
 
-menu "v0.3.0 Enhanced Memory Management"
+menu "v0.3.1 Enhanced Memory Management"
 
 config ENABLE_MEMORY_POOLS
     bool "Enable Memory Pools"
@@ -203,7 +203,7 @@ config MPU_STACK_GUARD_SIZE
 
 endmenu
 
-menu "v0.3.0 Debugging and Profiling"
+menu "v0.3.1 Debugging and Profiling"
 
 config ENABLE_TASK_INSPECTION
     bool "Enable runtime task inspection"
@@ -253,7 +253,7 @@ config ENABLE_ENHANCED_ASSERTIONS
 
 endmenu
 
-menu "v0.3.0 Multi-Core Support"
+menu "v0.3.1 Multi-Core Support"
 
 config ENABLE_MULTI_CORE
     bool "Enable multi-core support (SMP)"
@@ -304,7 +304,7 @@ config IPC_CHANNEL_BUFFER_SIZE
 
 endmenu
 
-menu "v0.3.0 System Extensions"
+menu "v0.3.1 System Extensions"
 
 config ENABLE_IO_ABSTRACTION
     bool "Enable I/O abstraction layer"
@@ -337,7 +337,7 @@ config ENABLE_UNIVERSAL_TIMEOUTS
 
 endmenu
 
-menu "v0.3.0 Quality Assurance"
+menu "v0.3.1 Quality Assurance"
 
 config ENABLE_DEADLOCK_DETECTION
     bool "Enable deadlock detection"
@@ -385,7 +385,7 @@ config ENABLE_ALERT_SYSTEM
 
 endmenu
 
-menu "v0.3.0 Compatibility"
+menu "v0.3.1 Compatibility"
 
 config ENABLE_BACKWARD_COMPATIBILITY
     bool "Enable backward compatibility with v0.2.1"

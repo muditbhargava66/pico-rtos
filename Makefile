@@ -1,4 +1,4 @@
-# Pico-RTOS v0.3.0 Makefile
+# Pico-RTOS v0.3.1 Makefile
 # Provides convenient targets for building and configuring Pico-RTOS
 
 # Default build directory
@@ -24,7 +24,7 @@ all: configure build
 # Help target
 .PHONY: help
 help:
-	@echo "Pico-RTOS v0.3.0 Build System"
+	@echo "Pico-RTOS v0.3.1 Build System"
 	@echo ""
 	@echo "Configuration targets:"
 	@echo "  menuconfig     - Interactive configuration menu (ncurses)"
@@ -94,7 +94,7 @@ showconfig: install-deps-check
 	@$(PYTHON) scripts/menuconfig.py --config-file $(CONFIG_FILE) --show
 
 # Toolchain options
-TOOLCHAIN ?= 
+TOOLCHAIN ?=
 BUILD_TYPE ?= Release
 
 # Build targets
@@ -113,7 +113,7 @@ $(CONFIG_FILE):
 
 .PHONY: build
 build: configure
-	@echo "Building Pico-RTOS v0.3.0..."
+	@echo "Building Pico-RTOS v0.3.1..."
 	@if [ -x scripts/build.sh ]; then \
 		scripts/build.sh $(if $(filter Debug,$(BUILD_TYPE)),--debug) \
 			$(if $(TOOLCHAIN),--toolchain $(TOOLCHAIN)) \

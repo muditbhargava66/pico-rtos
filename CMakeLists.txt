@@ -29,10 +29,10 @@ else()
     else()
         message(FATAL_ERROR "
         Pico SDK not found. Please either:
-        1. Clone the Pico SDK into extern/pico-sdk: 
+        1. Clone the Pico SDK into extern/pico-sdk:
            git submodule add -b master https://github.com/raspberrypi/pico-sdk.git extern/pico-sdk
            git submodule update --init --recursive
-        2. Run the setup-pico-sdk.sh script: 
+        2. Run the setup-pico-sdk.sh script:
            ./setup-pico-sdk.sh
         3. Set the PICO_SDK_PATH environment variable to your Pico SDK installation.")
     endif()
@@ -103,21 +103,21 @@ set(PICO_RTOS_LOG_SUBSYSTEM_MASK "0xFF" CACHE STRING "Bitmask for enabled log su
 option(PICO_RTOS_ENABLE_ERROR_HISTORY "Enable error history tracking" ON)
 set(PICO_RTOS_ERROR_HISTORY_SIZE "10" CACHE STRING "Number of errors to keep in history")
 
-# v0.3.0 Advanced Synchronization Primitives
+# v0.3.1 Advanced Synchronization Primitives
 option(PICO_RTOS_ENABLE_EVENT_GROUPS "Enable event groups" ON)
 set(PICO_RTOS_EVENT_GROUPS_MAX_COUNT "8" CACHE STRING "Maximum number of event groups")
 option(PICO_RTOS_ENABLE_STREAM_BUFFERS "Enable stream buffers" ON)
 set(PICO_RTOS_STREAM_BUFFERS_MAX_COUNT "4" CACHE STRING "Maximum number of stream buffers")
 set(PICO_RTOS_STREAM_BUFFER_ZERO_COPY_THRESHOLD "256" CACHE STRING "Zero-copy threshold in bytes")
 
-# v0.3.0 Enhanced Memory Management
+# v0.3.1 Enhanced Memory Management
 option(PICO_RTOS_ENABLE_MEMORY_POOLS "Enable memory pools" ON)
 set(PICO_RTOS_MEMORY_POOLS_MAX_COUNT "4" CACHE STRING "Maximum number of memory pools")
 option(PICO_RTOS_MEMORY_POOL_STATISTICS "Enable memory pool statistics" ON)
 option(PICO_RTOS_ENABLE_MPU_SUPPORT "Enable Memory Protection Unit support" OFF)
 set(PICO_RTOS_MPU_REGIONS_MAX "4" CACHE STRING "Maximum MPU regions")
 
-# v0.3.0 Debugging and Profiling Tools
+# v0.3.1 Debugging and Profiling Tools
 option(PICO_RTOS_ENABLE_TASK_INSPECTION "Enable runtime task inspection" ON)
 option(PICO_RTOS_ENABLE_EXECUTION_PROFILING "Enable execution time profiling" OFF)
 set(PICO_RTOS_PROFILING_MAX_ENTRIES "64" CACHE STRING "Maximum profiling entries")
@@ -127,7 +127,7 @@ option(PICO_RTOS_TRACE_OVERFLOW_WRAP "Trace buffer wrap-around behavior" ON)
 option(PICO_RTOS_ENABLE_ENHANCED_ASSERTIONS "Enable enhanced assertion handling" ON)
 option(PICO_RTOS_ASSERTION_HANDLER_CONFIGURABLE "Enable configurable assertion handlers" OFF)
 
-# v0.3.0 Multi-Core Support
+# v0.3.1 Multi-Core Support
 option(PICO_RTOS_ENABLE_MULTI_CORE "Enable multi-core support" ON)
 option(PICO_RTOS_ENABLE_LOAD_BALANCING "Enable automatic load balancing" ON)
 set(PICO_RTOS_LOAD_BALANCE_THRESHOLD "75" CACHE STRING "Load balancing threshold percentage")
@@ -136,7 +136,7 @@ option(PICO_RTOS_ENABLE_IPC_CHANNELS "Enable inter-core communication channels" 
 set(PICO_RTOS_IPC_CHANNEL_BUFFER_SIZE "512" CACHE STRING "IPC channel buffer size in bytes")
 option(PICO_RTOS_ENABLE_CORE_FAILURE_DETECTION "Enable core failure detection" ON)
 
-# v0.3.0 Advanced System Extensions
+# v0.3.1 Advanced System Extensions
 option(PICO_RTOS_ENABLE_IO_ABSTRACTION "Enable thread-safe I/O abstraction" OFF)
 set(PICO_RTOS_IO_DEVICES_MAX_COUNT "4" CACHE STRING "Maximum I/O devices")
 option(PICO_RTOS_ENABLE_HIRES_TIMERS "Enable high-resolution software timers" OFF)
@@ -145,7 +145,7 @@ option(PICO_RTOS_ENABLE_UNIVERSAL_TIMEOUTS "Enable universal timeout support" ON
 option(PICO_RTOS_ENABLE_ENHANCED_LOGGING "Enable enhanced multi-level logging" OFF)
 set(PICO_RTOS_ENHANCED_LOG_LEVELS "6" CACHE STRING "Number of enhanced log levels")
 
-# v0.3.0 Production Quality Assurance
+# v0.3.1 Production Quality Assurance
 option(PICO_RTOS_ENABLE_DEADLOCK_DETECTION "Enable deadlock detection" OFF)
 set(PICO_RTOS_DEADLOCK_DETECTION_MAX_RESOURCES "16" CACHE STRING "Maximum tracked resources for deadlock detection")
 option(PICO_RTOS_ENABLE_SYSTEM_HEALTH_MONITORING "Enable system health monitoring" ON)
@@ -155,7 +155,7 @@ set(PICO_RTOS_WATCHDOG_TIMEOUT_MS "5000" CACHE STRING "Watchdog timeout in ms")
 option(PICO_RTOS_ENABLE_ALERT_SYSTEM "Enable configurable alert and notification system" OFF)
 set(PICO_RTOS_ALERT_THRESHOLDS_MAX "8" CACHE STRING "Maximum alert thresholds")
 
-# v0.3.0 Backward Compatibility
+# v0.3.1 Backward Compatibility
 option(PICO_RTOS_ENABLE_BACKWARD_COMPATIBILITY "Enable v0.2.1 backward compatibility mode" ON)
 option(PICO_RTOS_ENABLE_MIGRATION_WARNINGS "Enable migration warnings for deprecated features" ON)
 
@@ -202,15 +202,15 @@ if(PICO_RTOS_ENABLE_LOGGING)
     if(NOT PICO_RTOS_LOG_LEVEL MATCHES "^[0-4]$")
         message(FATAL_ERROR "PICO_RTOS_LOG_LEVEL must be between 0 and 4 (0=NONE, 1=ERROR, 2=WARN, 3=INFO, 4=DEBUG)")
     endif()
-    
+
     if(NOT PICO_RTOS_LOG_MESSAGE_MAX_LENGTH MATCHES "^[0-9]+$" OR PICO_RTOS_LOG_MESSAGE_MAX_LENGTH LESS 32)
         message(FATAL_ERROR "PICO_RTOS_LOG_MESSAGE_MAX_LENGTH must be at least 32 characters")
     endif()
-    
+
     if(PICO_RTOS_LOG_MESSAGE_MAX_LENGTH GREATER 512)
         message(WARNING "PICO_RTOS_LOG_MESSAGE_MAX_LENGTH > 512 may consume significant memory")
     endif()
-    
+
     if(NOT PICO_RTOS_LOG_SUBSYSTEM_MASK MATCHES "^0x[0-9A-Fa-f]+$" AND NOT PICO_RTOS_LOG_SUBSYSTEM_MASK MATCHES "^[0-9]+$")
         message(FATAL_ERROR "PICO_RTOS_LOG_SUBSYSTEM_MASK must be a valid hexadecimal (0x...) or decimal number")
     endif()
@@ -230,7 +230,7 @@ if(PICO_RTOS_ENABLE_LOGGING AND PICO_RTOS_LOG_LEVEL GREATER 2 AND NOT PICO_RTOS_
     message(WARNING "High log levels (INFO/DEBUG) are most useful with debug mode enabled")
 endif()
 
-# v0.3.0 Configuration validation and dependencies
+# v0.3.1 Configuration validation and dependencies
 if(PICO_RTOS_ENABLE_MULTI_CORE AND NOT PICO_RTOS_ENABLE_MEMORY_TRACKING)
     message(WARNING "Multi-core support requires memory tracking for optimal operation and debugging")
 endif()
@@ -329,7 +329,7 @@ add_compile_definitions(
     PICO_RTOS_ERROR_HISTORY_SIZE=${PICO_RTOS_ERROR_HISTORY_SIZE}
 )
 
-# v0.3.0 feature compile definitions
+# v0.3.1 feature compile definitions
 add_compile_definitions(
     PICO_RTOS_EVENT_GROUPS_MAX_COUNT=${PICO_RTOS_EVENT_GROUPS_MAX_COUNT}
     PICO_RTOS_STREAM_BUFFERS_MAX_COUNT=${PICO_RTOS_STREAM_BUFFERS_MAX_COUNT}
@@ -376,7 +376,7 @@ if(PICO_RTOS_ENABLE_LOGGING)
     )
 endif()
 
-# v0.3.0 Advanced Synchronization Primitives
+# v0.3.1 Advanced Synchronization Primitives
 if(PICO_RTOS_ENABLE_EVENT_GROUPS)
     add_compile_definitions(PICO_RTOS_ENABLE_EVENT_GROUPS=1)
 endif()
@@ -385,7 +385,7 @@ if(PICO_RTOS_ENABLE_STREAM_BUFFERS)
     add_compile_definitions(PICO_RTOS_ENABLE_STREAM_BUFFERS=1)
 endif()
 
-# v0.3.0 Enhanced Memory Management
+# v0.3.1 Enhanced Memory Management
 if(PICO_RTOS_ENABLE_MEMORY_POOLS)
     add_compile_definitions(PICO_RTOS_ENABLE_MEMORY_POOLS=1)
 endif()
@@ -398,7 +398,7 @@ if(PICO_RTOS_ENABLE_MPU_SUPPORT)
     add_compile_definitions(PICO_RTOS_ENABLE_MPU_SUPPORT=1)
 endif()
 
-# v0.3.0 Debugging and Profiling Tools
+# v0.3.1 Debugging and Profiling Tools
 if(PICO_RTOS_ENABLE_TASK_INSPECTION)
     add_compile_definitions(PICO_RTOS_ENABLE_TASK_INSPECTION=1)
 endif()
@@ -423,7 +423,7 @@ if(PICO_RTOS_ASSERTION_HANDLER_CONFIGURABLE)
     add_compile_definitions(PICO_RTOS_ASSERTION_HANDLER_CONFIGURABLE=1)
 endif()
 
-# v0.3.0 Multi-Core Support
+# v0.3.1 Multi-Core Support
 if(PICO_RTOS_ENABLE_MULTI_CORE)
     add_compile_definitions(PICO_RTOS_ENABLE_MULTI_CORE=1)
 endif()
@@ -444,7 +444,7 @@ if(PICO_RTOS_ENABLE_CORE_FAILURE_DETECTION)
     add_compile_definitions(PICO_RTOS_ENABLE_CORE_FAILURE_DETECTION=1)
 endif()
 
-# v0.3.0 Advanced System Extensions
+# v0.3.1 Advanced System Extensions
 if(PICO_RTOS_ENABLE_IO_ABSTRACTION)
     add_compile_definitions(PICO_RTOS_ENABLE_IO_ABSTRACTION=1)
 endif()
@@ -461,7 +461,7 @@ if(PICO_RTOS_ENABLE_ENHANCED_LOGGING)
     add_compile_definitions(PICO_RTOS_ENABLE_ENHANCED_LOGGING=1)
 endif()
 
-# v0.3.0 Production Quality Assurance
+# v0.3.1 Production Quality Assurance
 if(PICO_RTOS_ENABLE_DEADLOCK_DETECTION)
     add_compile_definitions(PICO_RTOS_ENABLE_DEADLOCK_DETECTION=1)
 endif()
@@ -478,14 +478,14 @@ if(PICO_RTOS_ENABLE_ALERT_SYSTEM)
     add_compile_definitions(PICO_RTOS_ENABLE_ALERT_SYSTEM=1)
 endif()
 
-# v0.3.0 Backward Compatibility
+# v0.3.1 Backward Compatibility
 if(PICO_RTOS_ENABLE_BACKWARD_COMPATIBILITY)
     add_compile_definitions(PICO_RTOS_ENABLE_BACKWARD_COMPATIBILITY=1)
 endif()
 
-if(PICO_RTOS_ENABLE_MIGRATION_WARNINGS)
-    add_compile_definitions(PICO_RTOS_ENABLE_MIGRATION_WARNINGS=1)
-endif()
+# if(PICO_RTOS_ENABLE_MIGRATION_WARNINGS)
+#     add_compile_definitions(PICO_RTOS_ENABLE_MIGRATION_WARNINGS=1)
+# endif()
 
 # Create the RTOS library
 set(PICO_RTOS_SOURCES
@@ -503,7 +503,7 @@ set(PICO_RTOS_SOURCES
     src/deprecation.c
 )
 
-# v0.3.0 Conditional source files (will be created in future tasks)
+# v0.3.1 Conditional source files (will be created in future tasks)
 # Note: These files will be added as they are implemented in subsequent tasks
 
 # Helper function to conditionally add source files if they exist
@@ -596,6 +596,8 @@ endif()
 target_link_libraries(pico_rtos
     pico_stdlib
     hardware_timer
+    pico_multicore
+    pico_sync
 )
 
 # Build examples if enabled
@@ -617,39 +619,39 @@ endif()
 if(PICO_RTOS_BUILD_TESTS)
     # Include comprehensive test suite
     include(tests/CMakeLists_comprehensive.txt)
-    
+
     # Add test executables
     add_executable(mutex_test tests/mutex_test.c)
     target_link_libraries(mutex_test pico_rtos pico_stdlib)
     pico_add_extra_outputs(mutex_test)
     pico_enable_stdio_usb(mutex_test 1)
     pico_enable_stdio_uart(mutex_test 0)
-    
+
     add_executable(queue_test tests/queue_test.c)
     target_link_libraries(queue_test pico_rtos pico_stdlib)
     pico_add_extra_outputs(queue_test)
     pico_enable_stdio_usb(queue_test 1)
     pico_enable_stdio_uart(queue_test 0)
-    
+
     add_executable(semaphore_test tests/semaphore_test.c)
     target_link_libraries(semaphore_test pico_rtos pico_stdlib)
     pico_add_extra_outputs(semaphore_test)
     pico_enable_stdio_usb(semaphore_test 1)
     pico_enable_stdio_uart(semaphore_test 0)
-    
+
     add_executable(task_test tests/task_test.c)
     target_link_libraries(task_test pico_rtos pico_stdlib)
     pico_add_extra_outputs(task_test)
     pico_enable_stdio_usb(task_test 1)
     pico_enable_stdio_uart(task_test 0)
-    
+
     add_executable(timer_test tests/timer_test.c)
     target_link_libraries(timer_test pico_rtos pico_stdlib)
     pico_add_extra_outputs(timer_test)
     pico_enable_stdio_usb(timer_test 1)
     pico_enable_stdio_uart(timer_test 0)
-    
-    # v0.3.0 Debug System Tests
+
+    # v0.3.1 Debug System Tests
     if(PICO_RTOS_ENABLE_TASK_INSPECTION)
         add_executable(debug_test tests/debug_test.c)
         target_link_libraries(debug_test pico_rtos pico_stdlib)
@@ -657,8 +659,8 @@ if(PICO_RTOS_BUILD_TESTS)
         pico_enable_stdio_usb(debug_test 1)
         pico_enable_stdio_uart(debug_test 0)
     endif()
-    
-    # v0.3.0 Profiler Tests
+
+    # v0.3.1 Profiler Tests
     if(PICO_RTOS_ENABLE_EXECUTION_PROFILING)
         add_executable(profiler_test tests/profiler_test.c)
         target_link_libraries(profiler_test pico_rtos pico_stdlib)
@@ -666,8 +668,8 @@ if(PICO_RTOS_BUILD_TESTS)
         pico_enable_stdio_usb(profiler_test 1)
         pico_enable_stdio_uart(profiler_test 0)
     endif()
-    
-    # v0.3.0 Trace System Tests
+
+    # v0.3.1 Trace System Tests
     if(PICO_RTOS_ENABLE_SYSTEM_TRACING)
         add_executable(trace_test tests/trace_test.c)
         target_link_libraries(trace_test pico_rtos pico_stdlib)
@@ -675,8 +677,8 @@ if(PICO_RTOS_BUILD_TESTS)
         pico_enable_stdio_usb(trace_test 1)
         pico_enable_stdio_uart(trace_test 0)
     endif()
-    
-    # v0.3.0 Assertion System Tests
+
+    # v0.3.1 Assertion System Tests
     if(PICO_RTOS_ENABLE_ENHANCED_ASSERTIONS)
         add_executable(assertion_test tests/assertion_test.c)
         target_link_libraries(assertion_test pico_rtos pico_stdlib)
@@ -684,8 +686,8 @@ if(PICO_RTOS_BUILD_TESTS)
         pico_enable_stdio_usb(assertion_test 1)
         pico_enable_stdio_uart(assertion_test 0)
     endif()
-    
-    # v0.3.0 Event Group Tests
+
+    # v0.3.1 Event Group Tests
     if(PICO_RTOS_ENABLE_EVENT_GROUPS)
         add_executable(event_group_test tests/event_group_test.c)
         target_link_libraries(event_group_test pico_rtos pico_stdlib)
@@ -693,71 +695,71 @@ if(PICO_RTOS_BUILD_TESTS)
         pico_enable_stdio_usb(event_group_test 1)
         pico_enable_stdio_uart(event_group_test 0)
     endif()
-    
-    # v0.3.0 Stream Buffer Tests
+
+    # v0.3.1 Stream Buffer Tests
     if(PICO_RTOS_ENABLE_STREAM_BUFFERS)
         add_executable(stream_buffer_test tests/stream_buffer_test.c)
         target_link_libraries(stream_buffer_test pico_rtos pico_stdlib)
         pico_add_extra_outputs(stream_buffer_test)
         pico_enable_stdio_usb(stream_buffer_test 1)
         pico_enable_stdio_uart(stream_buffer_test 0)
-        
+
         add_executable(stream_buffer_concurrent_test tests/stream_buffer_concurrent_test.c)
         target_link_libraries(stream_buffer_concurrent_test pico_rtos pico_stdlib)
         pico_add_extra_outputs(stream_buffer_concurrent_test)
         pico_enable_stdio_usb(stream_buffer_concurrent_test 1)
         pico_enable_stdio_uart(stream_buffer_concurrent_test 0)
-        
+
         add_executable(stream_buffer_performance_test tests/stream_buffer_performance_test.c)
         target_link_libraries(stream_buffer_performance_test pico_rtos pico_stdlib)
         pico_add_extra_outputs(stream_buffer_performance_test)
         pico_enable_stdio_usb(stream_buffer_performance_test 1)
         pico_enable_stdio_uart(stream_buffer_performance_test 0)
     endif()
-    
-    # v0.3.0 Memory Pool Tests
+
+    # v0.3.1 Memory Pool Tests
     if(PICO_RTOS_ENABLE_MEMORY_POOLS)
         add_executable(memory_pool_test tests/memory_pool_test.c)
         target_link_libraries(memory_pool_test pico_rtos pico_stdlib)
         pico_add_extra_outputs(memory_pool_test)
         pico_enable_stdio_usb(memory_pool_test 1)
         pico_enable_stdio_uart(memory_pool_test 0)
-        
+
         add_executable(memory_pool_performance_test tests/memory_pool_performance_test.c)
         target_link_libraries(memory_pool_performance_test pico_rtos pico_stdlib)
         pico_add_extra_outputs(memory_pool_performance_test)
         pico_enable_stdio_usb(memory_pool_performance_test 1)
         pico_enable_stdio_uart(memory_pool_performance_test 0)
-        
+
         add_executable(memory_pool_statistics_test tests/memory_pool_statistics_test.c)
         target_link_libraries(memory_pool_statistics_test pico_rtos pico_stdlib)
         pico_add_extra_outputs(memory_pool_statistics_test)
         pico_enable_stdio_usb(memory_pool_statistics_test 1)
         pico_enable_stdio_uart(memory_pool_statistics_test 0)
     endif()
-    
-    # v0.3.0 SMP Tests
+
+    # v0.3.1 SMP Tests
     if(PICO_RTOS_ENABLE_MULTI_CORE)
         add_executable(smp_test tests/smp_test.c)
         target_link_libraries(smp_test pico_rtos pico_stdlib pico_multicore)
         pico_add_extra_outputs(smp_test)
         pico_enable_stdio_usb(smp_test 1)
         pico_enable_stdio_uart(smp_test 0)
-        
+
         add_executable(inter_core_sync_test tests/inter_core_sync_test.c)
         target_link_libraries(inter_core_sync_test pico_rtos pico_stdlib pico_multicore)
         pico_add_extra_outputs(inter_core_sync_test)
         pico_enable_stdio_usb(inter_core_sync_test 1)
         pico_enable_stdio_uart(inter_core_sync_test 0)
     endif()
-    
-    # v0.3.0 Backward Compatibility Tests
+
+    # v0.3.1 Backward Compatibility Tests
     add_executable(compatibility_test tests/compatibility_test.c)
     target_link_libraries(compatibility_test pico_rtos pico_stdlib)
     pico_add_extra_outputs(compatibility_test)
     pico_enable_stdio_usb(compatibility_test 1)
     pico_enable_stdio_uart(compatibility_test 0)
-    
+
     add_executable(deprecation_test tests/deprecation_test.c)
     target_link_libraries(deprecation_test pico_rtos pico_stdlib)
     pico_add_extra_outputs(deprecation_test)
@@ -855,39 +857,39 @@ message(STATUS "  Memory tracking: ${PICO_RTOS_ENABLE_MEMORY_TRACKING}")
 message(STATUS "  Runtime stats: ${PICO_RTOS_ENABLE_RUNTIME_STATS}")
 message(STATUS "  Error history: ${PICO_RTOS_ENABLE_ERROR_HISTORY} (size: ${PICO_RTOS_ERROR_HISTORY_SIZE})")
 message(STATUS "")
-message(STATUS "v0.3.0 Advanced Synchronization:")
+message(STATUS "v0.3.1 Advanced Synchronization:")
 message(STATUS "  Event groups: ${PICO_RTOS_ENABLE_EVENT_GROUPS} (max: ${PICO_RTOS_EVENT_GROUPS_MAX_COUNT})")
 message(STATUS "  Stream buffers: ${PICO_RTOS_ENABLE_STREAM_BUFFERS} (max: ${PICO_RTOS_STREAM_BUFFERS_MAX_COUNT})")
 message(STATUS "")
-message(STATUS "v0.3.0 Enhanced Memory Management:")
+message(STATUS "v0.3.1 Enhanced Memory Management:")
 message(STATUS "  Memory pools: ${PICO_RTOS_ENABLE_MEMORY_POOLS} (max: ${PICO_RTOS_MEMORY_POOLS_MAX_COUNT})")
 message(STATUS "  Pool statistics: ${PICO_RTOS_MEMORY_POOL_STATISTICS}")
 message(STATUS "  MPU support: ${PICO_RTOS_ENABLE_MPU_SUPPORT}")
 message(STATUS "")
-message(STATUS "v0.3.0 Debugging and Profiling:")
+message(STATUS "v0.3.1 Debugging and Profiling:")
 message(STATUS "  Task inspection: ${PICO_RTOS_ENABLE_TASK_INSPECTION}")
 message(STATUS "  Execution profiling: ${PICO_RTOS_ENABLE_EXECUTION_PROFILING}")
 message(STATUS "  System tracing: ${PICO_RTOS_ENABLE_SYSTEM_TRACING}")
 message(STATUS "  Enhanced assertions: ${PICO_RTOS_ENABLE_ENHANCED_ASSERTIONS}")
 message(STATUS "")
-message(STATUS "v0.3.0 Multi-Core Support:")
+message(STATUS "v0.3.1 Multi-Core Support:")
 message(STATUS "  Multi-core: ${PICO_RTOS_ENABLE_MULTI_CORE}")
 message(STATUS "  Load balancing: ${PICO_RTOS_ENABLE_LOAD_BALANCING}")
 message(STATUS "  Core affinity: ${PICO_RTOS_ENABLE_CORE_AFFINITY}")
 message(STATUS "  IPC channels: ${PICO_RTOS_ENABLE_IPC_CHANNELS}")
 message(STATUS "")
-message(STATUS "v0.3.0 System Extensions:")
+message(STATUS "v0.3.1 System Extensions:")
 message(STATUS "  I/O abstraction: ${PICO_RTOS_ENABLE_IO_ABSTRACTION}")
 message(STATUS "  High-res timers: ${PICO_RTOS_ENABLE_HIRES_TIMERS}")
 message(STATUS "  Universal timeouts: ${PICO_RTOS_ENABLE_UNIVERSAL_TIMEOUTS}")
 message(STATUS "")
-message(STATUS "v0.3.0 Quality Assurance:")
+message(STATUS "v0.3.1 Quality Assurance:")
 message(STATUS "  Deadlock detection: ${PICO_RTOS_ENABLE_DEADLOCK_DETECTION}")
 message(STATUS "  Health monitoring: ${PICO_RTOS_ENABLE_SYSTEM_HEALTH_MONITORING}")
 message(STATUS "  Watchdog integration: ${PICO_RTOS_ENABLE_WATCHDOG_INTEGRATION}")
 message(STATUS "  Alert system: ${PICO_RTOS_ENABLE_ALERT_SYSTEM}")
 message(STATUS "")
-message(STATUS "v0.3.0 Compatibility:")
+message(STATUS "v0.3.1 Compatibility:")
 message(STATUS "  Backward compatibility: ${PICO_RTOS_ENABLE_BACKWARD_COMPATIBILITY}")
 message(STATUS "  Migration warnings: ${PICO_RTOS_ENABLE_MIGRATION_WARNINGS}")
 message(STATUS "")

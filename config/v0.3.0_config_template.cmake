@@ -1,9 +1,9 @@
-# Pico-RTOS v0.3.0 Configuration Template
-# This file provides a template for configuring v0.3.0 features
+# Pico-RTOS v0.3.1 Configuration Template
+# This file provides a template for configuring v0.3.1 features
 # Copy and modify this file to customize your build configuration
 
 # =============================================================================
-# v0.3.0 Advanced Synchronization Primitives
+# v0.3.1 Advanced Synchronization Primitives
 # =============================================================================
 
 # Event Groups - Advanced task synchronization
@@ -16,7 +16,7 @@ set(PICO_RTOS_STREAM_BUFFERS_MAX_COUNT 4 CACHE STRING "Maximum number of stream 
 set(PICO_RTOS_STREAM_BUFFER_ZERO_COPY_THRESHOLD 256 CACHE STRING "Zero-copy threshold in bytes")
 
 # =============================================================================
-# v0.3.0 Enhanced Memory Management
+# v0.3.1 Enhanced Memory Management
 # =============================================================================
 
 # Memory Pools - O(1) fixed-size allocation
@@ -29,7 +29,7 @@ set(PICO_RTOS_ENABLE_MPU_SUPPORT OFF CACHE BOOL "Enable MPU support")
 set(PICO_RTOS_MPU_REGIONS_MAX 4 CACHE STRING "Maximum MPU regions")
 
 # =============================================================================
-# v0.3.0 Debugging and Profiling Tools
+# v0.3.1 Debugging and Profiling Tools
 # =============================================================================
 
 # Task Inspection - Runtime debugging
@@ -49,7 +49,7 @@ set(PICO_RTOS_ENABLE_ENHANCED_ASSERTIONS ON CACHE BOOL "Enable enhanced assertio
 set(PICO_RTOS_ASSERTION_HANDLER_CONFIGURABLE OFF CACHE BOOL "Enable configurable assertion handlers")
 
 # =============================================================================
-# v0.3.0 Multi-Core Support
+# v0.3.1 Multi-Core Support
 # =============================================================================
 
 # Multi-Core Support - Dual-core RP2040 utilization
@@ -68,7 +68,7 @@ set(PICO_RTOS_IPC_CHANNEL_BUFFER_SIZE 512 CACHE STRING "IPC channel buffer size 
 set(PICO_RTOS_ENABLE_CORE_FAILURE_DETECTION ON CACHE BOOL "Enable core failure detection")
 
 # =============================================================================
-# v0.3.0 Advanced System Extensions
+# v0.3.1 Advanced System Extensions
 # =============================================================================
 
 # I/O Abstraction - Thread-safe I/O
@@ -87,7 +87,7 @@ set(PICO_RTOS_ENABLE_ENHANCED_LOGGING OFF CACHE BOOL "Enable enhanced multi-leve
 set(PICO_RTOS_ENHANCED_LOG_LEVELS 6 CACHE STRING "Number of enhanced log levels")
 
 # =============================================================================
-# v0.3.0 Production Quality Assurance
+# v0.3.1 Production Quality Assurance
 # =============================================================================
 
 # Deadlock Detection - Resource cycle detection
@@ -107,7 +107,7 @@ set(PICO_RTOS_ENABLE_ALERT_SYSTEM OFF CACHE BOOL "Enable configurable alert and 
 set(PICO_RTOS_ALERT_THRESHOLDS_MAX 8 CACHE STRING "Maximum alert thresholds")
 
 # =============================================================================
-# v0.3.0 Backward Compatibility
+# v0.3.1 Backward Compatibility
 # =============================================================================
 
 # Backward Compatibility - v0.2.1 compatibility

@@ -10,7 +10,7 @@
 
 /**
  * @file mpu.h
- * @brief Memory Protection Unit (MPU) Support for Pico-RTOS v0.3.0
+ * @brief Memory Protection Unit (MPU) Support for Pico-RTOS v0.3.1
  * 
  * This module provides optional Memory Protection Unit support for
  * hardware-assisted memory protection on supported ARM Cortex-M variants.

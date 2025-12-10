@@ -1,5 +1,5 @@
 #!/bin/bash
-# Pico-RTOS v0.3.0 Build Script
+# Pico-RTOS v0.3.1 Build Script
 # Unified build script for all configurations
 
 set -e
@@ -24,7 +24,7 @@ NC='\033[0m' # No Color
 
 usage() {
     cat << EOF
-Pico-RTOS v0.3.0 Build Script
+Pico-RTOS v0.3.1 Build Script
 
 Usage: $0 [OPTIONS]
 
@@ -41,7 +41,7 @@ Options:
 Configuration Profiles:
     minimal                 Minimal RTOS features only
     default                 Standard feature set
-    full                    All v0.3.0 features enabled
+    full                    All v0.3.1 features enabled
 
 Examples:
     $0                      # Build with current configuration
@@ -100,7 +100,7 @@ apply_config_profile() {
     case "$profile" in
         minimal)
             cat > "$config_file" << EOF
-# Pico-RTOS v0.3.0 Minimal Configuration
+# Pico-RTOS v0.3.1 Minimal Configuration
 BUILD_EXAMPLES=y
 BUILD_TESTS=n
 ENABLE_DEBUG=n
@@ -110,7 +110,7 @@ MAX_TASKS=8
 MAX_TIMERS=4
 DEFAULT_TASK_STACK_SIZE=512
 IDLE_TASK_STACK_SIZE=256
-# Disable v0.3.0 features for minimal build
+# Disable v0.3.1 features for minimal build
 # ENABLE_EVENT_GROUPS is not set
 # ENABLE_STREAM_BUFFERS is not set
 # ENABLE_MEMORY_POOLS is not set
@@ -125,7 +125,7 @@ EOF
             ;;
         default)
             cat > "$config_file" << EOF
-# Pico-RTOS v0.3.0 Default Configuration
+# Pico-RTOS v0.3.1 Default Configuration
 BUILD_EXAMPLES=y
 BUILD_TESTS=y
 ENABLE_DEBUG=y
@@ -135,7 +135,7 @@ MAX_TASKS=16
 MAX_TIMERS=8
 DEFAULT_TASK_STACK_SIZE=1024
 IDLE_TASK_STACK_SIZE=256
-# Enable standard v0.3.0 features
+# Enable standard v0.3.1 features
 ENABLE_EVENT_GROUPS=y
 MAX_EVENT_GROUPS=8
 ENABLE_STREAM_BUFFERS=y
@@ -160,7 +160,7 @@ EOF
             ;;
         full)
             cat > "$config_file" << EOF
-# Pico-RTOS v0.3.0 Full Configuration
+# Pico-RTOS v0.3.1 Full Configuration
 BUILD_EXAMPLES=y
 BUILD_TESTS=y
 ENABLE_DEBUG=y
@@ -170,7 +170,7 @@ MAX_TASKS=32
 MAX_TIMERS=16
 DEFAULT_TASK_STACK_SIZE=1024
 IDLE_TASK_STACK_SIZE=256
-# Enable all v0.3.0 features
+# Enable all v0.3.1 features
 ENABLE_EVENT_GROUPS=y
 MAX_EVENT_GROUPS=16
 ENABLE_STREAM_BUFFERS=y
@@ -234,7 +234,7 @@ EOF
 }
 
 build_project() {
-    log_info "Starting Pico-RTOS v0.3.0 build..."
+    log_info "Starting Pico-RTOS v0.3.1 build..."
     
     # Create build directory
     if [ "$CLEAN_BUILD" = true ] && [ -d "$BUILD_DIR" ]; then
@@ -337,7 +337,7 @@ done
 
 # Main execution
 main() {
-    echo "Pico-RTOS v0.3.0 Build System"
+    echo "Pico-RTOS v0.3.1 Build System"
     echo "=============================="
     
     # Check dependencies
@@ -358,7 +358,7 @@ main() {
         exit 1
     fi
     
-    log_success "Pico-RTOS v0.3.0 build completed successfully!"
+    log_success "Pico-RTOS v0.3.1 build completed successfully!"
 }
 
 # Run main function

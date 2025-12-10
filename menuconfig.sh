@@ -1,5 +1,5 @@
 #!/bin/bash
-# Pico-RTOS v0.3.0 Menuconfig Wrapper Script
+# Pico-RTOS v0.3.1 Menuconfig Wrapper Script
 # This script provides easy access to the menuconfig system
 
 set -e

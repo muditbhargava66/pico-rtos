@@ -33,7 +33,7 @@ typedef enum {
 // Function pointer types
 typedef void (*pico_rtos_task_function_t)(void *param);
 
-// SMP-specific types (v0.3.0)
+// SMP-specific types (v0.3.1)
 // Note: Core affinity type is always defined for API consistency,
 // but functionality is only available when PICO_RTOS_ENABLE_MULTI_CORE is enabled
 /**

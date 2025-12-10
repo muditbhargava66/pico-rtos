@@ -1,6 +1,6 @@
 /**
  * @file main.c
- * @brief Multi-Core Load Balancing and IPC Example for Pico-RTOS v0.3.0
+ * @brief Multi-Core Load Balancing and IPC Example for Pico-RTOS v0.3.1
  * 
  * This example demonstrates multi-core capabilities including:
  * 
@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include "pico/stdlib.h"
 
-// Disable migration warnings for examples (they already use v0.3.0 APIs)
+// Disable migration warnings for examples (they already use v0.3.1 APIs)
 #define PICO_RTOS_DISABLE_MIGRATION_WARNINGS
 #include "pico_rtos.h"
 
@@ -586,7 +586,7 @@ int main() {
     gpio_set_dir(LED_PIN, GPIO_OUT);
     gpio_put(LED_PIN, 0);
     
-    printf("\n=== Pico-RTOS v0.3.0 Multi-Core Load Balancing and IPC Example ===\n");
+    printf("\n=== Pico-RTOS v0.3.1 Multi-Core Load Balancing and IPC Example ===\n");
     printf("This example demonstrates:\n");
     printf("1. Task distribution across both RP2040 cores\n");
     printf("2. Core affinity assignment and load balancing\n");

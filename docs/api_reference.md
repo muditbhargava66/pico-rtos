@@ -2,7 +2,7 @@
 
 This document provides a comprehensive reference for all Pico-RTOS APIs across all versions.
 
-**Current Version**: v0.3.0 "Advanced Synchronization & Multi-Core"  
+**Current Version**: v0.3.1 "Advanced Synchronization & Multi-Core"  
 **Backward Compatibility**: 100% compatible with v0.2.1 and earlier
 
 ## 📚 API Overview
@@ -19,34 +19,34 @@ Pico-RTOS provides a rich set of APIs organized into the following categories:
 - **Mutexes**: Mutual exclusion with priority inheritance
 - **Semaphores**: Counting and binary semaphores
 - **Queues**: Message passing with blocking operations
-- **Event Groups** *(v0.3.0)*: Multi-event synchronization
-- **Stream Buffers** *(v0.3.0)*: Variable-length message passing
+- **Event Groups** *(v0.3.1)*: Multi-event synchronization
+- **Stream Buffers** *(v0.3.1)*: Variable-length message passing
 
 ### Memory Management
 - Dynamic memory allocation with tracking
-- **Memory Pools** *(v0.3.0)*: O(1) deterministic allocation
-- **MPU Support** *(v0.3.0)*: Hardware memory protection
+- **Memory Pools** *(v0.3.1)*: O(1) deterministic allocation
+- **MPU Support** *(v0.3.1)*: Hardware memory protection
 - Stack overflow detection and monitoring
 
-### Multi-Core Support *(v0.3.0)*
+### Multi-Core Support *(v0.3.1)*
 - **SMP Scheduler**: Symmetric multiprocessing
 - **Load Balancing**: Automatic workload distribution
 - **Core Affinity**: Task binding to specific cores
 - **Inter-Core Communication**: High-performance IPC
 
-### Debugging & Profiling *(v0.3.0)*
+### Debugging & Profiling *(v0.3.1)*
 - **Runtime Inspection**: Task state monitoring
 - **Execution Profiling**: High-resolution timing analysis
 - **System Tracing**: Event logging and analysis
 - **Enhanced Assertions**: Advanced debugging support
 
-### System Extensions *(v0.3.0)*
+### System Extensions *(v0.3.1)*
 - **I/O Abstraction**: Thread-safe peripheral access
 - **High-Resolution Timers**: Microsecond precision
 - **Universal Timeouts**: Consistent timeout handling
 - **Multi-Level Logging**: Enhanced debug output
 
-### Quality Assurance *(v0.3.0)*
+### Quality Assurance *(v0.3.1)*
 - **Deadlock Detection**: Runtime prevention
 - **Health Monitoring**: System metrics collection
 - **Watchdog Integration**: Hardware reliability
@@ -287,7 +287,7 @@ Receive an item from the queue.
 
 ---
 
-## 🎯 Event Groups *(v0.3.0)*
+## 🎯 Event Groups *(v0.3.1)*
 
 Event groups provide advanced synchronization for multiple events.
 
@@ -369,7 +369,7 @@ uint32_t result = pico_rtos_event_group_wait_bits(
 
 ---
 
-## 📦 Stream Buffers *(v0.3.0)*
+## 📦 Stream Buffers *(v0.3.1)*
 
 Stream buffers provide efficient variable-length message passing.
 
@@ -435,7 +435,7 @@ Free previously allocated memory.
 **Parameters:**
 - `ptr`: Pointer to memory to free
 
-### Memory Pools *(v0.3.0)*
+### Memory Pools *(v0.3.1)*
 
 #### `bool pico_rtos_memory_pool_init(pico_rtos_memory_pool_t *pool, void *buffer, uint32_t block_size, uint32_t block_count)`
 Initialize a memory pool.
@@ -474,7 +474,7 @@ Free a block back to memory pool.
 
 ---
 
-## 🔄 Multi-Core Support *(v0.3.0)*
+## 🔄 Multi-Core Support *(v0.3.1)*
 
 ### SMP Scheduler
 
@@ -525,7 +525,7 @@ Send message to another core.
 
 ---
 
-## 🔍 Debugging & Profiling *(v0.3.0)*
+## 🔍 Debugging & Profiling *(v0.3.1)*
 
 ### Task Inspection
 
@@ -582,7 +582,7 @@ Get comprehensive system statistics.
 - `true` if statistics retrieved successfully
 - `false` if operation failed
 
-### Health Monitoring *(v0.3.0)*
+### Health Monitoring *(v0.3.1)*
 
 #### `bool pico_rtos_health_monitor_init(void)`
 Initialize system health monitoring.
@@ -688,7 +688,7 @@ int main() {
 }
 ```
 
-### Multi-Core Example *(v0.3.0)*
+### Multi-Core Example *(v0.3.1)*
 ```c
 void core0_task(void *param) {
     // Task runs on core 0
@@ -729,7 +729,7 @@ int main() {
 
 ## 🔄 Version Compatibility
 
-### v0.3.0 Compatibility
+### v0.3.1 Compatibility
 - **100% backward compatible** with v0.2.1 and earlier
 - All existing APIs continue to work unchanged
 - New features are additive and optional
@@ -742,6 +742,6 @@ int main() {
 
 ---
 
-**API Reference Version**: v0.3.0  
+**API Reference Version**: v0.3.1  
 **Last Updated**: July 25, 2025  
-**Compatibility**: v0.1.0, v0.2.0, v0.2.1, v0.3.0
+**Compatibility**: v0.1.0, v0.2.0, v0.2.1, v0.3.1

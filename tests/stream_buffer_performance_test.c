@@ -321,8 +321,8 @@ static void analyze_performance_results(void) {
     }
     
     // Calculate throughput
-    uint32_t standard_throughput_mbps = (LARGE_MESSAGE_SIZE * 8 * 1000000) / (standard_total * 1024 * 1024);
-    uint32_t zero_copy_throughput_mbps = (LARGE_MESSAGE_SIZE * 8 * 1000000) / (zero_copy_total * 1024 * 1024);
+    uint32_t standard_throughput_mbps = (uint32_t)(((uint64_t)LARGE_MESSAGE_SIZE * 8 * 1000000) / (standard_total * 1024 * 1024));
+    uint32_t zero_copy_throughput_mbps = (uint32_t)(((uint64_t)LARGE_MESSAGE_SIZE * 8 * 1000000) / (zero_copy_total * 1024 * 1024));
     
     printf("\nThroughput Analysis:\n");
     printf("Standard operations: %lu Mbps\n", standard_throughput_mbps);

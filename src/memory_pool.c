@@ -1,6 +1,6 @@
 /**
  * @file memory_pool.c
- * @brief Memory Pool Implementation for Pico-RTOS v0.3.0
+ * @brief Memory Pool Implementation for Pico-RTOS v0.3.1
  * 
  * This module implements O(1) fixed-size block allocation and deallocation
  * using memory pools with comprehensive statistics and validation.

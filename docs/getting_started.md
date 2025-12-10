@@ -1,10 +1,10 @@
-# Getting Started with Pico-RTOS v0.3.0
+# Getting Started with Pico-RTOS v0.3.1
 
-This guide will walk you through the steps to set up and start using **Pico-RTOS v0.3.0 "Advanced Synchronization & Multi-Core"** on your Raspberry Pi Pico board.
+This guide will walk you through the steps to set up and start using **Pico-RTOS v0.3.1 "Advanced Synchronization & Multi-Core"** on your Raspberry Pi Pico board.
 
-## 🚀 Production Ready v0.3.0
+## 🚀 Production Ready v0.3.1
 
-Pico-RTOS v0.3.0 is **production-ready** with enterprise-grade features including:
+Pico-RTOS v0.3.1 is **production-ready** with enterprise-grade features including:
 - **Advanced Synchronization**: Event Groups, Stream Buffers, Enhanced Mutexes
 - **Multi-Core Support**: SMP scheduler, load balancing, inter-core communication
 - **Enhanced Memory Management**: Memory Pools, MPU support, advanced statistics

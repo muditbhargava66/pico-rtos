@@ -28,7 +28,7 @@ typedef struct pico_rtos_task {
     struct pico_rtos_task *next;  // For linked list of tasks
     pico_rtos_critical_section_t cs;
     
-    // SMP-specific fields (v0.3.0)
+    // SMP-specific fields (v0.3.1)
 #ifdef PICO_RTOS_ENABLE_MULTI_CORE
     uint32_t core_affinity;                     // Core affinity setting (pico_rtos_core_affinity_t)
     uint32_t assigned_core;                     // Currently assigned core

@@ -1,4 +1,4 @@
-# CMakeLists.txt for Pico-RTOS v0.3.0 Comprehensive Test Suite
+# CMakeLists.txt for Pico-RTOS v0.3.1 Comprehensive Test Suite
 # This file should be included from the main CMakeLists.txt
 # It adds comprehensive test targets to the existing build system
 
@@ -88,7 +88,7 @@ create_comprehensive_test_executable(performance_regression_test performance_reg
 create_comprehensive_test_executable(hardware_in_the_loop_test hardware_in_the_loop_test.c)
 
 # =============================================================================
-# EXISTING TESTS (Enhanced for v0.3.0)
+# EXISTING TESTS (Enhanced for v0.3.1)
 # =============================================================================
 
 # Include existing test files that are part of comprehensive testing
@@ -332,7 +332,7 @@ add_custom_target(test_docs
 )
 
 # Print build information
-message(STATUS "Pico-RTOS v0.3.0 Comprehensive Test Suite Configuration:")
+message(STATUS "Pico-RTOS v0.3.1 Comprehensive Test Suite Configuration:")
 message(STATUS "  Unit Tests: ${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "  Integration Tests: Enabled")
 message(STATUS "  Performance Tests: Enabled")

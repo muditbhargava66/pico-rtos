@@ -1,6 +1,6 @@
-# Pico-RTOS v0.3.0 Documentation
+# Pico-RTOS v0.3.1 Documentation
 
-Welcome to the Pico-RTOS documentation! This directory contains comprehensive guides and references for using **Pico-RTOS v0.3.0 "Advanced Synchronization & Multi-Core"**.
+Welcome to the Pico-RTOS documentation! This directory contains comprehensive guides and references for using **Pico-RTOS v0.3.1 "Advanced Synchronization & Multi-Core"**.
 
 ## 📚 Documentation Overview
 
@@ -23,21 +23,21 @@ Welcome to the Pico-RTOS documentation! This directory contains comprehensive gu
 - **[User Guide](user_guide.md)** - Comprehensive usage documentation
   - Core concepts and architecture
   - Task management and scheduling
-  - Synchronization primitives (including v0.3.0 features)
+  - Synchronization primitives (including v0.3.1 features)
   - Memory management and protection
   - Multi-core programming
   - System monitoring and debugging
 
 ### 📋 **API Reference**
-- **[API Reference v0.3.0](api_reference_v0.3.0.md)** - Complete v0.3.0 function documentation
+- **[API Reference v0.3.1](api_reference_v0.3.1.md)** - Complete v0.3.1 function documentation
   - All RTOS functions with parameters and examples
-  - New v0.3.0 APIs (Event Groups, Stream Buffers, Memory Pools, etc.)
+  - New v0.3.1 APIs (Event Groups, Stream Buffers, Memory Pools, etc.)
   - Multi-core and SMP functions
   - Debugging and profiling APIs
   - Return values and error codes
 
 ### 🔄 **Migration & Compatibility**
-- **[Migration Guide v0.3.0](migration_guide_v0.3.0.md)** - Upgrading from v0.2.1
+- **[Migration Guide v0.3.1](migration_guide_v0.3.1.md)** - Upgrading from v0.2.1
   - Step-by-step migration process
   - New features overview
   - Configuration changes
@@ -60,7 +60,7 @@ Welcome to the Pico-RTOS documentation! This directory contains comprehensive gu
 ### ⚙️ **Configuration & Build System**
 - **[Menuconfig Guide](menuconfig_guide.md)** - Interactive configuration system
   - Terminal and GUI interfaces
-  - v0.3.0 configuration options
+  - v0.3.1 configuration options
   - Build profiles (minimal, default, full)
   - Build system integration
 
@@ -75,15 +75,15 @@ Welcome to the Pico-RTOS documentation! This directory contains comprehensive gu
   - Performance optimization
 
 #### Performance & Optimization
-- **[Performance Guide v0.3.0](performance_guide_v0.3.0.md)** - Optimization techniques
+- **[Performance Guide v0.3.1](performance_guide_v0.3.1.md)** - Optimization techniques
   - Real-time performance analysis
   - Memory optimization
   - Multi-core scaling
   - Profiling and benchmarking
 
 #### Troubleshooting
-- **[Troubleshooting v0.3.0](troubleshooting_v0.3.0.md)** - Problem solving
-  - v0.3.0 specific issues
+- **[Troubleshooting v0.3.1](troubleshooting_v0.3.1.md)** - Problem solving
+  - v0.3.1 specific issues
   - Multi-core debugging
   - Performance troubleshooting
   - Configuration problems
@@ -95,7 +95,7 @@ Welcome to the Pico-RTOS documentation! This directory contains comprehensive gu
   - Testing requirements
   - Pull request process
 
-## 🎯 v0.3.0 Feature Documentation
+## 🎯 v0.3.1 Feature Documentation
 
 ### New Synchronization Primitives
 - **Event Groups**: 32-bit event coordination with any/all semantics
@@ -131,27 +131,27 @@ Welcome to the Pico-RTOS documentation! This directory contains comprehensive gu
 1. **[Getting Started](getting_started.md)** - Installation and first project
 2. **[Flashing and Testing](flashing_and_testing.md)** - Run examples on hardware
 3. **[User Guide](user_guide.md)** - Learn core concepts
-4. **[API Reference v0.3.0](api_reference_v0.3.0.md)** - Function documentation
+4. **[API Reference v0.3.1](api_reference_v0.3.1.md)** - Function documentation
 
 ### For Upgrading Users
-1. **[Migration Guide v0.3.0](migration_guide_v0.3.0.md)** - Upgrade from v0.2.1
-2. **[Performance Guide v0.3.0](performance_guide_v0.3.0.md)** - Optimize your application
+1. **[Migration Guide v0.3.1](migration_guide_v0.3.1.md)** - Upgrade from v0.2.1
+2. **[Performance Guide v0.3.1](performance_guide_v0.3.1.md)** - Optimize your application
 3. **[Multi-Core Programming Guide](multicore_programming_guide.md)** - Use SMP features
 
 ### For Advanced Development
 1. **[Multi-Core Programming Guide](multicore_programming_guide.md)** - SMP development
-2. **[Performance Guide v0.3.0](performance_guide_v0.3.0.md)** - Optimization techniques
+2. **[Performance Guide v0.3.1](performance_guide_v0.3.1.md)** - Optimization techniques
 3. **[Contributing Guidelines](contributing.md)** - Development workflow
 
 ### For Troubleshooting
-1. **[Troubleshooting v0.3.0](troubleshooting_v0.3.0.md)** - v0.3.0 specific issues
-2. **[Migration Guide v0.3.0](migration_guide_v0.3.0.md)** - Migration problems
-3. **[Performance Guide v0.3.0](performance_guide_v0.3.0.md)** - Performance issues
+1. **[Troubleshooting v0.3.1](troubleshooting_v0.3.1.md)** - v0.3.1 specific issues
+2. **[Migration Guide v0.3.1](migration_guide_v0.3.1.md)** - Migration problems
+3. **[Performance Guide v0.3.1](performance_guide_v0.3.1.md)** - Performance issues
 
 ## 🔧 Documentation Features
 
-### ✅ **Production Ready v0.3.0**
-All documentation covers the complete v0.3.0 feature set:
+### ✅ **Production Ready v0.3.1**
+All documentation covers the complete v0.3.1 feature set:
 - Advanced synchronization primitives
 - Multi-core support and SMP scheduling
 - Enhanced memory management with MPU support
@@ -161,7 +161,7 @@ All documentation covers the complete v0.3.0 feature set:
 
 ### 💡 **Practical Examples**
 Every guide includes:
-- Working code examples for v0.3.0 features
+- Working code examples for v0.3.1 features
 - Step-by-step instructions
 - Real-world usage patterns
 - Multi-core programming examples
@@ -178,34 +178,34 @@ Documentation covers:
 
 | Document | Status | Version | Features |
 |----------|--------|---------|----------|
-| Getting Started | ✅ Complete | v0.3.0 | Updated for v0.3.0 |
-| User Guide | ✅ Complete | v0.3.0 | Multi-core, new APIs |
-| API Reference v0.3.0 | ✅ Complete | v0.3.0 | All v0.3.0 APIs |
-| Migration Guide v0.3.0 | ✅ Complete | v0.3.0 | v0.2.1 → v0.3.0 |
-| Multi-Core Guide | ✅ Complete | v0.3.0 | SMP programming |
-| Performance Guide v0.3.0 | ✅ Complete | v0.3.0 | Optimization |
-| Troubleshooting v0.3.0 | ✅ Complete | v0.3.0 | v0.3.0 issues |
-| Menuconfig Guide | ✅ Complete | v0.3.0 | v0.3.0 config |
-| Error Code Reference | ✅ Complete | v0.3.0 | Updated codes |
-| Logging Guide | ✅ Complete | v0.3.0 | Enhanced logging |
-| Flashing and Testing | ✅ Complete | v0.3.0 | Updated workflow |
-| Contributing | ✅ Complete | v0.3.0 | v0.3.0 workflow |
+| Getting Started | ✅ Complete | v0.3.1 | Updated for v0.3.1 |
+| User Guide | ✅ Complete | v0.3.1 | Multi-core, new APIs |
+| API Reference v0.3.1 | ✅ Complete | v0.3.1 | All v0.3.1 APIs |
+| Migration Guide v0.3.1 | ✅ Complete | v0.3.1 | v0.2.1 → v0.3.1 |
+| Multi-Core Guide | ✅ Complete | v0.3.1 | SMP programming |
+| Performance Guide v0.3.1 | ✅ Complete | v0.3.1 | Optimization |
+| Troubleshooting v0.3.1 | ✅ Complete | v0.3.1 | v0.3.1 issues |
+| Menuconfig Guide | ✅ Complete | v0.3.1 | v0.3.1 config |
+| Error Code Reference | ✅ Complete | v0.3.1 | Updated codes |
+| Logging Guide | ✅ Complete | v0.3.1 | Enhanced logging |
+| Flashing and Testing | ✅ Complete | v0.3.1 | Updated workflow |
+| Contributing | ✅ Complete | v0.3.1 | v0.3.1 workflow |
 
-## 🆕 What's New in v0.3.0 Documentation
+## 🆕 What's New in v0.3.1 Documentation
 
 ### New Guides
 - **Multi-Core Programming Guide**: Complete SMP development guide
-- **Performance Guide v0.3.0**: Optimization and benchmarking
-- **Migration Guide v0.3.0**: Smooth upgrade path from v0.2.1
-- **API Reference v0.3.0**: Complete v0.3.0 API documentation
+- **Performance Guide v0.3.1**: Optimization and benchmarking
+- **Migration Guide v0.3.1**: Smooth upgrade path from v0.2.1
+- **API Reference v0.3.1**: Complete v0.3.1 API documentation
 
 ### Enhanced Guides
-- **User Guide**: Updated with v0.3.0 features and multi-core concepts
-- **Troubleshooting**: v0.3.0 specific issues and solutions
+- **User Guide**: Updated with v0.3.1 features and multi-core concepts
+- **Troubleshooting**: v0.3.1 specific issues and solutions
 - **Menuconfig Guide**: New configuration options and profiles
 
 ### Updated Examples
-- All code examples updated for v0.3.0
+- All code examples updated for v0.3.1
 - Multi-core programming examples
 - New synchronization primitive examples
 - Performance optimization examples
@@ -232,4 +232,4 @@ Documentation improvements are welcome! See [Contributing Guidelines](contributi
 
 ---
 
-**Welcome to Pico-RTOS v0.3.0 - Advanced Synchronization & Multi-Core!** 🚀
+**Welcome to Pico-RTOS v0.3.1 - Advanced Synchronization & Multi-Core!** 🚀

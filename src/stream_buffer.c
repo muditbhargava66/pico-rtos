@@ -939,7 +939,6 @@ bool pico_rtos_stream_buffer_zero_copy_receive_complete(pico_rtos_stream_buffer_
     // Clear zero-copy state
     stream->zero_copy_active = false;
     stream->zero_copy_buffer = NULL;
-    uint32_t received_bytes = stream->zero_copy_size;
     stream->zero_copy_size = 0;
     
     // Unblock any waiting writers

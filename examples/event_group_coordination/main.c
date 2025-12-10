@@ -1,6 +1,6 @@
 /**
  * @file main.c
- * @brief Event Group Multi-Event Coordination Example for Pico-RTOS v0.3.0
+ * @brief Event Group Multi-Event Coordination Example for Pico-RTOS v0.3.1
  * 
  * This example demonstrates advanced synchronization using event groups to coordinate
  * multiple events across different tasks. It showcases:
@@ -20,7 +20,7 @@
 #include <math.h>
 #include "pico/stdlib.h"
 
-// Disable migration warnings for examples (they already use v0.3.0 APIs)
+// Disable migration warnings for examples (they already use v0.3.1 APIs)
 #define PICO_RTOS_DISABLE_MIGRATION_WARNINGS
 #include "pico_rtos.h"
 
@@ -724,7 +724,7 @@ int main() {
     gpio_set_dir(LED_PIN, GPIO_OUT);
     gpio_put(LED_PIN, 0);
     
-    printf("\n=== Pico-RTOS v0.3.0 Event Group Multi-Event Coordination Example ===\n");
+    printf("\n=== Pico-RTOS v0.3.1 Event Group Multi-Event Coordination Example ===\n");
     printf("This example demonstrates:\n");
     printf("1. Multi-event coordination with 'wait for any' and 'wait for all' semantics\n");
     printf("2. System initialization synchronization across multiple subsystems\n");

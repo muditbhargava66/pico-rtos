@@ -1,16 +1,16 @@
-# Pico-RTOS v0.3.0 Configuration Directory
+# Pico-RTOS v0.3.1 Configuration Directory
 
-This directory contains configuration files and templates for Pico-RTOS v0.3.0.
+This directory contains configuration files and templates for Pico-RTOS v0.3.1.
 
 ## Files
 
 ### Configuration Files
-- **defconfig**: Default configuration for v0.3.0
+- **defconfig**: Default configuration for v0.3.1
 - **.config**: Current project configuration (generated)
 - **cmake_config.cmake**: Generated CMake configuration (generated)
 
 ### Templates
-- **v0.3.0_config_template.cmake**: CMake configuration template
+- **v0.3.1_config_template.cmake**: CMake configuration template
 
 ## Usage
 
@@ -49,12 +49,12 @@ scripts/build.sh --profile full
 - Suitable for resource-constrained applications
 
 ### Default Profile
-- Standard v0.3.0 features
+- Standard v0.3.1 features
 - ~16KB code footprint
 - Recommended for most applications
 
 ### Full Profile
-- All v0.3.0 features enabled
+- All v0.3.1 features enabled
 - ~24KB code footprint
 - Maximum functionality for development and testing
 

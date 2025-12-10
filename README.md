@@ -2,7 +2,7 @@
 
 # Pico-RTOS
 
-![Pico-RTOS Version](https://img.shields.io/badge/version-0.3.0-blue)
+![Pico-RTOS Version](https://img.shields.io/badge/version-0.3.1-blue)
 ![Production Ready](https://img.shields.io/badge/status-production%20ready-brightgreen)
 ![Real-Time Compliant](https://img.shields.io/badge/real--time-compliant-success)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -15,7 +15,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/muditbhargava66/pico-rtos)](https://github.com/muditbhargava66/pico-rtos/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/muditbhargava66/pico-rtos)](https://github.com/muditbhargava66/pico-rtos/network/members)
 
-**Pico-RTOS is a production-ready, lightweight real-time operating system specifically designed for the Raspberry Pi Pico board. Version 0.3.0 introduces advanced synchronization primitives (event groups, stream buffers), enhanced memory management with pools, multi-core SMP support, comprehensive debugging and profiling tools, and quality assurance features including deadlock detection and system health monitoring. Built for enterprise-grade reliability with extensive testing and validation.**
+**Pico-RTOS is a production-ready, lightweight real-time operating system specifically designed for the Raspberry Pi Pico board. Version 0.3.1 introduces advanced synchronization primitives (event groups, stream buffers), enhanced memory management with pools, multi-core SMP support, comprehensive debugging and profiling tools, and quality assurance features including deadlock detection and system health monitoring. Built for enterprise-grade reliability with extensive testing and validation.**
 
 </div>
 
@@ -238,7 +238,7 @@ pico_rtos_timer_start(&timer);
 
 ## Comprehensive Examples (v0.3.0)
 
-Pico-RTOS v0.3.0 includes 11 professional examples demonstrating real-world integration patterns:
+Pico-RTOS v0.3.1 includes 11 professional examples demonstrating real-world integration patterns:
 
 ### Core Examples
 - **LED Blinking**: Basic task management and GPIO control
@@ -246,7 +246,7 @@ Pico-RTOS v0.3.0 includes 11 professional examples demonstrating real-world inte
 - **Task Communication**: Queue-based producer-consumer and notification systems
 - **Hardware Interrupt**: RTOS-aware GPIO interrupt handling with safe ISR communication
 
-### Advanced v0.3.0 Examples
+### Advanced v0.3.1 Examples
 - **Event Group Coordination**: Complex task synchronization using event groups
 - **Stream Buffer Data Streaming**: High-performance data streaming with zero-copy optimization
 - **Multicore Load Balancing**: SMP scheduling and inter-core communication

@@ -1,6 +1,6 @@
-# Troubleshooting Guide for Pico-RTOS v0.3.0
+# Troubleshooting Guide for Pico-RTOS v0.3.1
 
-This guide provides solutions to common issues encountered when using or migrating to Pico-RTOS v0.3.0.
+This guide provides solutions to common issues encountered when using or migrating to Pico-RTOS v0.3.1.
 
 ## General Troubleshooting
 
@@ -247,7 +247,7 @@ void detect_priority_inversion(void) {
 
 **Solutions**:
 ```c
-// Use priority inheritance mutexes (enabled by default in v0.3.0)
+// Use priority inheritance mutexes (enabled by default in v0.3.1)
 pico_rtos_mutex_t priority_mutex;
 pico_rtos_mutex_init(&priority_mutex);  // Priority inheritance enabled
 

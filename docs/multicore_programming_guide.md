@@ -1,10 +1,10 @@
-# Multi-Core Programming Guide for Pico-RTOS v0.3.0
+# Multi-Core Programming Guide for Pico-RTOS v0.3.1
 
-This guide provides comprehensive information on developing multi-core applications using Pico-RTOS v0.3.0's dual-core support for the Raspberry Pi Pico (RP2040).
+This guide provides comprehensive information on developing multi-core applications using Pico-RTOS v0.3.1's dual-core support for the Raspberry Pi Pico (RP2040).
 
 ## Overview
 
-Pico-RTOS v0.3.0 introduces symmetric multi-processing (SMP) support that allows tasks to run on both cores of the RP2040 simultaneously. This enables better CPU utilization and improved performance for multi-threaded applications.
+Pico-RTOS v0.3.1 introduces symmetric multi-processing (SMP) support that allows tasks to run on both cores of the RP2040 simultaneously. This enables better CPU utilization and improved performance for multi-threaded applications.
 
 ### Key Features
 
@@ -710,4 +710,4 @@ bool acquire_dual_locks(pico_rtos_mutex_t *lock1, pico_rtos_mutex_t *lock2) {
 }
 ```
 
-This guide provides a comprehensive foundation for developing efficient multi-core applications with Pico-RTOS v0.3.0. Remember to always test thoroughly and monitor performance in your specific use case.
+This guide provides a comprehensive foundation for developing efficient multi-core applications with Pico-RTOS v0.3.1. Remember to always test thoroughly and monitor performance in your specific use case.

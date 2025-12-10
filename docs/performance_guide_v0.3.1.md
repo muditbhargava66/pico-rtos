@@ -1,10 +1,10 @@
-# Performance Tuning Guide for Pico-RTOS v0.3.0
+# Performance Tuning Guide for Pico-RTOS v0.3.1
 
-This guide provides comprehensive performance optimization strategies for Pico-RTOS v0.3.0, covering both single-core and multi-core configurations.
+This guide provides comprehensive performance optimization strategies for Pico-RTOS v0.3.1, covering both single-core and multi-core configurations.
 
 ## Performance Overview
 
-Pico-RTOS v0.3.0 introduces several performance enhancements while maintaining the real-time characteristics of previous versions:
+Pico-RTOS v0.3.1 introduces several performance enhancements while maintaining the real-time characteristics of previous versions:
 
 - **Multi-core support** for improved throughput
 - **Advanced synchronization primitives** with optimized implementations
@@ -24,7 +24,7 @@ Pico-RTOS v0.3.0 introduces several performance enhancements while maintaining t
 | Semaphore give/take | 1-2 μs | Uncontended |
 | Timer operations | 1-3 μs | Software timers |
 
-### New v0.3.0 Features Performance
+### New v0.3.1 Features Performance
 
 | Feature | Typical Latency | Memory Overhead | Notes |
 |---------|----------------|-----------------|-------|
@@ -622,4 +622,4 @@ void diagnose_lock_contention(void) {
 
 ## Conclusion
 
-Optimizing Pico-RTOS v0.3.0 performance requires a systematic approach considering configuration, task design, synchronization, memory management, and multi-core utilization. Use the profiling and monitoring tools to identify bottlenecks and validate optimizations. Remember that premature optimization can harm maintainability - profile first, then optimize based on actual measurements.
+Optimizing Pico-RTOS v0.3.1 performance requires a systematic approach considering configuration, task design, synchronization, memory management, and multi-core utilization. Use the profiling and monitoring tools to identify bottlenecks and validate optimizations. Remember that premature optimization can harm maintainability - profile first, then optimize based on actual measurements.

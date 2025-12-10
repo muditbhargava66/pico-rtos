@@ -1,12 +1,12 @@
-# Migration Guide: Upgrading from Pico-RTOS v0.2.1 to v0.3.0
+# Migration Guide: Upgrading from Pico-RTOS v0.2.1 to v0.3.1
 
-This guide provides comprehensive instructions for upgrading existing Pico-RTOS v0.2.1 applications to v0.3.0, including configuration changes, new features, and troubleshooting common migration issues.
+This guide provides comprehensive instructions for upgrading existing Pico-RTOS v0.2.1 applications to v0.3.1, including configuration changes, new features, and troubleshooting common migration issues.
 
 ## Overview
 
-Pico-RTOS v0.3.0 is designed to be fully backward compatible with v0.2.1 applications. All existing APIs remain unchanged, and existing applications should compile and run without modification. However, to take advantage of the new features, some configuration and code updates may be desired.
+Pico-RTOS v0.3.1 is designed to be fully backward compatible with v0.2.1 applications. All existing APIs remain unchanged, and existing applications should compile and run without modification. However, to take advantage of the new features, some configuration and code updates may be desired.
 
-### What's New in v0.3.0
+### What's New in v0.3.1
 
 - **Advanced Synchronization Primitives**: Event groups and stream buffers
 - **Enhanced Memory Management**: Memory pools and optional MPU support
@@ -35,14 +35,14 @@ If you're using Pico-RTOS as a git submodule:
 ```bash
 cd your-project/pico-rtos
 git fetch origin
-git checkout v0.3.0
+git checkout v0.3.1
 cd ..
 git add pico-rtos
-git commit -m "Update Pico-RTOS to v0.3.0"
+git commit -m "Update Pico-RTOS to v0.3.1"
 ```
 
 #### Option B: Manual Download
-1. Download Pico-RTOS v0.3.0 from the releases page
+1. Download Pico-RTOS v0.3.1 from the releases page
 2. Replace your existing `pico-rtos` directory
 3. Update any local modifications
 
@@ -59,7 +59,7 @@ target_link_libraries(your_project
     pico_rtos
 )
 
-# Optional: Add new v0.3.0 components
+# Optional: Add new v0.3.1 components
 target_link_libraries(your_project
     pico_stdlib
     pico_rtos
@@ -77,7 +77,7 @@ target_link_libraries(your_project
 Run the configuration tool to see new options:
 
 ```bash
-# Update configuration with new v0.3.0 options
+# Update configuration with new v0.3.1 options
 ./menuconfig.sh
 ```
 
@@ -117,10 +117,10 @@ picotool load your_project.uf2
 
 ### Automatic Migration Tool
 
-Pico-RTOS v0.3.0 includes an automatic configuration migration tool:
+Pico-RTOS v0.3.1 includes an automatic configuration migration tool:
 
 ```bash
-# Migrate v0.2.1 configuration to v0.3.0
+# Migrate v0.2.1 configuration to v0.3.1
 python3 scripts/migrate_config.py --input config/.config --output config/v030_config.cmake
 
 # Review the migrated configuration
@@ -192,7 +192,7 @@ pico_rtos_semaphore_take(&network_ready_sem, PICO_RTOS_WAIT_FOREVER);
 pico_rtos_semaphore_take(&storage_ready_sem, PICO_RTOS_WAIT_FOREVER);
 ```
 
-#### After (v0.3.0):
+#### After (v0.3.1):
 ```c
 // Simple event group coordination
 pico_rtos_event_group_t system_events;
@@ -226,7 +226,7 @@ pico_rtos_queue_t message_queue;
 variable_message_t queue_buffer[QUEUE_SIZE];
 ```
 
-#### After (v0.3.0):
+#### After (v0.3.1):
 ```c
 // Simple stream buffer for variable-length messages
 pico_rtos_stream_buffer_t message_stream;
@@ -255,7 +255,7 @@ if (buffer) {
 }
 ```
 
-#### After (v0.3.0):
+#### After (v0.3.1):
 ```c
 // Deterministic memory pool allocation
 static uint8_t pool_memory[BUFFER_SIZE * POOL_COUNT];
@@ -282,7 +282,7 @@ Distribute tasks across both RP2040 cores:
 pico_rtos_task_create(&task, "MyTask", task_function, NULL, 1024, 5);
 ```
 
-#### After (v0.3.0):
+#### After (v0.3.1):
 ```c
 // Multi-core task creation with affinity
 pico_rtos_task_create(&task, "MyTask", task_function, NULL, 1024, 5);
@@ -323,7 +323,7 @@ if (pico_rtos_get_task_info(&my_task, &task_info)) {
 }
 ```
 
-## Performance Tuning for v0.3.0
+## Performance Tuning for v0.3.1
 
 ### Memory Optimization
 
@@ -378,12 +378,12 @@ Monitor the performance impact of debugging features:
 
 #### Issue 1: Compilation Errors
 
-**Problem**: Undefined references to new v0.3.0 functions.
+**Problem**: Undefined references to new v0.3.1 functions.
 
 **Solution**: 
 ```cmake
 # Ensure you're linking against the correct version
-find_package(PicoRTOS 0.3.0 REQUIRED)
+find_package(PicoRTOS 0.3.1 REQUIRED)
 target_link_libraries(your_project pico_rtos)
 ```
 
@@ -454,13 +454,13 @@ python3 scripts/check_config_compatibility.py
 - [ ] Multi-core functionality (if enabled) works correctly
 - [ ] Debugging features (if enabled) provide useful information
 
-## Best Practices for v0.3.0
+## Best Practices for v0.3.1
 
 ### 1. Gradual Feature Adoption
 
 Don't enable all new features at once. Add them incrementally:
 
-1. **Phase 1**: Migrate to v0.3.0 with existing functionality
+1. **Phase 1**: Migrate to v0.3.1 with existing functionality
 2. **Phase 2**: Add event groups or stream buffers where beneficial
 3. **Phase 3**: Enable multi-core support if needed
 4. **Phase 4**: Add debugging and profiling capabilities
@@ -507,7 +507,7 @@ Update your project documentation:
 
 ### 5. Monitoring and Metrics
 
-Use v0.3.0's monitoring capabilities to validate the migration:
+Use v0.3.1's monitoring capabilities to validate the migration:
 
 ```c
 // Monitor system health after migration
@@ -527,9 +527,9 @@ void monitor_migration_health(void) {
 
 ### Documentation
 
-- [API Reference v0.3.0](api_reference_v0.3.0.md)
+- [API Reference v0.3.1](api_reference_v0.3.1.md)
 - [Multi-Core Programming Guide](multicore_programming_guide.md)
-- [Performance Tuning Guide](performance_guide_v0.3.0.md)
+- [Performance Tuning Guide](performance_guide_v0.3.1.md)
 - [Troubleshooting Guide](troubleshooting.md)
 
 ### Example Applications
@@ -571,6 +571,6 @@ If you encounter issues during migration:
 
 ## Conclusion
 
-Migrating from Pico-RTOS v0.2.1 to v0.3.0 should be straightforward due to the maintained backward compatibility. The new features provide significant enhancements for complex applications while maintaining the real-time performance characteristics that make Pico-RTOS suitable for demanding embedded applications.
+Migrating from Pico-RTOS v0.2.1 to v0.3.1 should be straightforward due to the maintained backward compatibility. The new features provide significant enhancements for complex applications while maintaining the real-time performance characteristics that make Pico-RTOS suitable for demanding embedded applications.
 
 Take advantage of the new capabilities gradually, and use the comprehensive debugging and profiling tools to ensure your application continues to meet its real-time requirements while benefiting from the enhanced functionality.

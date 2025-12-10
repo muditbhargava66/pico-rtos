@@ -26,7 +26,7 @@
 #include "hardware/gpio.h"
 #include "hardware/irq.h"
 
-// Disable migration warnings for examples (they already use v0.3.0 APIs)
+// Disable migration warnings for examples (they already use v0.3.1 APIs)
 #define PICO_RTOS_DISABLE_MIGRATION_WARNINGS
 #include "pico_rtos.h"
 
