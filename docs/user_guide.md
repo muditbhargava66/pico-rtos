@@ -4,8 +4,9 @@ This user guide provides an overview of the Pico-RTOS features and how to use th
 
 ## Introduction
 
-Pico-RTOS is a production-ready, lightweight real-time operating system specifically designed for the Raspberry Pi Pico board. Version 0.2.1 provides comprehensive features including:
+Pico-RTOS is a production-ready, lightweight real-time operating system specifically designed for the Raspberry Pi Pico board. Version 0.3.1 "Advanced Synchronization & Multi-Core" provides comprehensive features including:
 
+### Core Features
 - Complete ARM Cortex-M0+ context switching
 - Priority inheritance to prevent priority inversion
 - Stack overflow protection with dual canaries
@@ -17,9 +18,22 @@ Pico-RTOS is a production-ready, lightweight real-time operating system specific
 - Optional debug logging system with configurable levels and subsystems
 - Comprehensive examples demonstrating hardware integration patterns
 
+### v0.3.1 Advanced Features
+- **Event Groups**: 32-bit event coordination with any/all wait semantics
+- **Stream Buffers**: Zero-copy message passing with variable-length support
+- **Memory Pools**: O(1) deterministic fixed-size block allocation
+- **Multi-Core SMP**: Dual-core scheduler with load balancing
+- **Core Affinity**: Pin tasks to specific cores
+- **IPC Channels**: High-speed inter-core communication
+- **Execution Profiler**: Function-level timing analysis
+- **System Tracing**: Event logging for debugging
+- **Deadlock Detection**: Runtime dependency analysis
+- **Health Monitoring**: System-wide metrics and alerts
+- **Watchdog Integration**: Hardware failure recovery
+
 ## Configuration Options
 
-Pico-RTOS v0.2.1 provides extensive configuration options to customize the system for your specific needs. These options can be set through CMake configuration or by defining them before including the RTOS headers.
+Pico-RTOS v0.3.1 provides extensive configuration options to customize the system for your specific needs. These options can be set through CMake configuration or by defining them before including the RTOS headers.
 
 ### System Tick Frequency
 
@@ -204,7 +218,7 @@ void timer_callback(void *param)
 
 ## Error Handling and Reporting
 
-Pico-RTOS v0.2.1 includes a comprehensive error reporting system with detailed error codes and optional error history tracking.
+Pico-RTOS v0.3.1 includes a comprehensive error reporting system with detailed error codes and optional error history tracking.
 
 ### Error Codes
 
@@ -370,7 +384,7 @@ pico_rtos_log_init(pico_rtos_log_compact_output);    // Compact format
 
 ## Examples and Learning Resources
 
-Pico-RTOS v0.2.1 includes comprehensive examples demonstrating real-world usage patterns:
+Pico-RTOS v0.3.1 includes comprehensive examples demonstrating real-world usage patterns:
 
 ### Hardware Interrupt Handling
 
@@ -652,12 +666,31 @@ If migrating from FreeRTOS or other RTOSes:
 
 ## Conclusion
 
-Pico-RTOS v0.2.1 builds upon the solid foundation of v0.2.0 with enhanced developer experience through comprehensive examples, improved debugging capabilities, and flexible configuration options. The combination of real-time capabilities, safety features, monitoring tools, and extensive documentation makes it an excellent choice for both learning and professional embedded development on Raspberry Pi Pico.
+Pico-RTOS v0.3.1 builds upon the solid foundation of previous versions with enhanced developer experience through comprehensive examples, improved debugging capabilities, and flexible configuration options. The combination of real-time capabilities, safety features, monitoring tools, and extensive documentation makes it an excellent choice for both learning and professional embedded development on Raspberry Pi Pico.
 
-Key improvements in v0.2.1:
+Key improvements in v0.3.1:
+- **Advanced Synchronization**: Event groups, stream buffers with zero-copy optimization
+- **Multi-Core SMP**: True dual-core scheduling with automatic load balancing
+- **Memory Pools**: O(1) deterministic allocation for real-time applications
+- **Enhanced Debugging**: Runtime task inspection, execution profiling, system tracing
+- **Production Quality**: Deadlock detection, health monitoring, watchdog integration
 - Configurable system tick frequency for different timing requirements
 - Enhanced error reporting with detailed codes and optional history tracking
 - Optional debug logging system with zero overhead when disabled
 - Comprehensive examples demonstrating real-world integration patterns
 - Improved build system with extensive configuration options
 - Better documentation and learning resources
+
+---
+
+## See Also
+
+- [API Reference](api_reference.md) — Complete function documentation
+- [Multi-Core Guide](multicore.md) — SMP programming details
+- [Performance Guide](performance_guide.md) — Optimization techniques
+- [Migration Guide](migration_guide.md) — Upgrading from previous versions
+
+---
+
+**User Guide Version**: v0.3.1  
+**Last Updated**: December 2025

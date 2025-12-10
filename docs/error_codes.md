@@ -1,6 +1,6 @@
 # Pico-RTOS Error Code Reference
 
-This document provides a comprehensive reference for all error codes in Pico-RTOS v0.2.1, including their meanings, common causes, and recommended solutions.
+This document provides a comprehensive reference for all error codes in Pico-RTOS v0.3.1, including their meanings, common causes, and recommended solutions.
 
 ## Error Code Categories
 

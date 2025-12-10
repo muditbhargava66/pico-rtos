@@ -15,60 +15,83 @@
 [![GitHub stars](https://img.shields.io/github/stars/muditbhargava66/pico-rtos)](https://github.com/muditbhargava66/pico-rtos/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/muditbhargava66/pico-rtos)](https://github.com/muditbhargava66/pico-rtos/network/members)
 
-**Pico-RTOS is a production-ready, lightweight real-time operating system specifically designed for the Raspberry Pi Pico board. Version 0.3.1 introduces advanced synchronization primitives (event groups, stream buffers), enhanced memory management with pools, multi-core SMP support, comprehensive debugging and profiling tools, and quality assurance features including deadlock detection and system health monitoring. Built for enterprise-grade reliability with extensive testing and validation.**
+**A production-ready, lightweight real-time operating system for the Raspberry Pi Pico (RP2040). Pico-RTOS provides advanced synchronization primitives, multi-core SMP support, comprehensive debugging tools, and enterprise-grade reliability features. Built for embedded systems requiring deterministic timing and robust resource management.**
+
+<img src="assets/banner.svg" alt="Pico-RTOS Banner"/>
 
 </div>
 
+---
+
 ## Features
 
-### Core RTOS Features
-- **Task Management**: Preemptive multitasking with priority-based scheduling, task creation/deletion, and power management
-- **Inter-task Communication**: Queue-based messaging with timeout support and priority-based unblocking
-- **Synchronization Primitives**: Mutexes with priority inheritance, counting/binary semaphores, and robust timeout handling
-- **Memory Management**: Thread-safe dynamic allocation, comprehensive tracking, and automatic cleanup
-- **Timing Services**: System tick counter, software timers (one-shot/auto-reload), and accurate delay functions
+### Task Management
+- **Preemptive Scheduling**: Priority-based multitasking with configurable priorities (0-255)
+- **Task Creation/Deletion**: Dynamic task lifecycle management with parameter passing
+- **Task Delays and Yields**: Precise timing control with millisecond resolution
+- **Stack Overflow Protection**: Dual canary detection with configurable guard regions
+- **Runtime Statistics**: CPU usage, context switch counts, and stack high-water marks
 
-### v0.3.0 Advanced Synchronization Primitives
-- **Event Groups**: Efficient task synchronization using bit patterns with wait-for-any/all semantics
-- **Stream Buffers**: High-performance byte stream communication with zero-copy optimization
-- **Enhanced Timeouts**: Universal timeout support across all blocking operations
+### Synchronization Primitives
+- **Mutexes**: Mutual exclusion with priority inheritance to prevent priority inversion
+- **Semaphores**: Counting and binary semaphores with timeout support
+- **Event Groups**: 32-bit event flags with wait-for-any/all semantics
+- **Queues**: Thread-safe FIFO messaging with configurable item sizes
+- **Stream Buffers**: Variable-length byte stream communication with zero-copy optimization
 
-### v0.3.0 Enhanced Memory Management
-- **Memory Pools**: Fixed-size block allocation with deterministic timing and comprehensive statistics
-- **Memory Protection Unit (MPU)**: Hardware-assisted memory protection and access control
-- **Advanced Tracking**: Detailed memory usage analytics and leak detection
+### Memory Management
+- **Dynamic Allocation**: Thread-safe malloc/free with tracking and leak detection
+- **Memory Pools**: Fixed-size block allocation with O(1) deterministic timing
+- **Memory Protection Unit (MPU)**: Hardware-assisted access control and stack protection
+- **Usage Analytics**: Real-time monitoring of heap fragmentation and allocation patterns
 
-### v0.3.0 Multi-Core Support
-- **Symmetric Multi-Processing (SMP)**: True dual-core task scheduling with automatic load balancing
-- **Inter-Core Synchronization**: Core-aware mutexes, semaphores, and communication primitives
-- **Core Affinity**: Task pinning to specific cores for performance optimization
-- **IPC Channels**: High-speed inter-processor communication
+### Multi-Core Support (SMP)
+- **Dual-Core Scheduling**: True symmetric multi-processing on RP2040's Cortex-M0+ cores
+- **Automatic Load Balancing**: Configurable workload distribution with migration thresholds
+- **Core Affinity**: Pin tasks to specific cores for deterministic timing
+- **Inter-Processor Communication (IPC)**: High-speed message passing between cores
+- **Cross-Core Synchronization**: All primitives are thread-safe across cores
 
-### v0.3.0 Debugging and Profiling
-- **Runtime Task Inspection**: Live task state monitoring and stack usage analysis
-- **Execution Profiling**: Function-level timing analysis with statistical reporting
-- **System Tracing**: Comprehensive event logging for performance analysis
-- **Enhanced Assertions**: Detailed error reporting with context information
+### Timing Services
+- **System Tick**: Configurable tick frequency (100 Hz to 2000 Hz)
+- **Software Timers**: One-shot and auto-reload timers with callback functions
+- **High-Resolution Timers**: Microsecond-precision timing for critical measurements
+- **Universal Timeouts**: Consistent timeout handling across all blocking operations
 
-### v0.3.0 System Extensions
-- **I/O Abstraction Layer**: Unified interface for hardware peripherals
-- **High-Resolution Timers**: Microsecond-precision timing for critical applications
-- **Universal Timeouts**: Consistent timeout handling across all RTOS components
+### Debugging and Profiling
+- **Runtime Task Inspection**: Live task state, priority, and stack usage monitoring
+- **Execution Profiler**: Function-level timing analysis with min/max/average statistics
+- **System Tracing**: Event logging with timestamps for post-mortem analysis
+- **Debug Logging**: Multi-level logging (ERROR, WARN, INFO, DEBUG) with subsystem filtering
 
-### v0.3.0 Quality Assurance
-- **Deadlock Detection**: Automatic detection and reporting of potential deadlocks
-- **System Health Monitoring**: Continuous monitoring of system resources and performance
-- **Hardware Watchdog Integration**: Automatic system recovery from failures
-- **Alert System**: Configurable thresholds and notifications for system events
+### Quality Assurance
+- **Deadlock Detection**: Automatic detection of circular wait conditions
+- **Health Monitoring**: Continuous tracking of CPU, memory, and task metrics
+- **Watchdog Integration**: Hardware watchdog support with automatic feeding
+- **Alert System**: Configurable thresholds with callback notifications
 
-### v0.3.0 Compatibility and Migration
-- **Backward Compatibility**: Full compatibility with v0.2.1 applications
-- **Migration Warnings**: Helpful warnings for deprecated APIs with migration guidance
-- **Legacy Support**: Continued support for existing applications during transition
+### I/O and Peripherals
+- **I/O Abstraction Layer**: Unified read/write interface for hardware peripherals
+- **Interrupt-Safe Operations**: RTOS-aware interrupt handling with deferred processing
+
+### Compatibility
+- **Backward Compatible**: Existing v0.2.x applications compile without changes
+- **Migration Support**: Deprecation warnings guide API updates
+- **Configurable Build**: Enable/disable features via menuconfig or CMake
+
+---
 
 ## Getting Started
 
-To get started with Pico-RTOS, follow these steps:
+### Prerequisites
+
+| Requirement | Version | Notes |
+|-------------|---------|-------|
+| Raspberry Pi Pico | RP2040-based | Or compatible boards |
+| ARM GCC Toolchain | 10.3+ | arm-none-eabi-gcc |
+| CMake | 3.13+ | Build system |
+| Python | 3.6+ | Configuration tools |
+| Pico SDK | 1.5.0+ | Automatically fetched |
 
 ### 1. Clone the Repository
 
@@ -79,316 +102,288 @@ cd pico-rtos
 
 ### 2. Set Up the Pico SDK
 
-You have three options for setting up the Pico SDK:
-
-#### Option A: Use the Setup Script (Recommended)
-
-Run the provided setup script, which will automatically set up the Pico SDK as a submodule:
+**Option A: Automated Setup (Recommended)**
 
 ```bash
 chmod +x setup-pico-sdk.sh
 ./setup-pico-sdk.sh
 ```
 
-#### Option B: Manual Submodule Setup
-
-Alternatively, you can manually set up the submodule:
+**Option B: Manual Submodule Setup**
 
 ```bash
-# Add the Pico SDK as a submodule
 git submodule add -f -b master https://github.com/raspberrypi/pico-sdk.git extern/pico-sdk
-
-# Initialize and update submodules
 git submodule update --init --recursive
-
-# Copy the SDK import script to the project root
 cp extern/pico-sdk/external/pico_sdk_import.cmake .
 ```
 
-#### Option C: Use an Existing SDK Installation
-
-If you already have the Pico SDK installed elsewhere, you can set the `PICO_SDK_PATH` environment variable:
+**Option C: Use Existing SDK**
 
 ```bash
-# Linux/macOS
-export PICO_SDK_PATH=/path/to/your/pico-sdk
-
-# Windows
-set PICO_SDK_PATH=C:\path\to\your\pico-sdk
+export PICO_SDK_PATH=/path/to/your/pico-sdk   # Linux/macOS
+set PICO_SDK_PATH=C:\path\to\your\pico-sdk    # Windows
 ```
 
-### 3. Configure and Build the Project
+### 3. Configure and Build
 
-Pico-RTOS now includes a menuconfig-style configuration system for easy customization:
-
-#### Option A: Using Menuconfig (Recommended)
+**Interactive Configuration (Recommended)**
 
 ```bash
-# Install Python dependencies
 pip install -r requirements.txt
-
-# Configure interactively
-make menuconfig
-
-# Build with your configuration
+make menuconfig    # Terminal-based configuration
 make build
 ```
 
-#### Option B: Using GUI Configuration
+**Traditional CMake Build**
 
 ```bash
-# Use graphical configuration interface
-make guiconfig
-
-# Build with your configuration
-make build
-```
-
-#### Option C: Traditional CMake Build
-
-```bash
-mkdir build
-cd build
+mkdir build && cd build
 cmake ..
 make
 ```
 
-#### Quick Start
-
-For a complete setup from scratch:
+**Quick Start**
 
 ```bash
-# Set up everything and build with defaults
-make quick-start
+make quick-start   # Sets up SDK and builds with defaults
 ```
 
-### 4. Flash and Run
+### 4. Flash to Device
 
-Connect your Raspberry Pi Pico board to your computer while holding the BOOTSEL button. It will appear as a USB drive. Copy the desired `.uf2` file to the drive:
+1. Hold BOOTSEL button on Pico and connect USB
+2. Release button (Pico mounts as USB drive `RPI-RP2`)
+3. Copy the `.uf2` file:
 
 ```bash
-# For example, to flash the LED blinking example:
-cp examples/led_blinking/led_blinking.uf2 /Volumes/RPI-RP2/  # macOS
-# or
-cp examples/led_blinking/led_blinking.uf2 /media/username/RPI-RP2/  # Linux
-# or
-copy examples\led_blinking\led_blinking.uf2 E:\  # Windows
+cp build/examples/led_blinking/led_blinking.uf2 /Volumes/RPI-RP2/   # macOS
+cp build/examples/led_blinking/led_blinking.uf2 /media/$USER/RPI-RP2/  # Linux
 ```
+
+---
 
 ## Usage Examples
 
 ### Creating Tasks
 
 ```c
+#include "pico_rtos.h"
+
 void my_task(void *param) {
     while (1) {
-        // Do something
-        pico_rtos_task_delay(100);  // Delay for 100ms
+        // Task work
+        pico_rtos_task_delay(100);  // 100ms delay
     }
 }
 
-// In your main function:
-pico_rtos_task_t task;
-pico_rtos_task_create(&task, "My Task", my_task, NULL, 256, 1);
+int main(void) {
+    pico_rtos_init();
+    
+    pico_rtos_task_t task;
+    pico_rtos_task_create(&task, "MyTask", my_task, NULL, 512, 5);
+    
+    pico_rtos_start();  // Does not return
+    return 0;
+}
 ```
 
-### Using Mutexes
+### Mutex-Protected Shared Resource
 
 ```c
 pico_rtos_mutex_t mutex;
-pico_rtos_mutex_init(&mutex);
 
-// In your task:
-if (pico_rtos_mutex_lock(&mutex, PICO_RTOS_WAIT_FOREVER)) {
-    // Critical section - protected access to shared resources
-    
-    pico_rtos_mutex_unlock(&mutex);
+void init(void) {
+    pico_rtos_mutex_init(&mutex);
+}
+
+void critical_section(void) {
+    if (pico_rtos_mutex_lock(&mutex, 1000)) {  // 1s timeout
+        // Access shared resource
+        pico_rtos_mutex_unlock(&mutex);
+    }
 }
 ```
 
-### Inter-task Communication with Queues
+### Queue-Based Communication
 
 ```c
 pico_rtos_queue_t queue;
-uint8_t queue_buffer[5 * sizeof(int)];
-pico_rtos_queue_init(&queue, queue_buffer, sizeof(int), 5);
+uint8_t buffer[10 * sizeof(int)];
 
-// In sender task:
-int data = 42;
-pico_rtos_queue_send(&queue, &data, PICO_RTOS_WAIT_FOREVER);
+void init(void) {
+    pico_rtos_queue_init(&queue, buffer, sizeof(int), 10);
+}
 
-// In receiver task:
-int received;
-if (pico_rtos_queue_receive(&queue, &received, 100)) {
-    // Process received data (timeout of 100ms)
+void producer(void) {
+    int data = 42;
+    pico_rtos_queue_send(&queue, &data, PICO_RTOS_WAIT_FOREVER);
+}
+
+void consumer(void) {
+    int data;
+    if (pico_rtos_queue_receive(&queue, &data, 100)) {
+        // Process data
+    }
 }
 ```
 
-### Using Timers
+### Timer Callback
 
 ```c
-void timer_callback(void *param) {
-    // Timer expired, do something
+void on_timer(void *param) {
+    // Timer expired
 }
 
-pico_rtos_timer_t timer;
-pico_rtos_timer_init(&timer, "My Timer", timer_callback, NULL, 1000, true);
-pico_rtos_timer_start(&timer);
+void setup_timer(void) {
+    pico_rtos_timer_t timer;
+    pico_rtos_timer_init(&timer, "Timer", on_timer, NULL, 1000, true);
+    pico_rtos_timer_start(&timer);
+}
 ```
 
-## Comprehensive Examples (v0.3.0)
+---
 
-Pico-RTOS v0.3.1 includes 11 professional examples demonstrating real-world integration patterns:
+## Examples
 
-### Core Examples
-- **LED Blinking**: Basic task management and GPIO control
-- **Task Synchronization**: Advanced semaphore and mutex usage patterns
-- **Task Communication**: Queue-based producer-consumer and notification systems
-- **Hardware Interrupt**: RTOS-aware GPIO interrupt handling with safe ISR communication
+The `examples/` directory contains 11 complete applications:
 
-### Advanced v0.3.1 Examples
-- **Event Group Coordination**: Complex task synchronization using event groups
-- **Stream Buffer Data Streaming**: High-performance data streaming with zero-copy optimization
-- **Multicore Load Balancing**: SMP scheduling and inter-core communication
-- **Performance Benchmark**: Comprehensive timing analysis and performance measurement
-- **Power Management**: Advanced power optimization with multi-core considerations
-- **System Test**: Complete RTOS validation and stress testing
-- **Debugging & Profiling Analysis**: Real-time system monitoring and performance profiling
+| Example | Description |
+|---------|-------------|
+| `led_blinking` | Basic task management and GPIO control |
+| `task_synchronization` | Mutex and semaphore usage patterns |
+| `task_communication` | Queue-based producer-consumer |
+| `hardware_interrupt` | RTOS-aware interrupt handling |
+| `event_group_coordination` | Multi-task synchronization with event flags |
+| `stream_buffer_data_streaming` | High-throughput data streaming |
+| `multicore_load_balancing` | SMP scheduling demonstration |
+| `performance_benchmark` | Context switch and latency measurement |
+| `power_management` | Low-power mode integration |
+| `system_test` | Comprehensive RTOS validation |
+| `debugging_profiling_analysis` | Runtime monitoring tools |
 
-### Building and Running Examples
 ```bash
-# Build all examples
-make examples
-
-# Build specific example
-make led_blinking
-make multicore_load_balancing
-make debugging_profiling_analysis
-
-# Flash to device (example)
+make examples                          # Build all
+make led_blinking                      # Build specific
 cp build/examples/led_blinking/led_blinking.uf2 /Volumes/RPI-RP2/
 ```
 
+---
+
 ## Documentation
 
-The Pico-RTOS documentation is available in the `docs/` directory:
+| Document | Description |
+|----------|-------------|
+| [Getting Started](docs/getting_started.md) | Installation and first project |
+| [User Guide](docs/user_guide.md) | Comprehensive RTOS concepts |
+| [API Reference](docs/api_reference.md) | Complete function documentation |
+| [Multi-Core Guide](docs/multicore.md) | SMP programming details |
+| [Performance Guide](docs/performance_guide.md) | Optimization techniques |
+| [Troubleshooting](docs/troubleshooting.md) | Common issues and solutions |
+| [Contributing](docs/contributing.md) | Development guidelines |
 
-- [Getting Started](docs/getting_started.md): Step-by-step guide to set up and start using Pico-RTOS
-- [Flashing and Testing Guide](docs/flashing_and_testing.md): Complete guide for flashing firmware and monitoring output
-- [User Guide](docs/user_guide.md): Comprehensive guide on using Pico-RTOS in your projects
-- [API Reference](docs/api_reference.md): Detailed information about the Pico-RTOS API and its usage
-- [Troubleshooting](docs/troubleshooting.md): Solutions to common issues and debugging tips
-- [Contributing Guidelines](docs/contributing.md): Information on how to contribute to the Pico-RTOS project
+---
 
 ## Project Structure
 
 ```
 pico-rtos/
-├── cmake/                      # CMake modules and configuration
-├── config/                     # Configuration files (generated)
-├── docs/                       # Comprehensive documentation
-│   ├── api_reference.md       # Complete API documentation
-│   ├── user_guide.md          # User guide and best practices
-│   ├── getting_started.md     # Getting started guide
-│   ├── flashing_and_testing.md # Hardware testing guide
-│   ├── troubleshooting.md     # Common issues and solutions
-│   └── contributing.md        # Contribution guidelines
-├── examples/                   # Professional example applications (11 total)
-│   ├── led_blinking/          # Basic task management
-│   ├── task_synchronization/  # Advanced synchronization patterns
-│   ├── task_communication/    # Inter-task communication
-│   ├── hardware_interrupt/    # RTOS-aware interrupt handling
-│   ├── event_group_coordination/ # Event group synchronization
-│   ├── stream_buffer_data_streaming/ # High-performance streaming
-│   ├── multicore_load_balancing/ # SMP and load balancing
-│   ├── performance_benchmark/ # Performance measurement
-│   ├── power_management/      # Power optimization
-│   ├── system_test/           # Comprehensive RTOS validation
-│   └── debugging_profiling_analysis/ # System monitoring
-├── extern/                     # External dependencies
-│   └── pico-sdk/              # Pico SDK submodule
-├── include/                    # Public header files
-│   ├── pico_rtos/             # Individual component headers
-│   │   ├── config.h           # Configuration definitions
-│   │   ├── task.h             # Task management
-│   │   ├── mutex.h            # Mutex synchronization
-│   │   ├── queue.h            # Queue communication
-│   │   ├── semaphore.h        # Semaphore primitives
-│   │   ├── timer.h            # Timer services
-│   │   ├── event_group.h      # Event group synchronization
-│   │   ├── stream_buffer.h    # Stream buffer communication
-│   │   ├── memory_pool.h      # Memory pool management
-│   │   ├── smp.h              # Multi-core support
-│   │   ├── debug.h            # Debugging tools
-│   │   ├── profiler.h         # Performance profiling
-│   │   ├── trace.h            # System tracing
-│   │   ├── health.h           # System health monitoring
-│   │   ├── watchdog.h         # Watchdog integration
-│   │   ├── alerts.h           # Alert system
-│   │   ├── logging.h          # Debug logging
-│   │   ├── timeout.h          # Universal timeouts
-│   │   ├── hires_timer.h      # High-resolution timers
-│   │   ├── io.h               # I/O abstraction
-│   │   ├── mpu.h              # Memory protection
-│   │   ├── deadlock.h         # Deadlock detection
-│   │   ├── compatibility.h    # Backward compatibility
-│   │   ├── deprecation.h      # Deprecation warnings
-│   │   └── error.h            # Error handling
-│   └── pico_rtos.h            # Main RTOS header
-├── scripts/                    # Build and utility scripts
-├── src/                        # RTOS implementation
-│   ├── core/                  # Core RTOS functionality
-│   ├── sync/                  # Synchronization primitives
-│   ├── memory/                # Memory management
-│   ├── multicore/             # Multi-core support
-│   ├── debug/                 # Debugging and profiling
-│   ├── system/                # System extensions
-│   └── compat/                # Compatibility layer
-├── tests/                      # Unit and integration tests (8 total)
-│   ├── mutex_test.c           # Mutex functionality tests
-│   ├── queue_test.c           # Queue communication tests
-│   ├── task_test.c            # Task management tests
-│   ├── event_group_test.c     # Event group tests
-│   ├── memory_pool_test.c     # Memory pool tests
-│   ├── comprehensive_event_group_test.c # Advanced event group tests
-│   ├── multicore_comprehensive_test.c # Multi-core tests
-│   ├── integration_component_interactions_test.c # Integration tests
-│   ├── CMakeLists_comprehensive.txt # Comprehensive test configuration
-│   └── README.md              # Test documentation
-├── .gitignore                 # Git ignore rules
-├── .gitmodules                # Git submodule configuration
-├── CMakeLists.txt             # Main CMake configuration
-├── CHANGELOG.md               # Version history and changes
-├── LICENSE                    # MIT License
-├── README.md                  # This file
-├── RELEASE_NOTES_v0.3.0.md    # v0.3.0 release notes
-└── ROADMAP.md                 # Development roadmap
+├── assets/                     # Images and media
+│   └── banner.svg             # Repository banner
+├── include/                    # Public headers
+│   ├── pico_rtos.h            # Main include file
+│   └── pico_rtos/             # Component headers (28 files)
+│       ├── task.h             # Task management
+│       ├── mutex.h            # Mutexes
+│       ├── semaphore.h        # Semaphores
+│       ├── queue.h            # Queues
+│       ├── event_group.h      # Event groups
+│       ├── stream_buffer.h    # Stream buffers
+│       ├── memory_pool.h      # Memory pools
+│       ├── smp.h              # Multi-core support
+│       ├── timer.h            # Software timers
+│       ├── hires_timer.h      # High-resolution timers
+│       ├── profiler.h         # Execution profiling
+│       ├── trace.h            # System tracing
+│       ├── debug.h            # Debug utilities
+│       ├── health.h           # Health monitoring
+│       ├── watchdog.h         # Watchdog integration
+│       ├── alerts.h           # Alert system
+│       ├── deadlock.h         # Deadlock detection
+│       ├── mpu.h              # Memory protection
+│       ├── io.h               # I/O abstraction
+│       ├── logging.h          # Debug logging
+│       ├── timeout.h          # Universal timeouts
+│       ├── error.h            # Error codes
+│       └── config.h           # Configuration
+├── src/                        # Implementation (27 source files)
+├── examples/                   # Example applications (11 projects)
+├── tests/                      # Test suite (40 test files)
+├── docs/                       # Documentation (13 guides)
+├── scripts/                    # Build utilities
+├── cmake/                      # CMake modules
+├── extern/                     # External dependencies (Pico SDK)
+├── CMakeLists.txt             # Build configuration
+├── Kconfig                     # Menuconfig definitions
+├── Makefile                    # Convenience targets
+├── CHANGELOG.md               # Version history
+├── ROADMAP.md                 # Development plan
+└── LICENSE                    # MIT License
 ```
+
+---
+
+## Performance
+
+Performance characteristics are measured using the `performance_benchmark` example on actual hardware. Run the benchmark example to measure your specific configuration:
+
+```bash
+# Build and flash performance benchmark
+make performance_benchmark
+cp build/examples/performance_benchmark/performance_benchmark.uf2 /Volumes/RPI-RP2/
+```
+
+**Performance Targets (RP2040 @ 125 MHz):**
+- Context switch: < 100 μs (typical target)
+- Mutex lock/unlock: < 20 μs uncontended
+- Queue send/receive: < 30 μs
+- Memory pool allocation: O(1) deterministic
+
+For detailed performance analysis and optimization guidance, see [Performance Guide](docs/performance_guide.md).
+
+---
 
 ## Contributing
 
-Contributions to Pico-RTOS are welcome! If you find any issues or have suggestions for improvements, please open an issue or submit a pull request. For more information, see the [Contributing Guidelines](docs/contributing.md).
+Contributions are welcome. Please see [Contributing Guidelines](docs/contributing.md) for:
+
+- Code style and standards
+- Testing requirements
+- Pull request process
+- Issue reporting
+
+---
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the development plan and upcoming features.
+See [ROADMAP.md](ROADMAP.md) for planned features and development priorities.
+
+---
 
 ## License
 
 Pico-RTOS is released under the [MIT License](LICENSE).
 
+---
+
 ## Acknowledgements
 
-Pico-RTOS was inspired by the design and concepts of other popular real-time operating systems. We would like to acknowledge their contributions to the embedded systems community and the excellent documentation provided by the Raspberry Pi Foundation for the Pico platform.
+Pico-RTOS was inspired by the design principles of other real-time operating systems and benefits from the excellent Pico SDK documentation provided by the Raspberry Pi Foundation.
+
+---
 
 <div align="center">
 
----
-⭐️ Star the repo and consider contributing!  
-  
-📫 **Contact**: [@muditbhargava66](https://github.com/muditbhargava66)
-🐛 **Report Issues**: [Issue Tracker](https://github.com/muditbhargava66/pico-rtos/issues)
-  
-© 2025 Mudit Bhargava. [MIT License](LICENSE)  
-<!-- Copyright symbol using HTML entity for better compatibility -->
+**Contact**: [@muditbhargava66](https://github.com/muditbhargava66) | **Issues**: [GitHub Issues](https://github.com/muditbhargava66/pico-rtos/issues)
+
+© 2025 Mudit Bhargava. [MIT License](LICENSE)
+
 </div>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1280" height="640" viewBox="0 0 1280 640" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d1b2a"/>
+      <stop offset="100%" style="stop-color:#1b263b"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1280" height="640" fill="url(#bgGradient)"/>
+  
+  <!-- Decorative circuit-like pattern (left side) -->
+  <g stroke="#00d4ff" stroke-width="2" fill="none" opacity="0.3">
+    <!-- Horizontal lines -->
+    <line x1="0" y1="200" x2="200" y2="200"/>
+    <line x1="0" y1="320" x2="150" y2="320"/>
+    <line x1="0" y1="440" x2="180" y2="440"/>
+    <!-- Nodes -->
+    <circle cx="200" cy="200" r="8" fill="#00d4ff"/>
+    <circle cx="150" cy="320" r="8" fill="#00d4ff"/>
+    <circle cx="180" cy="440" r="8" fill="#00d4ff"/>
+    <!-- Connecting lines -->
+    <line x1="200" y1="200" x2="250" y2="280"/>
+    <line x1="150" y1="320" x2="250" y2="280"/>
+    <line x1="180" y1="440" x2="250" y2="360"/>
+    <circle cx="250" cy="280" r="6" fill="#00d4ff"/>
+    <circle cx="250" cy="360" r="6" fill="#00d4ff"/>
+  </g>
+  
+  <!-- Decorative circuit-like pattern (right side) -->
+  <g stroke="#00d4ff" stroke-width="2" fill="none" opacity="0.3">
+    <!-- Horizontal lines -->
+    <line x1="1280" y1="200" x2="1080" y2="200"/>
+    <line x1="1280" y1="320" x2="1130" y2="320"/>
+    <line x1="1280" y1="440" x2="1100" y2="440"/>
+    <!-- Nodes -->
+    <circle cx="1080" cy="200" r="8" fill="#00d4ff"/>
+    <circle cx="1130" cy="320" r="8" fill="#00d4ff"/>
+    <circle cx="1100" cy="440" r="8" fill="#00d4ff"/>
+    <!-- Connecting lines -->
+    <line x1="1080" y1="200" x2="1030" y2="280"/>
+    <line x1="1130" y1="320" x2="1030" y2="280"/>
+    <line x1="1100" y1="440" x2="1030" y2="360"/>
+    <circle cx="1030" cy="280" r="6" fill="#00d4ff"/>
+    <circle cx="1030" cy="360" r="6" fill="#00d4ff"/>
+  </g>
+  
+  <!-- Central RTOS Architecture Diagram -->
+  <g transform="translate(640, 320)">
+    <!-- Outer ring (Tasks) -->
+    <circle cx="0" cy="0" r="180" stroke="#00d4ff" stroke-width="2" fill="none" opacity="0.2"/>
+    
+    <!-- Task nodes on outer ring -->
+    <circle cx="0" cy="-180" r="12" fill="#00d4ff" opacity="0.6"/>
+    <circle cx="156" cy="-90" r="12" fill="#00d4ff" opacity="0.6"/>
+    <circle cx="156" cy="90" r="12" fill="#00d4ff" opacity="0.6"/>
+    <circle cx="0" cy="180" r="12" fill="#00d4ff" opacity="0.6"/>
+    <circle cx="-156" cy="90" r="12" fill="#00d4ff" opacity="0.6"/>
+    <circle cx="-156" cy="-90" r="12" fill="#00d4ff" opacity="0.6"/>
+    
+    <!-- Inner ring (Kernel) -->
+    <circle cx="0" cy="0" r="100" stroke="#00d4ff" stroke-width="3" fill="none" opacity="0.4"/>
+    
+    <!-- Core (Scheduler) -->
+    <circle cx="0" cy="0" r="40" fill="#00d4ff" opacity="0.3"/>
+    <circle cx="0" cy="0" r="20" fill="#00d4ff" opacity="0.5"/>
+    
+    <!-- Connection lines from core to tasks -->
+    <line x1="0" y1="-40" x2="0" y2="-168" stroke="#00d4ff" stroke-width="1" opacity="0.3"/>
+    <line x1="35" y1="-20" x2="144" y2="-83" stroke="#00d4ff" stroke-width="1" opacity="0.3"/>
+    <line x1="35" y1="20" x2="144" y2="83" stroke="#00d4ff" stroke-width="1" opacity="0.3"/>
+    <line x1="0" y1="40" x2="0" y2="168" stroke="#00d4ff" stroke-width="1" opacity="0.3"/>
+    <line x1="-35" y1="20" x2="-144" y2="83" stroke="#00d4ff" stroke-width="1" opacity="0.3"/>
+    <line x1="-35" y1="-20" x2="-144" y2="-83" stroke="#00d4ff" stroke-width="1" opacity="0.3"/>
+  </g>
+  
+  <!-- Main Title -->
+  <text x="640" y="280" 
+        font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
+        font-size="72" 
+        font-weight="bold" 
+        fill="white" 
+        text-anchor="middle">
+    Pico-RTOS
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="640" y="340" 
+        font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
+        font-size="28" 
+        fill="#a0aec0" 
+        text-anchor="middle">
+    Real-Time Operating System for Raspberry Pi Pico
+  </text>
+  
+  <!-- Bottom accent line -->
+  <rect x="440" y="380" width="400" height="3" fill="#00d4ff" opacity="0.6" rx="1"/>
+</svg>

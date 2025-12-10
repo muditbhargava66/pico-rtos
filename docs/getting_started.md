@@ -2,6 +2,36 @@
 
 This guide will walk you through the steps to set up and start using **Pico-RTOS v0.3.1 "Advanced Synchronization & Multi-Core"** on your Raspberry Pi Pico board.
 
+---
+
+## 📋 System Requirements
+
+### Hardware
+| Component | Requirement |
+|-----------|-------------|
+| **Board** | Raspberry Pi Pico (RP2040) or compatible |
+| **USB Cable** | Micro-USB data cable (not charge-only) |
+| **Host OS** | Windows 10+, macOS 10.14+, or Linux |
+
+### Software
+| Tool | Version | Purpose |
+|------|---------|---------|
+| **ARM GCC** | 10.3+ | Cross-compiler for Cortex-M0+ |
+| **CMake** | 3.13+ | Build system |
+| **Python** | 3.6+ | Configuration tools |
+| **Pico SDK** | 1.5.0+ | Hardware abstraction |
+
+### Quick Check
+
+```bash
+# Verify installations
+arm-none-eabi-gcc --version   # Should show 10.3 or higher
+cmake --version               # Should show 3.13 or higher
+python3 --version             # Should show 3.6 or higher
+```
+
+---
+
 ## 🚀 Production Ready v0.3.1
 
 Pico-RTOS v0.3.1 is **production-ready** with enterprise-grade features including:
@@ -11,6 +41,8 @@ Pico-RTOS v0.3.1 is **production-ready** with enterprise-grade features includin
 - **Debugging & Profiling**: Runtime inspection, execution profiling, system tracing
 - **Production Quality**: Deadlock detection, health monitoring, watchdog integration
 - **100% Backward Compatibility**: Seamless upgrade from v0.2.1
+
+---
 
 ## Prerequisites
 
