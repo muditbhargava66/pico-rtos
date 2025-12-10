@@ -1,9 +1,9 @@
 /**
  * @file deprecation.h
- * @brief Deprecation warnings and migration support for Pico-RTOS v0.3.0
+ * @brief Deprecation warnings and migration support for Pico-RTOS v0.3.1
  * 
  * This header provides compile-time deprecation warnings for APIs and
- * configurations that have been superseded in v0.3.0. It helps users
+ * configurations that have been superseded in v0.3.1. It helps users
  * migrate from v0.2.1 by providing clear warnings and migration paths.
  */
 
@@ -44,41 +44,41 @@ void pico_rtos_get_memory_stats(uint32_t *current, uint32_t *peak, uint32_t *all
 
 // Check for deprecated configuration patterns
 #ifdef CONFIG_OLD_TIMER_API
-    #warning "CONFIG_OLD_TIMER_API is deprecated. Use CONFIG_ENABLE_HIRES_TIMERS for high-resolution timing in v0.3.0"
+    #warning "CONFIG_OLD_TIMER_API is deprecated. Use CONFIG_ENABLE_HIRES_TIMERS for high-resolution timing in v0.3.1"
 #endif
 
 #ifdef CONFIG_SIMPLE_LOGGING
-    #warning "CONFIG_SIMPLE_LOGGING is deprecated. Use CONFIG_ENABLE_ENHANCED_LOGGING for advanced logging features in v0.3.0"
+    #warning "CONFIG_SIMPLE_LOGGING is deprecated. Use CONFIG_ENABLE_ENHANCED_LOGGING for advanced logging features in v0.3.1"
 #endif
 
 #ifdef CONFIG_BASIC_MEMORY_TRACKING
-    #warning "CONFIG_BASIC_MEMORY_TRACKING is deprecated. Memory tracking is now always available when CONFIG_ENABLE_MEMORY_TRACKING is enabled in v0.3.0"
+    #warning "CONFIG_BASIC_MEMORY_TRACKING is deprecated. Memory tracking is now always available when CONFIG_ENABLE_MEMORY_TRACKING is enabled in v0.3.1"
 #endif
 
 #ifdef CONFIG_LEGACY_QUEUE_API
-    #warning "CONFIG_LEGACY_QUEUE_API is deprecated. The standard queue API now includes all legacy functionality in v0.3.0"
+    #warning "CONFIG_LEGACY_QUEUE_API is deprecated. The standard queue API now includes all legacy functionality in v0.3.1"
 #endif
 
 #ifdef CONFIG_SIMPLE_SCHEDULER
-    #warning "CONFIG_SIMPLE_SCHEDULER is deprecated. Use CONFIG_ENABLE_MULTI_CORE=n for single-core operation in v0.3.0"
+    #warning "CONFIG_SIMPLE_SCHEDULER is deprecated. Use CONFIG_ENABLE_MULTI_CORE=n for single-core operation in v0.3.1"
 #endif
 
 // Check for potentially problematic configurations
 #if defined(CONFIG_TICK_RATE_HZ) && (CONFIG_TICK_RATE_HZ > 2000)
-    #warning "High tick rates (>2000 Hz) may impact performance. Consider using CONFIG_ENABLE_HIRES_TIMERS for precise timing in v0.3.0"
+    #warning "High tick rates (>2000 Hz) may impact performance. Consider using CONFIG_ENABLE_HIRES_TIMERS for precise timing in v0.3.1"
 #endif
 
 #if defined(CONFIG_MAX_TASKS) && (CONFIG_MAX_TASKS > 32)
-    #warning "High task counts (>32) may impact performance. Consider task consolidation or enabling CONFIG_ENABLE_MULTI_CORE in v0.3.0"
+    #warning "High task counts (>32) may impact performance. Consider task consolidation or enabling CONFIG_ENABLE_MULTI_CORE in v0.3.1"
 #endif
 
 // Check for missing recommended configurations
 #if defined(PICO_RTOS_ENABLE_MULTI_CORE) && !defined(PICO_RTOS_ENABLE_MEMORY_TRACKING)
-    #warning "Multi-core support works best with memory tracking enabled. Consider enabling CONFIG_ENABLE_MEMORY_TRACKING in v0.3.0"
+    #warning "Multi-core support works best with memory tracking enabled. Consider enabling CONFIG_ENABLE_MEMORY_TRACKING in v0.3.1"
 #endif
 
 #if defined(PICO_RTOS_ENABLE_MULTI_CORE) && !defined(PICO_RTOS_ENABLE_RUNTIME_STATS)
-    #warning "Multi-core support requires runtime statistics for load balancing. Consider enabling CONFIG_ENABLE_RUNTIME_STATS in v0.3.0"
+    #warning "Multi-core support requires runtime statistics for load balancing. Consider enabling CONFIG_ENABLE_RUNTIME_STATS in v0.3.1"
 #endif
 
 #endif // PICO_RTOS_ENABLE_MIGRATION_WARNINGS
@@ -156,19 +156,19 @@ typedef enum {
 #if defined(PICO_RTOS_ENABLE_MIGRATION_WARNINGS) && !defined(PICO_RTOS_DISABLE_MIGRATION_WARNINGS)
 
 #define PICO_RTOS_WAIT_INFINITE PICO_RTOS_WAIT_FOREVER
-#pragma message("PICO_RTOS_WAIT_INFINITE is deprecated. Use PICO_RTOS_WAIT_FOREVER for consistency in v0.3.0")
+#pragma message("PICO_RTOS_WAIT_INFINITE is deprecated. Use PICO_RTOS_WAIT_FOREVER for consistency in v0.3.1")
 
 #define PICO_RTOS_NO_TIMEOUT PICO_RTOS_NO_WAIT
-#pragma message("PICO_RTOS_NO_TIMEOUT is deprecated. Use PICO_RTOS_NO_WAIT for consistency in v0.3.0")
+#pragma message("PICO_RTOS_NO_TIMEOUT is deprecated. Use PICO_RTOS_NO_WAIT for consistency in v0.3.1")
 
 #define PICO_RTOS_TASK_PRIORITY_IDLE 0
-#pragma message("PICO_RTOS_TASK_PRIORITY_IDLE is deprecated. Use explicit priority values (0 = lowest) in v0.3.0")
+#pragma message("PICO_RTOS_TASK_PRIORITY_IDLE is deprecated. Use explicit priority values (0 = lowest) in v0.3.1")
 
 #define PICO_RTOS_TASK_PRIORITY_NORMAL 5
-#pragma message("PICO_RTOS_TASK_PRIORITY_NORMAL is deprecated. Use explicit priority values based on your needs in v0.3.0")
+#pragma message("PICO_RTOS_TASK_PRIORITY_NORMAL is deprecated. Use explicit priority values based on your needs in v0.3.1")
 
 #define PICO_RTOS_TASK_PRIORITY_HIGH 10
-#pragma message("PICO_RTOS_TASK_PRIORITY_HIGH is deprecated. Use explicit priority values based on your needs in v0.3.0")
+#pragma message("PICO_RTOS_TASK_PRIORITY_HIGH is deprecated. Use explicit priority values based on your needs in v0.3.1")
 
 #elif defined(PICO_RTOS_ENABLE_MIGRATION_WARNINGS)
 // Provide deprecated macros without warnings when explicitly disabled
@@ -185,7 +185,7 @@ typedef enum {
 
 #if defined(PICO_RTOS_ENABLE_MIGRATION_WARNINGS) && !defined(PICO_RTOS_DISABLE_MIGRATION_WARNINGS)
     #define PICO_RTOS_MIGRATION_NOTICE(feature, replacement) \
-        _Pragma("message(\"Feature has been enhanced in v0.3.0. See migration guide.\")")
+        _Pragma("message(\"Feature has been enhanced in v0.3.1. See migration guide.\")")
 #else
     #define PICO_RTOS_MIGRATION_NOTICE(feature, replacement)
 #endif
@@ -224,35 +224,35 @@ typedef struct {
 static const pico_rtos_deprecation_info_t pico_rtos_deprecation_schedule[] = {
     {
         .feature = "pico_rtos_timer_create_precise",
-        .deprecated_version = "0.3.0",
+        .deprecated_version = "0.3.1",
         .removal_version = "0.4.0",
         .replacement = "pico_rtos_hires_timer_create",
         .migration_notes = "High-resolution timers provide microsecond precision"
     },
     {
         .feature = "pico_rtos_simple_log",
-        .deprecated_version = "0.3.0", 
+        .deprecated_version = "0.3.1", 
         .removal_version = "0.4.0",
         .replacement = "pico_rtos_log with log levels",
         .migration_notes = "Enhanced logging provides better control and filtering"
     },
     {
         .feature = "pico_rtos_get_memory_usage",
-        .deprecated_version = "0.3.0",
+        .deprecated_version = "0.3.1",
         .removal_version = "0.4.0", 
         .replacement = "pico_rtos_get_memory_stats",
         .migration_notes = "Comprehensive memory statistics provide more information"
     },
     {
         .feature = "PICO_RTOS_WAIT_INFINITE",
-        .deprecated_version = "0.3.0",
+        .deprecated_version = "0.3.1",
         .removal_version = "0.4.0",
         .replacement = "PICO_RTOS_WAIT_FOREVER",
         .migration_notes = "Consistent naming across the API"
     },
     {
         .feature = "CONFIG_OLD_TIMER_API",
-        .deprecated_version = "0.3.0",
+        .deprecated_version = "0.3.1",
         .removal_version = "0.4.0",
         .replacement = "CONFIG_ENABLE_HIRES_TIMERS",
         .migration_notes = "New timer system provides better precision and features"
@@ -273,6 +273,11 @@ const pico_rtos_deprecation_info_t *pico_rtos_get_deprecation_info(const char *f
  * This function can be called during initialization to show all active deprecations
  */
 void pico_rtos_print_deprecation_warnings(void);
+
+/**
+ * @brief Check for problematic configuration combinations and log warnings
+ */
+void pico_rtos_check_configuration_warnings(void);
 
 /**
  * @brief Check if a feature is deprecated

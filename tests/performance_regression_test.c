@@ -1,6 +1,6 @@
 /**
  * @file performance_regression_test.c
- * @brief Performance regression test suite for Pico-RTOS v0.3.0
+ * @brief Performance regression test suite for Pico-RTOS v0.3.1
  * 
  * Automated performance benchmarks for:
  * - Context switch timing validation with new features enabled
@@ -620,7 +620,7 @@ static void analyze_performance_regression(void) {
 static void run_performance_regression_tests(void) {
     printf("\n");
     printf("========================================================\n");
-    printf("  Performance Regression Test Suite (Pico-RTOS v0.3.0) \n");
+    printf("  Performance Regression Test Suite (Pico-RTOS v0.3.1) \n");
     printf("========================================================\n");
     
     // Initialize profiler for accurate measurements
@@ -646,7 +646,7 @@ static void run_performance_regression_tests(void) {
     
     if (test_failures == 0) {
         printf("🎉 All performance regression tests PASSED!\n");
-        printf("✅ v0.3.0 performance is within acceptable limits\n");
+        printf("✅ v0.3.1 performance is within acceptable limits\n");
     } else {
         printf("❌ Some performance regression tests FAILED!\n");
         printf("⚠️  Performance regression detected - review required\n");

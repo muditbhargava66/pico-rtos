@@ -1,6 +1,6 @@
 #!/bin/bash
-# Pico-RTOS v0.3.0 Test Runner
-# Comprehensive test execution script
+# Pico-RTOS v0.3.1 Test Runner
+# Comprehensive test runner for Pico-RTOSn script
 
 set -e
 
@@ -25,7 +25,7 @@ PARALLEL_JOBS=4
 
 usage() {
     cat << EOF
-Pico-RTOS v0.3.0 Test Runner
+Pico-RTOS v0.3.1 Test Runner
 
 Usage: $0 [OPTIONS]
 
@@ -293,7 +293,7 @@ generate_test_report() {
     log_info "Generating test report..."
     
     cat > "$report_file" << EOF
-Pico-RTOS v0.3.0 Test Report
+Pico-RTOS v0.3.1 Test Report
 Generated: $(date)
 ============================
 
@@ -377,7 +377,7 @@ done
 
 # Main execution
 main() {
-    echo "Pico-RTOS v0.3.0 Test Runner"
+    echo "Pico-RTOS v0.3.1 Test Runner"
     echo "============================="
     
     # Check build

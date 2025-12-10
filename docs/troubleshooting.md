@@ -2,7 +2,7 @@
 
 This guide helps you diagnose and resolve common issues with Pico-RTOS across all versions.
 
-**Current Version**: v0.3.0 "Advanced Synchronization & Multi-Core"
+**Current Version**: v0.3.1 "Advanced Synchronization & Multi-Core"
 
 ## 🔍 Quick Diagnosis
 
@@ -19,7 +19,7 @@ printf("Current Core: %d\n", get_core_num());
 #endif
 ```
 
-### Health Check *(v0.3.0)*
+### Health Check *(v0.3.1)*
 ```c
 // Quick system health check
 pico_rtos_system_stats_t stats;
@@ -36,7 +36,7 @@ if (pico_rtos_get_system_stats(&stats)) {
 
 ### Build and Configuration Issues
 
-#### Issue: Build Fails After Updating to v0.3.0
+#### Issue: Build Fails After Updating to v0.3.1
 **Symptoms:**
 ```
 error: 'PICO_RTOS_ENABLE_EVENT_GROUPS' undeclared
@@ -114,7 +114,7 @@ void debug_task_states() {
 ```
 
 **Common Causes & Solutions:**
-1. **Deadlock**: Use deadlock detection *(v0.3.0)*
+1. **Deadlock**: Use deadlock detection *(v0.3.1)*
    ```cmake
    set(PICO_RTOS_ENABLE_DEADLOCK_DETECTION ON)
    ```
@@ -163,7 +163,7 @@ void monitor_performance() {
 1. **Optimize Task Priorities**: Ensure proper priority assignment
 2. **Reduce Context Switching**: Batch work in tasks
 3. **Use Appropriate Delays**: Avoid busy-waiting
-4. **Enable Multi-Core**: Distribute load *(v0.3.0)*
+4. **Enable Multi-Core**: Distribute load *(v0.3.1)*
 
 #### Issue: Memory Issues
 **Symptoms:**
@@ -195,11 +195,11 @@ void check_memory_health() {
 
 **Solutions:**
 1. **Reduce Stack Sizes**: Right-size task stacks
-2. **Use Memory Pools**: For frequent allocations *(v0.3.0)*
+2. **Use Memory Pools**: For frequent allocations *(v0.3.1)*
 3. **Fix Memory Leaks**: Track allocations
 4. **Optimize Data Structures**: Reduce memory footprint
 
-### Multi-Core Issues *(v0.3.0)*
+### Multi-Core Issues *(v0.3.1)*
 
 #### Issue: Multi-Core Not Working
 **Symptoms:**
@@ -254,7 +254,7 @@ void check_multicore_status() {
 
 ### Synchronization Issues
 
-#### Issue: Deadlock Detection *(v0.3.0)*
+#### Issue: Deadlock Detection *(v0.3.1)*
 **Symptoms:**
 - System hangs with multiple tasks blocked
 - Deadlock detection alerts
@@ -281,7 +281,7 @@ void check_deadlock_status() {
 3. **Minimize Lock Scope**: Keep critical sections short
 4. **Review Lock Dependencies**: Simplify synchronization
 
-#### Issue: Event Groups Not Working *(v0.3.0)*
+#### Issue: Event Groups Not Working *(v0.3.1)*
 **Symptoms:**
 - Tasks not waking up on events
 - Event bits not being set/cleared properly
@@ -306,7 +306,7 @@ uint32_t result = pico_rtos_event_group_wait_bits(
     &events, 0x01 | 0x02, false, true, 1000);  // wait_any=false, clear=true
 ```
 
-#### Issue: Stream Buffer Problems *(v0.3.0)*
+#### Issue: Stream Buffer Problems *(v0.3.1)*
 **Symptoms:**
 - Data corruption in stream buffers
 - Send/receive operations failing
@@ -331,7 +331,7 @@ pico_rtos_stream_buffer_init(&stream, adequate_buffer, sizeof(adequate_buffer));
 
 ## 🔧 Debugging Tools
 
-### Built-in Debugging *(v0.3.0)*
+### Built-in Debugging *(v0.3.1)*
 
 #### Task Inspection
 ```c
@@ -505,7 +505,7 @@ void detect_memory_leaks() {
 }
 ```
 
-### Multi-Core Issues *(v0.3.0)*
+### Multi-Core Issues *(v0.3.1)*
 
 #### Core Utilization Analysis
 ```c
@@ -713,16 +713,16 @@ void save_critical_data() {
 - [ ] Profile critical code paths
 - [ ] Check memory usage patterns
 - [ ] Analyze task priorities and scheduling
-- [ ] Monitor multi-core utilization *(v0.3.0)*
+- [ ] Monitor multi-core utilization *(v0.3.1)*
 
 ### Memory Issues
 - [ ] Enable memory tracking
 - [ ] Check for memory leaks
 - [ ] Validate stack sizes
 - [ ] Monitor heap fragmentation
-- [ ] Use memory pools where appropriate *(v0.3.0)*
+- [ ] Use memory pools where appropriate *(v0.3.1)*
 
-### Multi-Core Issues *(v0.3.0)*
+### Multi-Core Issues *(v0.3.1)*
 - [ ] Verify SMP initialization
 - [ ] Check core utilization balance
 - [ ] Validate task affinity settings
@@ -754,6 +754,6 @@ For commercial projects requiring professional support:
 
 ---
 
-**Troubleshooting Guide Version**: v0.3.0  
+**Troubleshooting Guide Version**: v0.3.1  
 **Last Updated**: July 25, 2025  
-**Covers**: All versions (v0.1.0 through v0.3.0)
+**Covers**: All versions (v0.1.0 through v0.3.1)

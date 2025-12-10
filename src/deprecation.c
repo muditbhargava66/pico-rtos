@@ -1,6 +1,6 @@
 /**
  * @file deprecation.c
- * @brief Implementation of deprecation warning system for Pico-RTOS v0.3.0
+ * @brief Implementation of deprecation warning system for Pico-RTOS v0.3.1
  */
 
 #include "pico_rtos/deprecation.h"
@@ -55,7 +55,7 @@ static void print_deprecation_warning(const pico_rtos_deprecation_info_t *info) 
 void pico_rtos_print_deprecation_warnings(void) {
     bool found_deprecated = false;
     
-    printf("=== Pico-RTOS v0.3.0 Deprecation Warnings ===\n\n");
+    printf("=== Pico-RTOS v0.3.1 Deprecation Warnings ===\n\n");
     
     // Check for deprecated configuration options
     #ifdef CONFIG_OLD_TIMER_API
@@ -96,7 +96,7 @@ void pico_rtos_print_deprecation_warnings(void) {
     
     if (!found_deprecated) {
         printf("No deprecated features detected in current configuration.\n");
-        printf("Your configuration is up-to-date with v0.3.0 standards.\n\n");
+        printf("Your configuration is up-to-date with v0.3.1 standards.\n\n");
     } else {
         printf("Please update your code to use the recommended replacements.\n");
         printf("See the migration guide for detailed instructions: %s\n", PICO_RTOS_MIGRATION_GUIDE_URL);

@@ -1,6 +1,6 @@
 #!/bin/bash
-# Pico-RTOS v0.3.0 Validation Script
-# Comprehensive system validation and quality checks
+# Pico-RTOS v0.3.1 Validation Script
+# Validates the codebase for releaselidation and quality checks
 
 set -e
 
@@ -25,7 +25,7 @@ VERBOSE=false
 
 usage() {
     cat << EOF
-Pico-RTOS v0.3.0 Validation Script
+Pico-RTOS v0.3.1 Validation Script
 
 Usage: $0 [OPTIONS]
 
@@ -293,11 +293,11 @@ check_examples() {
         fi
     done
     
-    # Check v0.3.0 specific examples
+    # Check v0.3.1 specific examples
     local v030_examples=("event_group_example" "stream_buffer_example" "memory_pool_example")
     for example in "${v030_examples[@]}"; do
         if [ ! -d "$PROJECT_ROOT/examples/$example" ]; then
-            log_warning "Missing v0.3.0 example: $example"
+            log_warning "Missing v0.3.1 example: $example"
             issues=$((issues + 1))
         fi
     done
@@ -339,11 +339,11 @@ check_tests() {
         issues=$((issues + 1))
     fi
     
-    # Check for v0.3.0 specific tests
+    # Check for v0.3.1 specific tests
     local v030_tests=("event_group_test" "stream_buffer_test" "memory_pool_test" "mpu_test")
     for test in "${v030_tests[@]}"; do
         if ! find "$PROJECT_ROOT/tests" -name "*${test}*" | grep -q .; then
-            log_warning "Missing v0.3.0 test: $test"
+            log_warning "Missing v0.3.1 test: $test"
             issues=$((issues + 1))
         fi
     done
@@ -363,7 +363,7 @@ generate_validation_report() {
     log_info "Generating validation report..."
     
     cat > "$report_file" << EOF
-Pico-RTOS v0.3.0 Validation Report
+Pico-RTOS v0.3.1 Validation Report
 Generated: $(date)
 ==================================
 
@@ -388,7 +388,7 @@ Build System:
 - Makefile: $([ -f "$PROJECT_ROOT/Makefile" ] && echo "Present" || echo "Missing")
 
 Version Information:
-- Version: v0.3.0
+- Version: v0.3.1
 - Git commit: $(git rev-parse --short HEAD 2>/dev/null || echo "Unknown")
 - Git status: $(git status --porcelain 2>/dev/null | wc -l) modified files
 
@@ -481,7 +481,7 @@ done
 
 # Main execution
 main() {
-    echo "Pico-RTOS v0.3.0 Validation System"
+    echo "Pico-RTOS v0.3.1 Validation System"
     echo "==================================="
     
     local overall_result=0

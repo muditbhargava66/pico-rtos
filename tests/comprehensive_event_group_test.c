@@ -3,7 +3,7 @@
  * @brief Enhanced comprehensive unit tests for Event Groups with edge cases
  * 
  * This extends the existing event_group_test.c with additional edge cases,
- * stress testing, and multi-core scenarios for v0.3.0
+ * stress testing, and multi-core scenarios for v0.3.1
  */
 
 #include <stdio.h>
@@ -354,7 +354,7 @@ static void test_statistics_accuracy(void) {
 static void run_comprehensive_event_group_tests(void) {
     printf("\n");
     printf("================================================\n");
-    printf("  Comprehensive Event Group Unit Tests (v0.3.0)\n");
+    printf("  Comprehensive Event Group Unit Tests (v0.3.1)\n");
     printf("================================================\n");
     
     test_high_frequency_operations();

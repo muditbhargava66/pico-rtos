@@ -1,6 +1,6 @@
 /**
  * @file mpu.c
- * @brief Memory Protection Unit Implementation for Pico-RTOS v0.3.0
+ * @brief Memory Protection Unit Implementation for Pico-RTOS v0.3.1
  * 
  * This module implements MPU support for ARM Cortex-M processors.
  * Note: The RP2040 (Cortex-M0+) has limited MPU support compared to

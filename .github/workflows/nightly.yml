@@ -8,22 +8,13 @@ on:
 
 env:
   BUILD_TYPE: Release
+  ARM_TOOLCHAIN_VERSION: "13.3.rel1"
 
 jobs:
-  nightly-build:
-    name: Nightly Build (${{ matrix.config.name }})
-    runs-on: ${{ matrix.config.os }}
-    
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-          - name: "Ubuntu Latest"
-            os: ubuntu-latest
-            install: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi cmake
-          - name: "macOS Latest"
-            os: macos-latest
-            install-deps: brew install arm-none-eabi-gcc cmake
+  # Ubuntu nightly build
+  nightly-ubuntu:
+    name: Nightly Build (Ubuntu)
+    runs-on: ubuntu-latest
     
     steps:
     - name: Checkout code
@@ -37,37 +28,34 @@ jobs:
         python-version: '3.11'
     
     - name: Install system dependencies
-      run: ${{ matrix.config.install }}
-      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-arm-none-eabi cmake ninja-build
     
     - name: Setup Pico SDK
       run: git submodule update --init --recursive
-      shell: bash
     
     - name: Build Debug
       run: |
         python3 scripts/build.py configure --build-type Debug --enable-examples
         python3 scripts/build.py build
         mv build build-debug
-      shell: bash
       continue-on-error: true
     
     - name: Build Release
       run: |
         python3 scripts/build.py configure --build-type Release --enable-examples
         python3 scripts/build.py build
-      shell: bash
       continue-on-error: true
     
     - name: Run build system tests
       run: python3 tests/build_system_test.py
-      shell: bash
       continue-on-error: true
     
     - name: Generate build report
       run: |
-        echo "## Nightly Build Report for ${{ matrix.config.name }}" > build-report.md
-        echo "- OS: ${{ matrix.config.os }}" >> build-report.md
+        echo "## Nightly Build Report for Ubuntu" > build-report.md
+        echo "- OS: ubuntu-latest" >> build-report.md
         echo "- Build Status: ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}" >> build-report.md
         echo "- Timestamp: $(date)" >> build-report.md
         echo "- Examples Built: $(find build -name "*.uf2" 2>/dev/null | wc -l)" >> build-report.md
@@ -76,7 +64,6 @@ jobs:
           SIZE=$(stat -c%s build/libpico_rtos.a 2>/dev/null || stat -f%z build/libpico_rtos.a)
           echo "- Library Size: $SIZE bytes" >> build-report.md
         fi
-      shell: bash
     
     - name: Archive build artifacts
       run: |
@@ -85,24 +72,112 @@ jobs:
         [ -f build/libpico_rtos.a ] && cp build/libpico_rtos.a artifacts/
         find build -name "*.uf2" -exec cp {} artifacts/ \;
         tar -czf artifacts.tar.gz artifacts/
-      shell: bash
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: nightly-build-${{ matrix.config.name }}-${{ github.run_number }}
+        name: nightly-build-ubuntu-${{ github.run_number }}
         path: artifacts.tar.gz
         retention-days: 30
     
     - name: Cleanup workspace
       run: rm -rf build build-debug artifacts
-      shell: bash
       if: always()
 
+  # macOS nightly build with official ARM toolchain
+  nightly-macos:
+    name: Nightly Build (macOS)
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install build tools
+      run: brew install cmake ninja
+    
+    - name: Download ARM toolchain
+      run: |
+        # Download ARM GNU Toolchain from official ARM website
+        TOOLCHAIN_URL="https://developer.arm.com/-/media/Files/downloads/gnu/${{ env.ARM_TOOLCHAIN_VERSION }}/binrel/arm-gnu-toolchain-${{ env.ARM_TOOLCHAIN_VERSION }}-darwin-arm64-arm-none-eabi.tar.xz"
+        
+        echo "Downloading ARM toolchain from: $TOOLCHAIN_URL"
+        curl -L -o arm-toolchain.tar.xz "$TOOLCHAIN_URL"
+        
+        # Extract to /opt
+        sudo mkdir -p /opt/arm-gnu-toolchain
+        sudo tar -xf arm-toolchain.tar.xz -C /opt/arm-gnu-toolchain --strip-components=1
+        
+        # Add to PATH
+        echo "/opt/arm-gnu-toolchain/bin" >> $GITHUB_PATH
+        
+        # Verify installation
+        /opt/arm-gnu-toolchain/bin/arm-none-eabi-gcc --version
+    
+    - name: Setup Pico SDK
+      run: git submodule update --init --recursive
+    
+    - name: Build Debug
+      run: |
+        python3 scripts/build.py configure --build-type Debug --enable-examples
+        python3 scripts/build.py build
+        mv build build-debug
+      continue-on-error: true
+    
+    - name: Build Release
+      run: |
+        python3 scripts/build.py configure --build-type Release --enable-examples
+        python3 scripts/build.py build
+      continue-on-error: true
+    
+    - name: Run build system tests
+      run: python3 tests/build_system_test.py
+      continue-on-error: true
+    
+    - name: Generate build report
+      run: |
+        echo "## Nightly Build Report for macOS" > build-report.md
+        echo "- OS: macos-latest" >> build-report.md
+        echo "- Build Status: ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}" >> build-report.md
+        echo "- Timestamp: $(date)" >> build-report.md
+        echo "- Examples Built: $(find build -name "*.uf2" 2>/dev/null | wc -l)" >> build-report.md
+        
+        if [ -f build/libpico_rtos.a ]; then
+          SIZE=$(stat -f%z build/libpico_rtos.a)
+          echo "- Library Size: $SIZE bytes" >> build-report.md
+        fi
+    
+    - name: Archive build artifacts
+      run: |
+        mkdir -p artifacts
+        cp build-report.md artifacts/
+        [ -f build/libpico_rtos.a ] && cp build/libpico_rtos.a artifacts/
+        find build -name "*.uf2" -exec cp {} artifacts/ \;
+        tar -czf artifacts.tar.gz artifacts/
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: nightly-build-macos-${{ github.run_number }}
+        path: artifacts.tar.gz
+        retention-days: 30
+    
+    - name: Cleanup workspace
+      run: rm -rf build build-debug artifacts
+      if: always()
+
+  # Generate summary from all builds
   nightly-summary:
     name: Generate Nightly Summary
     runs-on: ubuntu-latest
-    needs: [nightly-build]
+    needs: [nightly-ubuntu, nightly-macos]
     if: always()
     
     steps:
@@ -129,8 +204,6 @@ jobs:
         
         echo "## Summary" >> nightly-summary.md
         echo "- Total builds: $(find . -name 'build-report.md' | wc -l)" >> nightly-summary.md
-        echo "- Successful builds: $(find artifacts -name "build-report.md" 2>/dev/null | wc -l)" >> nightly-summary.md
-      shell: bash
     
     - name: Upload nightly summary
       uses: actions/upload-artifact@v4

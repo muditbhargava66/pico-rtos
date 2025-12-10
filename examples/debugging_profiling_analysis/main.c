@@ -1,6 +1,6 @@
 /**
  * @file main.c
- * @brief Debugging and Profiling Real-Time Analysis Example for Pico-RTOS v0.3.0
+ * @brief Debugging and Profiling Real-Time Analysis Example for Pico-RTOS v0.3.1
  * 
  * This example demonstrates comprehensive debugging and profiling capabilities:
  * 
@@ -20,7 +20,7 @@
 #include <math.h>
 #include "pico/stdlib.h"
 
-// Disable migration warnings for examples (they already use v0.3.0 APIs)
+// Disable migration warnings for examples (they already use v0.3.1 APIs)
 #define PICO_RTOS_DISABLE_MIGRATION_WARNINGS
 #include "pico_rtos.h"
 
@@ -678,7 +678,7 @@ int main() {
     gpio_set_dir(LED_PIN, GPIO_OUT);
     gpio_put(LED_PIN, 0);
     
-    printf("\n=== Pico-RTOS v0.3.0 Debugging and Profiling Real-Time Analysis Example ===\n");
+    printf("\n=== Pico-RTOS v0.3.1 Debugging and Profiling Real-Time Analysis Example ===\n");
     printf("This example demonstrates:\n");
     printf("1. Runtime task inspection and monitoring\n");
     printf("2. Execution time profiling for performance analysis\n");

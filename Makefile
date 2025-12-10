@@ -1,4 +1,4 @@
-# Pico-RTOS v0.3.0 Makefile
+# Pico-RTOS v0.3.1 Makefile
 # Provides convenient targets for building and configuring Pico-RTOS
 
 # Default build directory
@@ -24,7 +24,7 @@ all: configure build
 # Help target
 .PHONY: help
 help:
-	@echo "Pico-RTOS v0.3.0 Build System"
+	@echo "Pico-RTOS v0.3.1 Build System"
 	@echo ""
 	@echo "Configuration targets:"
 	@echo "  menuconfig     - Interactive configuration menu (ncurses)"
@@ -77,7 +77,7 @@ defconfig: install-deps-check
 	@echo "Loading default configuration..."
 	$(PYTHON) scripts/menuconfig.py --config-file $(CONFIG_FILE) \
 		--cmake-file $(CMAKE_CONFIG_FILE) --header-file $(HEADER_CONFIG_FILE) \
-		--load-defaults --show-config
+		--defconfig
 
 .PHONY: savedefconfig
 savedefconfig:
@@ -91,10 +91,10 @@ savedefconfig:
 
 .PHONY: showconfig
 showconfig: install-deps-check
-	@$(PYTHON) scripts/menuconfig.py --config-file $(CONFIG_FILE) --show-config
+	@$(PYTHON) scripts/menuconfig.py --config-file $(CONFIG_FILE) --show
 
 # Toolchain options
-TOOLCHAIN ?= 
+TOOLCHAIN ?=
 BUILD_TYPE ?= Release
 
 # Build targets
@@ -105,7 +105,7 @@ $(CMAKE_CONFIG_FILE): $(CONFIG_FILE) scripts/menuconfig.py
 	@echo "Generating build configuration..."
 	$(PYTHON) scripts/menuconfig.py --config-file $(CONFIG_FILE) \
 		--cmake-file $(CMAKE_CONFIG_FILE) --header-file $(HEADER_CONFIG_FILE) \
-		--show-config
+		--generate
 
 $(CONFIG_FILE):
 	@echo "No configuration found. Creating default configuration..."
@@ -113,7 +113,7 @@ $(CONFIG_FILE):
 
 .PHONY: build
 build: configure
-	@echo "Building Pico-RTOS v0.3.0..."
+	@echo "Building Pico-RTOS v0.3.1..."
 	@if [ -x scripts/build.sh ]; then \
 		scripts/build.sh $(if $(filter Debug,$(BUILD_TYPE)),--debug) \
 			$(if $(TOOLCHAIN),--toolchain $(TOOLCHAIN)) \

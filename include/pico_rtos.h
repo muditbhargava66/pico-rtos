@@ -11,7 +11,7 @@
 #include "pico_rtos/task.h"
 #include "pico_rtos/timer.h"
 
-// v0.3.0 Advanced Synchronization Primitives
+// v0.3.1 Advanced Synchronization Primitives
 #ifdef PICO_RTOS_ENABLE_EVENT_GROUPS
 #include "pico_rtos/event_group.h"
 #endif
@@ -20,7 +20,7 @@
 #include "pico_rtos/stream_buffer.h"
 #endif
 
-// v0.3.0 Enhanced Memory Management
+// v0.3.1 Enhanced Memory Management
 #ifdef PICO_RTOS_ENABLE_MEMORY_POOLS
 #include "pico_rtos/memory_pool.h"
 #endif
@@ -29,7 +29,7 @@
 #include "pico_rtos/mpu.h"
 #endif
 
-// v0.3.0 Debugging and Profiling Tools
+// v0.3.1 Debugging and Profiling Tools
 #ifdef PICO_RTOS_ENABLE_TASK_INSPECTION
 #include "pico_rtos/debug.h"
 #endif
@@ -42,12 +42,12 @@
 #include "pico_rtos/trace.h"
 #endif
 
-// v0.3.0 Multi-Core Support
+// v0.3.1 Multi-Core Support
 #ifdef PICO_RTOS_ENABLE_MULTI_CORE
 #include "pico_rtos/smp.h"
 #endif
 
-// v0.3.0 Advanced System Extensions
+// v0.3.1 Advanced System Extensions
 #ifdef PICO_RTOS_ENABLE_IO_ABSTRACTION
 #include "pico_rtos/io.h"
 #endif
@@ -60,7 +60,7 @@
 #include "pico_rtos/timeout.h"
 #endif
 
-// v0.3.0 Production Quality Assurance
+// v0.3.1 Production Quality Assurance
 #ifdef PICO_RTOS_ENABLE_DEADLOCK_DETECTION
 #include "pico_rtos/deadlock.h"
 #endif
@@ -77,7 +77,7 @@
 #include "pico_rtos/alerts.h"
 #endif
 
-// v0.3.0 Backward Compatibility
+// v0.3.1 Backward Compatibility
 #include "pico_rtos/deprecation.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -86,9 +86,14 @@
 /**
  * @brief Version information for Pico-RTOS
  */
+#ifndef PICO_RTOS_VERSION_MAJOR
 #define PICO_RTOS_VERSION_MAJOR 0
 #define PICO_RTOS_VERSION_MINOR 3
-#define PICO_RTOS_VERSION_PATCH 0
+#define PICO_RTOS_VERSION_PATCH 1
+#endif
+#ifndef PICO_RTOS_VERSION_PATCH
+#define PICO_RTOS_VERSION_PATCH 1
+#endif
 
 /**
  * @brief Initialize the RTOS

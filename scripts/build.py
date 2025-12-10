@@ -53,10 +53,9 @@ def build(args):
     except:
         cores = 1
     
+    cmd = f"cmake --build . --parallel {cores}"
     if args.target:
-        cmd = f"make {args.target} -j{cores}"
-    else:
-        cmd = f"make -j{cores}"
+        cmd += f" --target {args.target}"
     
     return run_command(cmd, cwd=build_dir)
 

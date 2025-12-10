@@ -1,9 +1,9 @@
 /**
  * @file compatibility_test.c
- * @brief Backward compatibility validation tests for Pico-RTOS v0.3.0
+ * @brief Backward compatibility validation tests for Pico-RTOS v0.3.1
  * 
  * This test suite validates that all v0.2.1 APIs remain unchanged and
- * behave identically in v0.3.0. It tests:
+ * behave identically in v0.3.1. It tests:
  * 1. API signature compatibility
  * 2. Behavioral compatibility
  * 3. Data structure compatibility
@@ -95,7 +95,7 @@ void test_core_api_compatibility(void) {
     // Test version string format
     const char *version = pico_rtos_get_version_string();
     TEST_ASSERT(version != NULL, "Version string should not be NULL");
-    TEST_ASSERT(strncmp(version, "0.3.0", 5) == 0, "Version string should be '0.3.0'");
+    TEST_ASSERT(strncmp(version, "0.3.1", 5) == 0, "Version string should be '0.3.1'");
     
     // Test system tick functions
     uint32_t tick1 = pico_rtos_get_tick_count();
@@ -365,7 +365,7 @@ void test_data_structure_compatibility(void) {
     TEST_SECTION("Data Structure Size Compatibility");
     
     // These sizes should remain stable for binary compatibility
-    // Note: In v0.3.0, task structure may be larger due to new fields,
+    // Note: In v0.3.1, task structure may be larger due to new fields,
     // but the core fields should remain in the same positions
     
     printf("Task structure size: %zu bytes\n", sizeof(pico_rtos_task_t));
@@ -419,7 +419,7 @@ void test_timeout_constants_compatibility(void) {
  * @brief Main compatibility test function
  */
 void compatibility_test_task(void *param) {
-    printf("\n=== Pico-RTOS v0.3.0 Backward Compatibility Test Suite ===\n");
+    printf("\n=== Pico-RTOS v0.3.1 Backward Compatibility Test Suite ===\n");
     printf("Testing compatibility with v0.2.1 API...\n");
     
     // Run all compatibility tests
@@ -441,10 +441,10 @@ void compatibility_test_task(void *param) {
     
     if (tests_failed == 0) {
         printf("SUCCESS: All compatibility tests passed!\n");
-        printf("v0.3.0 is fully backward compatible with v0.2.1\n");
+        printf("v0.3.1 is fully backward compatible with v0.2.1\n");
     } else {
         printf("FAILURE: %lu compatibility tests failed!\n", tests_failed);
-        printf("v0.3.0 has compatibility issues with v0.2.1\n");
+        printf("v0.3.1 has compatibility issues with v0.2.1\n");
     }
     
     printf("=== Compatibility test complete ===\n");

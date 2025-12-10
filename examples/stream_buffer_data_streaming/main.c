@@ -1,6 +1,6 @@
 /**
  * @file main.c
- * @brief Stream Buffer Efficient Data Streaming Example for Pico-RTOS v0.3.0
+ * @brief Stream Buffer Efficient Data Streaming Example for Pico-RTOS v0.3.1
  * 
  * This example demonstrates efficient data streaming using stream buffers with:
  * 
@@ -18,7 +18,7 @@
 #include <math.h>
 #include "pico/stdlib.h"
 
-// Disable migration warnings for examples (they already use v0.3.0 APIs)
+// Disable migration warnings for examples (they already use v0.3.1 APIs)
 #define PICO_RTOS_DISABLE_MIGRATION_WARNINGS
 #include "pico_rtos.h"
 
@@ -437,7 +437,7 @@ int main() {
     gpio_set_dir(LED_PIN, GPIO_OUT);
     gpio_put(LED_PIN, 0);
     
-    printf("\n=== Pico-RTOS v0.3.0 Stream Buffer Efficient Data Streaming Example ===\n");
+    printf("\n=== Pico-RTOS v0.3.1 Stream Buffer Efficient Data Streaming Example ===\n");
     printf("This example demonstrates:\n");
     printf("1. Variable-length message streaming between tasks\n");
     printf("2. High-throughput data pipeline with multiple producers and consumers\n");

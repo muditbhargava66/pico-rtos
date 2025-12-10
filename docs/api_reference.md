@@ -1,747 +1,422 @@
-# Pico-RTOS API Reference
+# Pico-RTOS v0.3.1 API Reference
 
-This document provides a comprehensive reference for all Pico-RTOS APIs across all versions.
+This document provides a comprehensive reference for the Pico-RTOS v0.3.1 API.
 
-**Current Version**: v0.3.0 "Advanced Synchronization & Multi-Core"  
-**Backward Compatibility**: 100% compatible with v0.2.1 and earlier
+## Table of Contents
 
-## 📚 API Overview
-
-Pico-RTOS provides a rich set of APIs organized into the following categories:
-
-### Core RTOS APIs
-- System initialization and control
-- Task management and scheduling
-- Time and tick management
-- Critical sections and interrupt control
-
-### Synchronization Primitives
-- **Mutexes**: Mutual exclusion with priority inheritance
-- **Semaphores**: Counting and binary semaphores
-- **Queues**: Message passing with blocking operations
-- **Event Groups** *(v0.3.0)*: Multi-event synchronization
-- **Stream Buffers** *(v0.3.0)*: Variable-length message passing
-
-### Memory Management
-- Dynamic memory allocation with tracking
-- **Memory Pools** *(v0.3.0)*: O(1) deterministic allocation
-- **MPU Support** *(v0.3.0)*: Hardware memory protection
-- Stack overflow detection and monitoring
-
-### Multi-Core Support *(v0.3.0)*
-- **SMP Scheduler**: Symmetric multiprocessing
-- **Load Balancing**: Automatic workload distribution
-- **Core Affinity**: Task binding to specific cores
-- **Inter-Core Communication**: High-performance IPC
-
-### Debugging & Profiling *(v0.3.0)*
-- **Runtime Inspection**: Task state monitoring
-- **Execution Profiling**: High-resolution timing analysis
-- **System Tracing**: Event logging and analysis
-- **Enhanced Assertions**: Advanced debugging support
-
-### System Extensions *(v0.3.0)*
-- **I/O Abstraction**: Thread-safe peripheral access
-- **High-Resolution Timers**: Microsecond precision
-- **Universal Timeouts**: Consistent timeout handling
-- **Multi-Level Logging**: Enhanced debug output
-
-### Quality Assurance *(v0.3.0)*
-- **Deadlock Detection**: Runtime prevention
-- **Health Monitoring**: System metrics collection
-- **Watchdog Integration**: Hardware reliability
-- **Alert System**: Proactive monitoring
+1. [Core System](#core-system)
+2. [Task Management](#task-management)
+3. [Synchronization Primitives](#synchronization-primitives)
+    - [Mutexes](#mutexes)
+    - [Semaphores](#semaphores)
+    - [Queues](#queues)
+    - [Event Groups](#event-groups)
+    - [Stream Buffers](#stream-buffers)
+4. [Memory Management](#memory-management)
+    - [Memory Pools](#memory-pools)
+    - [MPU Support](#mpu-support)
+5. [Diagnostics & Safety](#diagnostics--safety)
+    - [Deadlock Detection](#deadlock-detection)
+    - [Health Monitoring](#health-monitoring)
+    - [Profiler](#execution-profiler)
 
 ---
 
-## 🔧 Core RTOS Functions
+## Core System
 
-### System Control
+Basic system control functions.
 
-#### `bool pico_rtos_init(void)`
-Initialize the RTOS system.
-
-**Returns:**
-- `true` if initialization successful
-- `false` if initialization failed
-
-**Example:**
-```c
-if (!pico_rtos_init()) {
-    // Handle initialization failure
-    return -1;
-}
-```
-
-#### `void pico_rtos_start(void)`
-Start the RTOS scheduler. This function does not return unless the scheduler is stopped.
-
-**Note:** Call this after creating all initial tasks.
-
-#### `const char *pico_rtos_get_version_string(void)`
-Get the RTOS version string.
-
-**Returns:** Version string in format "X.Y.Z"
-
-### Time Management
-
-#### `uint32_t pico_rtos_get_tick_count(void)`
-Get the current system tick count.
-
-**Returns:** Current system time in milliseconds since startup
-
-#### `uint32_t pico_rtos_get_uptime_ms(void)`
-Get the system uptime in milliseconds.
-
-**Returns:** System uptime in milliseconds (thread-safe)
-
-#### `uint32_t pico_rtos_get_tick_rate_hz(void)`
-Get the current system tick frequency.
-
-**Returns:** System tick rate in Hz (configured at build time)
-
-### Critical Sections
-
-#### `void pico_rtos_enter_critical(void)`
-Enter a critical section (disable interrupts).
-
-**Warning:** Keep critical sections as short as possible.
-
-#### `void pico_rtos_exit_critical(void)`
-Exit a critical section (restore interrupts).
+### `void pico_rtos_start(void)`
+Starts the RTOS scheduler. This function does not return.
+- **Note**: Ensure all initial tasks and hardware initialization are complete before calling this.
 
 ---
 
-## 👥 Task Management
+## Task Management
 
-### Task Creation and Control
-
-#### `bool pico_rtos_task_create(pico_rtos_task_t *task, const char *name, pico_rtos_task_function_t function, void *param, uint32_t stack_size, uint32_t priority)`
-Create a new task.
-
-**Parameters:**
-- `task`: Pointer to task structure
-- `name`: Task name for debugging (max 15 characters)
-- `function`: Task function to execute
-- `param`: Parameter passed to task function
-- `stack_size`: Stack size in bytes (minimum 256)
-- `priority`: Task priority (0-31, higher = more priority)
-
-**Returns:**
-- `true` if task created successfully
-- `false` if creation failed
-
-**Example:**
-```c
-pico_rtos_task_t led_task;
-bool result = pico_rtos_task_create(
-    &led_task,
-    "LED_Blink",
-    led_task_function,
-    NULL,
-    1024,  // 1KB stack
-    10     // Medium priority
-);
-```
-
-#### `bool pico_rtos_task_delete(pico_rtos_task_t *task)`
-Delete a task.
-
-**Parameters:**
-- `task`: Task to delete (NULL for current task)
-
-**Returns:**
-- `true` if deletion successful
-- `false` if deletion failed
-
-#### `void pico_rtos_task_delay(uint32_t delay_ms)`
-Delay the current task for specified milliseconds.
-
-**Parameters:**
-- `delay_ms`: Delay time in milliseconds
-
-#### `void pico_rtos_task_yield(void)`
-Yield CPU to other tasks of same priority.
-
-#### `bool pico_rtos_task_set_priority(pico_rtos_task_t *task, uint32_t priority)`
-Change task priority.
-
-**Parameters:**
-- `task`: Task to modify (NULL for current task)
-- `priority`: New priority (0-31)
-
-**Returns:**
-- `true` if priority changed successfully
-- `false` if change failed
-
----
-
-## 🔒 Synchronization Primitives
-
-### Mutexes
-
-#### `bool pico_rtos_mutex_init(pico_rtos_mutex_t *mutex)`
-Initialize a mutex.
-
-**Parameters:**
-- `mutex`: Pointer to mutex structure
-
-**Returns:**
-- `true` if initialization successful
-- `false` if initialization failed
-
-#### `bool pico_rtos_mutex_lock(pico_rtos_mutex_t *mutex, uint32_t timeout_ms)`
-Lock a mutex with timeout.
-
-**Parameters:**
-- `mutex`: Mutex to lock
-- `timeout_ms`: Timeout in milliseconds (PICO_RTOS_WAIT_FOREVER for no timeout)
-
-**Returns:**
-- `true` if mutex locked successfully
-- `false` if timeout or error occurred
-
-#### `bool pico_rtos_mutex_unlock(pico_rtos_mutex_t *mutex)`
-Unlock a mutex.
-
-**Parameters:**
-- `mutex`: Mutex to unlock
-
-**Returns:**
-- `true` if mutex unlocked successfully
-- `false` if unlock failed (not owner)
-
-### Semaphores
-
-#### `bool pico_rtos_semaphore_init(pico_rtos_semaphore_t *semaphore, uint32_t initial_count, uint32_t max_count)`
-Initialize a semaphore.
-
-**Parameters:**
-- `semaphore`: Pointer to semaphore structure
-- `initial_count`: Initial count value
-- `max_count`: Maximum count value
-
-**Returns:**
-- `true` if initialization successful
-- `false` if initialization failed
-
-#### `bool pico_rtos_semaphore_take(pico_rtos_semaphore_t *semaphore, uint32_t timeout_ms)`
-Take (decrement) a semaphore.
-
-**Parameters:**
-- `semaphore`: Semaphore to take
-- `timeout_ms`: Timeout in milliseconds
-
-**Returns:**
-- `true` if semaphore taken successfully
-- `false` if timeout or error occurred
-
-#### `bool pico_rtos_semaphore_give(pico_rtos_semaphore_t *semaphore)`
-Give (increment) a semaphore.
-
-**Parameters:**
-- `semaphore`: Semaphore to give
-
-**Returns:**
-- `true` if semaphore given successfully
-- `false` if give failed (max count reached)
-
-### Queues
-
-#### `bool pico_rtos_queue_init(pico_rtos_queue_t *queue, void *buffer, uint32_t item_size, uint32_t item_count)`
-Initialize a queue.
-
-**Parameters:**
-- `queue`: Pointer to queue structure
-- `buffer`: Buffer for queue storage
-- `item_size`: Size of each item in bytes
-- `item_count`: Maximum number of items
-
-**Returns:**
-- `true` if initialization successful
-- `false` if initialization failed
-
-#### `bool pico_rtos_queue_send(pico_rtos_queue_t *queue, const void *item, uint32_t timeout_ms)`
-Send an item to the queue.
-
-**Parameters:**
-- `queue`: Queue to send to
-- `item`: Pointer to item data
-- `timeout_ms`: Timeout in milliseconds
-
-**Returns:**
-- `true` if item sent successfully
-- `false` if timeout or error occurred
-
-#### `bool pico_rtos_queue_receive(pico_rtos_queue_t *queue, void *item, uint32_t timeout_ms)`
-Receive an item from the queue.
-
-**Parameters:**
-- `queue`: Queue to receive from
-- `item`: Buffer to store received item
-- `timeout_ms`: Timeout in milliseconds
-
-**Returns:**
-- `true` if item received successfully
-- `false` if timeout or error occurred
-
----
-
-## 🎯 Event Groups *(v0.3.0)*
-
-Event groups provide advanced synchronization for multiple events.
+Manage threads of execution.
 
 ### Data Structures
-
-```c
-typedef struct {
-    uint32_t event_bits;                    // Current event state
-    pico_rtos_block_object_t *block_obj;    // Blocking object
-    critical_section_t cs;                  // Thread safety
-} pico_rtos_event_group_t;
-```
+- **`pico_rtos_task_t`**: Opaque handle to a task.
 
 ### Functions
 
-#### `bool pico_rtos_event_group_init(pico_rtos_event_group_t *event_group)`
-Initialize an event group.
+#### `bool pico_rtos_task_create(pico_rtos_task_function_t task_func, void *param, uint32_t *stack, size_t stack_size, uint32_t priority, pico_rtos_task_t *task)`
+Creates a new task.
+- **Parameters**:
+  - `task_func`: Function pointer for the task entry point.
+  - `param`: Pointer to parameter passed to the task.
+  - `stack`: Pointer to the stack memory array.
+  - `stack_size`: Size of the stack in words (uint32_t).
+  - `priority`: Task priority (0 is lowest).
+  - `task`: Pointer to task structure to initialize.
+- **Return**: `true` on success, `false` otherwise.
 
-**Parameters:**
-- `event_group`: Pointer to event group structure
+#### `void pico_rtos_task_sleep(uint32_t delay_ms)`
+Suspends the calling task for a specified duration.
+- **Parameters**:
+  - `delay_ms`: Delay in milliseconds.
 
-**Returns:**
-- `true` if initialization successful
-- `false` if initialization failed
-
-#### `bool pico_rtos_event_group_set_bits(pico_rtos_event_group_t *event_group, uint32_t bits)`
-Set (activate) event bits.
-
-**Parameters:**
-- `event_group`: Event group to modify
-- `bits`: Bit mask of events to set
-
-**Returns:**
-- `true` if bits set successfully
-- `false` if operation failed
-
-#### `bool pico_rtos_event_group_clear_bits(pico_rtos_event_group_t *event_group, uint32_t bits)`
-Clear (deactivate) event bits.
-
-**Parameters:**
-- `event_group`: Event group to modify
-- `bits`: Bit mask of events to clear
-
-**Returns:**
-- `true` if bits cleared successfully
-- `false` if operation failed
-
-#### `uint32_t pico_rtos_event_group_wait_bits(pico_rtos_event_group_t *event_group, uint32_t bits, bool wait_all, bool clear, uint32_t timeout_ms)`
-Wait for event bits with configurable semantics.
-
-**Parameters:**
-- `event_group`: Event group to wait on
-- `bits`: Bit mask of events to wait for
-- `wait_all`: `true` for "wait all", `false` for "wait any"
-- `clear`: `true` to clear bits after successful wait
-- `timeout_ms`: Timeout in milliseconds
-
-**Returns:**
-- Event bits that satisfied the wait condition
-- 0 if timeout or error occurred
-
-**Example:**
-```c
-pico_rtos_event_group_t events;
-pico_rtos_event_group_init(&events);
-
-// Task 1: Set events
-pico_rtos_event_group_set_bits(&events, 0x01 | 0x04);
-
-// Task 2: Wait for any event
-uint32_t result = pico_rtos_event_group_wait_bits(
-    &events, 
-    0x01 | 0x02 | 0x04,  // Wait for any of these
-    false,               // Wait for ANY (not all)
-    true,                // Clear bits after wait
-    1000                 // 1 second timeout
-);
-```
+#### `void pico_rtos_task_yield(void)`
+Voluntarily yields the processor to the next task of the same priority.
 
 ---
 
-## 📦 Stream Buffers *(v0.3.0)*
+## Synchronization Primitives
 
-Stream buffers provide efficient variable-length message passing.
+### Mutexes
+Mutual exclusion for shared resources. defined in `include/pico_rtos/mutex.h`.
 
-### Functions
+#### `bool pico_rtos_mutex_init(pico_rtos_mutex_t *mutex)`
+Initializes a mutex.
+- **Return**: `true` on success.
 
-#### `bool pico_rtos_stream_buffer_init(pico_rtos_stream_buffer_t *stream_buffer, uint8_t *buffer, uint32_t buffer_size)`
-Initialize a stream buffer.
+#### `bool pico_rtos_mutex_lock(pico_rtos_mutex_t *mutex, uint32_t timeout)`
+Acquires a lock on the mutex.
+- **Parameters**:
+  - `timeout`: Max wait time in ms (`PICO_RTOS_WAIT_FOREVER` for infinite).
+- **Return**: `true` if acquired, `false` on timeout.
 
-**Parameters:**
-- `stream_buffer`: Pointer to stream buffer structure
-- `buffer`: Buffer for data storage
-- `buffer_size`: Size of buffer in bytes
+#### `bool pico_rtos_mutex_try_lock(pico_rtos_mutex_t *mutex)`
+Attempts to lock without blocking.
 
-**Returns:**
-- `true` if initialization successful
-- `false` if initialization failed
+#### `bool pico_rtos_mutex_unlock(pico_rtos_mutex_t *mutex)`
+Releases the mutex. Must be called by the owner.
 
-#### `uint32_t pico_rtos_stream_buffer_send(pico_rtos_stream_buffer_t *stream_buffer, const void *data, uint32_t data_size, uint32_t timeout_ms)`
-Send data to stream buffer.
+#### `void pico_rtos_mutex_delete(pico_rtos_mutex_t *mutex)`
+Deletes the mutex.
 
-**Parameters:**
-- `stream_buffer`: Stream buffer to send to
-- `data`: Pointer to data to send
-- `data_size`: Size of data in bytes
-- `timeout_ms`: Timeout in milliseconds
+### Semaphores
+Counting or binary semaphores. defined in `include/pico_rtos/semaphore.h`.
 
-**Returns:**
-- Number of bytes sent
-- 0 if timeout or error occurred
+#### `bool pico_rtos_semaphore_init(pico_rtos_semaphore_t *sem, uint32_t initial, uint32_t max)`
+Initializes a semaphore.
+- **Parameters**:
+  - `initial`: Initial count.
+  - `max`: Maximum count.
 
-#### `uint32_t pico_rtos_stream_buffer_receive(pico_rtos_stream_buffer_t *stream_buffer, void *data, uint32_t buffer_size, uint32_t timeout_ms)`
-Receive data from stream buffer.
+#### `bool pico_rtos_semaphore_give(pico_rtos_semaphore_t *sem)`
+Increments the semaphore count.
 
-**Parameters:**
-- `stream_buffer`: Stream buffer to receive from
-- `data`: Buffer to store received data
-- `buffer_size`: Size of receive buffer
-- `timeout_ms`: Timeout in milliseconds
+#### `bool pico_rtos_semaphore_take(pico_rtos_semaphore_t *sem, uint32_t timeout)`
+Decrements the semaphore count, blocking if count is 0.
 
-**Returns:**
-- Number of bytes received
-- 0 if timeout or error occurred
+#### `void pico_rtos_semaphore_delete(pico_rtos_semaphore_t *sem)`
+Deletes the semaphore.
+
+### Queues
+Thread-safe message passing. defined in `include/pico_rtos/queue.h`.
+
+#### `bool pico_rtos_queue_init(pico_rtos_queue_t *queue, void *buffer, size_t item_size, size_t max_items)`
+Initializes a queue.
+- **Parameters**:
+  - `buffer`: Storage array for items. (size must be >= `item_size` * `max_items`).
+  - `item_size`: Size of each item in bytes.
+  - `max_items`: Capacity.
+
+#### `bool pico_rtos_queue_send(pico_rtos_queue_t *queue, const void *item, uint32_t timeout)`
+Sends an item to the back of the queue.
+
+#### `bool pico_rtos_queue_receive(pico_rtos_queue_t *queue, void *item, uint32_t timeout)`
+Receives an item from the front of the queue.
+
+### Event Groups
+Manage multiple events (bits) with "wait for any/all" semantics. defined in `include/pico_rtos/event_group.h`.
+
+#### Constants
+- `PICO_RTOS_EVENT_GROUP_MAX_EVENTS`: 32
+- `PICO_RTOS_EVENT_BIT_0`...`PICO_RTOS_EVENT_BIT_31`: Bit masks.
+
+#### `bool pico_rtos_event_group_init(pico_rtos_event_group_t *eg)`
+Initializes an event group.
+
+#### `bool pico_rtos_event_group_set_bits(pico_rtos_event_group_t *eg, uint32_t bits)`
+Sets specific bits. Unblocks waiting tasks if conditions are met. (ISR safe).
+
+#### `bool pico_rtos_event_group_clear_bits(pico_rtos_event_group_t *eg, uint32_t bits)`
+Clears specific bits.
+
+#### `uint32_t pico_rtos_event_group_wait_bits(pico_rtos_event_group_t *eg, uint32_t bits_to_wait, bool wait_all, bool clear_exit, uint32_t timeout)`
+Waits for event bits.
+- **Parameters**:
+  - `wait_all`: if true, waits for ALL bits. If false, waits for ANY bit.
+  - `clear_exit`: if true, clears the bits upon successful return.
+- **Return**: The value of the event bits when the condition was met.
+
+#### `uint32_t pico_rtos_event_group_get_bits(pico_rtos_event_group_t *eg)`
+Returns current bits instantly.
+
+### Stream Buffers
+Variable-length byte streams, optimized for single-reader/single-writer. defined in `include/pico_rtos/stream_buffer.h`.
+
+#### `bool pico_rtos_stream_buffer_init(pico_rtos_stream_buffer_t *sb, uint8_t *buffer, uint32_t size)`
+Initializes a stream buffer using the provided storage.
+
+#### `uint32_t pico_rtos_stream_buffer_send(pico_rtos_stream_buffer_t *sb, const void *data, uint32_t len, uint32_t timeout)`
+Writes bytes to the stream. Thread-safe.
+
+#### `uint32_t pico_rtos_stream_buffer_receive(pico_rtos_stream_buffer_t *sb, void *data, uint32_t max_len, uint32_t timeout)`
+Reads bytes from the stream.
+
+#### `bool pico_rtos_stream_buffer_set_zero_copy(pico_rtos_stream_buffer_t *sb, bool enable)`
+Enables zero-copy mode for large transfers.
+
+#### `bool pico_rtos_stream_buffer_zero_copy_send_start(pico_rtos_stream_buffer_t *sb, uint32_t len, pico_rtos_stream_buffer_zero_copy_t *zc, uint32_t timeout)`
+Begins a zero-copy write. Fills `zc` with direct buffer pointer. Must be followed by `complete`.
+
+#### `bool pico_rtos_stream_buffer_zero_copy_receive_start(...)`
+Begins a zero-copy read.
 
 ---
 
-## 🧠 Memory Management
+## Memory Management
 
-### Dynamic Memory
+### Memory Pools
+O(1) fixed-size block allocator. defined in `include/pico_rtos/memory_pool.h`.
 
-#### `void *pico_rtos_malloc(size_t size)`
-Allocate memory with tracking.
+#### `bool pico_rtos_memory_pool_init(pico_rtos_memory_pool_t *pool, void *mem, uint32_t block_size, uint32_t block_count)`
+Initializes a pool.
 
-**Parameters:**
-- `size`: Size in bytes to allocate
-
-**Returns:**
-- Pointer to allocated memory
-- `NULL` if allocation failed
-
-#### `void pico_rtos_free(void *ptr)`
-Free previously allocated memory.
-
-**Parameters:**
-- `ptr`: Pointer to memory to free
-
-### Memory Pools *(v0.3.0)*
-
-#### `bool pico_rtos_memory_pool_init(pico_rtos_memory_pool_t *pool, void *buffer, uint32_t block_size, uint32_t block_count)`
-Initialize a memory pool.
-
-**Parameters:**
-- `pool`: Pointer to memory pool structure
-- `buffer`: Buffer for pool storage
-- `block_size`: Size of each block
-- `block_count`: Number of blocks
-
-**Returns:**
-- `true` if initialization successful
-- `false` if initialization failed
-
-#### `void *pico_rtos_memory_pool_alloc(pico_rtos_memory_pool_t *pool, uint32_t timeout_ms)`
-Allocate a block from memory pool.
-
-**Parameters:**
-- `pool`: Memory pool to allocate from
-- `timeout_ms`: Timeout in milliseconds
-
-**Returns:**
-- Pointer to allocated block
-- `NULL` if timeout or error occurred
+#### `void *pico_rtos_memory_pool_alloc(pico_rtos_memory_pool_t *pool, uint32_t timeout)`
+Allocates a block. Returns NULL on timeout.
 
 #### `bool pico_rtos_memory_pool_free(pico_rtos_memory_pool_t *pool, void *block)`
-Free a block back to memory pool.
+Frees a block. Returns false if block is invalid (not from this pool) or corruption detected.
 
-**Parameters:**
-- `pool`: Memory pool to return block to
-- `block`: Block to free
+#### `bool pico_rtos_memory_pool_validate(pico_rtos_memory_pool_t *pool)`
+Debug: checks integrity of the entire pool.
 
-**Returns:**
-- `true` if block freed successfully
-- `false` if free failed
+### MPU Support
+Hardware memory protection (RP2040 limitations apply). defined in `include/pico_rtos/mpu.h`.
+
+#### `bool pico_rtos_mpu_init(void)`
+Initializes MPU hardware.
+
+#### `bool pico_rtos_mpu_configure_region(uint8_t region_num, const pico_rtos_mpu_region_t *config)`
+Detailed configuration of an MPU region.
+
+#### `bool pico_rtos_mpu_configure_simple_region(...)`
+Helper for common R/W/X scenarios.
+
+#### `bool pico_rtos_mpu_configure_stack_protection(uint8_t region_num, uint32_t base, uint32_t size, uint32_t guard_size)`
+Protects the bottom of a stack to detect overflows.
 
 ---
 
-## 🔄 Multi-Core Support *(v0.3.0)*
+## Diagnostics & Safety
 
-### SMP Scheduler
+### Deadlock Detection
+Runtime analysis of resource dependencies. defined in `include/pico_rtos/deadlock.h`.
+
+#### `bool pico_rtos_deadlock_init(void)`
+Starts the deadlock detector.
+
+#### `uint32_t pico_rtos_deadlock_register_resource(void *ptr, pico_rtos_resource_type_t type, const char *name)`
+Registers a resource (mutex, etc.) for tracking.
+
+#### `bool pico_rtos_deadlock_detect(pico_rtos_deadlock_result_t *result)`
+Manually triggers a detection cycle. (Usually runs automatically periodically).
+
+#### `bool pico_rtos_deadlock_resolve(const pico_rtos_deadlock_result_t *res, pico_rtos_deadlock_action_t action)`
+Attempts recovery (e.g., abort task).
+
+### Health Monitoring
+System-wide metrics telemetry. defined in `include/pico_rtos/health.h`.
+
+#### `bool pico_rtos_health_init(void)`
+Starts health monitor service.
+
+#### `bool pico_rtos_health_get_system_health(pico_rtos_system_health_t *health)`
+Gets global stats (uptime, task counts, error rates).
+
+#### `bool pico_rtos_health_get_cpu_stats(uint32_t core_id, pico_rtos_cpu_stats_t *stats)`
+Per-core usage stats (idle time, active time).
+
+#### `bool pico_rtos_health_get_memory_stats(pico_rtos_memory_stats_t *stats)`
+Heap usage statistics.
+
+#### `uint32_t pico_rtos_health_register_metric(...)`
+Adds a custom metric to the health system.
+
+### Execution Profiler
+High-resolution function timing. defined in `include/pico_rtos/profiler.h`.
+
+#### Macros
+- `PICO_RTOS_PROFILE_FUNCTION()`: Add this at the top of a function to profile it automatically.
+- `PICO_RTOS_PROFILE_BLOCK_START(name)` / `_END()`: Profile a section of code.
+
+#### Functions
+- **`pico_rtos_profiler_init(max_entries)`**: Setup.
+- **`pico_rtos_profiler_get_stats(...)`**: Get global overhead/stats.
+- **`pico_rtos_profiler_print_all_entries()`**: Dumps timing table to stdout.
+
+---
+
+## Multi-Core (SMP)
+Symmetric multi-processing support. Defined in `include/pico_rtos/smp.h`.
+
+### Initialization
 
 #### `bool pico_rtos_smp_init(void)`
-Initialize SMP scheduler for dual-core operation.
+Initializes the SMP scheduler for dual-core operation.
+- **Return**: `true` on success.
+- **Note**: Call after `pico_rtos_init()` and before `pico_rtos_start()`.
 
-**Returns:**
-- `true` if SMP initialization successful
-- `false` if initialization failed
+#### `bool pico_rtos_smp_set_load_balancing(bool enable)`
+Enables or disables automatic load balancing between cores.
 
-#### `bool pico_rtos_task_set_core_affinity(pico_rtos_task_t *task, uint32_t core_mask)`
-Set task core affinity.
+#### `bool pico_rtos_smp_set_load_balance_threshold(uint32_t percent)`
+Sets the CPU usage difference threshold that triggers task migration.
 
-**Parameters:**
-- `task`: Task to modify (NULL for current task)
-- `core_mask`: Bitmask of allowed cores (bit 0 = core 0, bit 1 = core 1)
+### Core Affinity
 
-**Returns:**
-- `true` if affinity set successfully
-- `false` if operation failed
+#### `bool pico_rtos_task_set_core_affinity(pico_rtos_task_t *task, uint8_t affinity_mask)`
+Sets which core(s) a task can run on.
+- **Parameters**:
+  - `affinity_mask`: `0x01` = Core 0, `0x02` = Core 1, `0x03` = Any.
+
+#### `uint8_t pico_rtos_task_get_core_affinity(pico_rtos_task_t *task)`
+Returns the current affinity mask for a task.
+
+#### `uint32_t pico_rtos_get_current_core(void)`
+Returns the ID of the currently executing core (0 or 1).
 
 ### Inter-Core Communication
 
-#### `bool pico_rtos_ipc_channel_init(pico_rtos_ipc_channel_t *channel, void *buffer, uint32_t buffer_size)`
-Initialize inter-core communication channel.
+#### `bool pico_rtos_ipc_send_message(uint32_t target_core, uint32_t type, const void *data, uint32_t size, uint32_t timeout)`
+Sends a message to a task on another core.
 
-**Parameters:**
-- `channel`: Pointer to IPC channel structure
-- `buffer`: Buffer for message storage
-- `buffer_size`: Size of buffer in bytes
+#### `bool pico_rtos_ipc_receive_message(pico_rtos_ipc_message_t *msg, uint32_t timeout)`
+Receives a pending IPC message.
 
-**Returns:**
-- `true` if initialization successful
-- `false` if initialization failed
+#### `uint32_t pico_rtos_ipc_get_pending_count(void)`
+Returns the number of pending IPC messages.
 
-#### `bool pico_rtos_ipc_send(pico_rtos_ipc_channel_t *channel, const void *message, uint32_t message_size, uint32_t timeout_ms)`
-Send message to another core.
+### Statistics
 
-**Parameters:**
-- `channel`: IPC channel to send on
-- `message`: Message data
-- `message_size`: Size of message
-- `timeout_ms`: Timeout in milliseconds
-
-**Returns:**
-- `true` if message sent successfully
-- `false` if timeout or error occurred
+#### `bool pico_rtos_smp_get_stats(pico_rtos_smp_stats_t *stats)`
+Gets SMP statistics including per-core usage and migration counts.
 
 ---
 
-## 🔍 Debugging & Profiling *(v0.3.0)*
+## High-Resolution Timers
+Microsecond-precision timing. Defined in `include/pico_rtos/hires_timer.h`.
 
-### Task Inspection
+#### `bool pico_rtos_hires_timer_init(pico_rtos_hires_timer_t *timer)`
+Initializes a high-resolution timer.
 
-#### `bool pico_rtos_debug_get_task_info(pico_rtos_task_t *task, pico_rtos_task_info_t *info)`
-Get detailed task information.
+#### `void pico_rtos_hires_timer_start(pico_rtos_hires_timer_t *timer)`
+Starts the timer.
 
-**Parameters:**
-- `task`: Task to inspect (NULL for current task)
-- `info`: Structure to fill with task information
+#### `uint64_t pico_rtos_hires_timer_get_us(pico_rtos_hires_timer_t *timer)`
+Returns elapsed microseconds since timer start.
 
-**Returns:**
-- `true` if information retrieved successfully
-- `false` if operation failed
-
-### Execution Profiling
-
-#### `bool pico_rtos_profiler_start(void)`
-Start execution profiling.
-
-**Returns:**
-- `true` if profiling started successfully
-- `false` if start failed
-
-#### `bool pico_rtos_profiler_stop(void)`
-Stop execution profiling.
-
-**Returns:**
-- `true` if profiling stopped successfully
-- `false` if stop failed
-
-#### `bool pico_rtos_profiler_get_stats(pico_rtos_profiler_stats_t *stats)`
-Get profiling statistics.
-
-**Parameters:**
-- `stats`: Structure to fill with profiling data
-
-**Returns:**
-- `true` if statistics retrieved successfully
-- `false` if operation failed
+#### `void pico_rtos_hires_timer_reset(pico_rtos_hires_timer_t *timer)`
+Resets the timer to zero.
 
 ---
 
-## 📊 System Monitoring
+## System Tracing
+Event logging for debugging. Defined in `include/pico_rtos/trace.h`.
 
-### System Statistics
+#### `bool pico_rtos_trace_init(uint32_t buffer_size)`
+Initializes trace buffer with specified size.
 
-#### `bool pico_rtos_get_system_stats(pico_rtos_system_stats_t *stats)`
-Get comprehensive system statistics.
+#### `void pico_rtos_trace_start(void)`
+Begins event recording.
 
-**Parameters:**
-- `stats`: Structure to fill with system statistics
+#### `void pico_rtos_trace_stop(void)`
+Stops event recording.
 
-**Returns:**
-- `true` if statistics retrieved successfully
-- `false` if operation failed
+#### `bool pico_rtos_trace_get_events(pico_rtos_trace_entry_t *buffer, uint32_t *count)`
+Retrieves recorded trace events.
 
-### Health Monitoring *(v0.3.0)*
-
-#### `bool pico_rtos_health_monitor_init(void)`
-Initialize system health monitoring.
-
-**Returns:**
-- `true` if initialization successful
-- `false` if initialization failed
-
-#### `bool pico_rtos_health_get_metrics(pico_rtos_health_metrics_t *metrics)`
-Get current health metrics.
-
-**Parameters:**
-- `metrics`: Structure to fill with health data
-
-**Returns:**
-- `true` if metrics retrieved successfully
-- `false` if operation failed
+#### `void pico_rtos_trace_clear(void)`
+Clears the trace buffer.
 
 ---
 
-## 🚨 Error Handling
+## Watchdog Integration
+Hardware watchdog support. Defined in `include/pico_rtos/watchdog.h`.
 
-### Error Codes
+#### `bool pico_rtos_watchdog_init(uint32_t timeout_ms)`
+Initializes the hardware watchdog with specified timeout.
 
-All functions return appropriate error codes. Common error codes include:
+#### `void pico_rtos_watchdog_feed(void)`
+Resets the watchdog timer (call periodically to prevent reset).
 
-- `PICO_RTOS_ERROR_NONE` (0): Success
-- `PICO_RTOS_ERROR_INVALID_PARAM`: Invalid parameter
-- `PICO_RTOS_ERROR_TIMEOUT`: Operation timed out
-- `PICO_RTOS_ERROR_NO_MEMORY`: Insufficient memory
-- `PICO_RTOS_ERROR_RESOURCE_BUSY`: Resource is busy
+#### `void pico_rtos_watchdog_enable(void)`
+Enables the watchdog.
 
-### Error History
+#### `void pico_rtos_watchdog_disable(void)`
+Disables the watchdog.
 
-#### `bool pico_rtos_get_error_history(pico_rtos_error_entry_t *entries, uint32_t *count)`
-Get recent error history.
-
-**Parameters:**
-- `entries`: Array to fill with error entries
-- `count`: Pointer to count (input: array size, output: entries filled)
-
-**Returns:**
-- `true` if history retrieved successfully
-- `false` if operation failed
+#### `bool pico_rtos_watchdog_caused_reboot(void)`
+Returns `true` if the last reset was caused by watchdog timeout.
 
 ---
 
-## 🔧 Configuration Constants
+## Alert System
+Configurable threshold notifications. Defined in `include/pico_rtos/alerts.h`.
 
-### Timeouts
-- `PICO_RTOS_WAIT_FOREVER`: Wait indefinitely
-- `PICO_RTOS_NO_WAIT`: Don't wait (immediate return)
+#### `bool pico_rtos_alert_init(void)`
+Initializes the alert system.
 
-### Priorities
-- `PICO_RTOS_PRIORITY_IDLE`: Idle task priority (0)
-- `PICO_RTOS_PRIORITY_LOW`: Low priority (8)
-- `PICO_RTOS_PRIORITY_NORMAL`: Normal priority (16)
-- `PICO_RTOS_PRIORITY_HIGH`: High priority (24)
-- `PICO_RTOS_PRIORITY_CRITICAL`: Critical priority (31)
+#### `uint32_t pico_rtos_alert_register(pico_rtos_alert_type_t type, uint32_t threshold, pico_rtos_alert_callback_t callback)`
+Registers an alert with threshold and callback.
 
-### Event Group Constants
-- `PICO_RTOS_EVENT_BIT_0` to `PICO_RTOS_EVENT_BIT_31`: Individual event bits
-- `PICO_RTOS_EVENT_ALL_BITS`: All event bits (0xFFFFFFFF)
+#### `bool pico_rtos_alert_unregister(uint32_t alert_id)`
+Removes a registered alert.
+
+#### `bool pico_rtos_alert_set_threshold(uint32_t alert_id, uint32_t threshold)`
+Updates an alert's threshold value.
 
 ---
 
-## 📝 Usage Examples
+## I/O Abstraction
+Unified peripheral interface. Defined in `include/pico_rtos/io.h`.
 
-### Basic Task Creation
-```c
-#include "pico_rtos.h"
+#### `bool pico_rtos_io_init(pico_rtos_io_t *io, const pico_rtos_io_config_t *config)`
+Initializes an I/O channel with the specified configuration.
 
-void led_task(void *param) {
-    while (1) {
-        gpio_put(PICO_DEFAULT_LED_PIN, 1);
-        pico_rtos_task_delay(500);
-        gpio_put(PICO_DEFAULT_LED_PIN, 0);
-        pico_rtos_task_delay(500);
-    }
-}
+#### `int32_t pico_rtos_io_read(pico_rtos_io_t *io, void *buffer, uint32_t size, uint32_t timeout)`
+Reads data from I/O channel. Returns bytes read or negative error code.
 
-int main() {
-    stdio_init_all();
-    gpio_init(PICO_DEFAULT_LED_PIN);
-    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
-    
-    if (!pico_rtos_init()) {
-        return -1;
-    }
-    
-    pico_rtos_task_t led_task_handle;
-    pico_rtos_task_create(
-        &led_task_handle,
-        "LED",
-        led_task,
-        NULL,
-        1024,
-        PICO_RTOS_PRIORITY_NORMAL
-    );
-    
-    pico_rtos_start();
-    return 0;
-}
-```
+#### `int32_t pico_rtos_io_write(pico_rtos_io_t *io, const void *data, uint32_t size, uint32_t timeout)`
+Writes data to I/O channel. Returns bytes written or negative error code.
 
-### Multi-Core Example *(v0.3.0)*
-```c
-void core0_task(void *param) {
-    // Task runs on core 0
-    while (1) {
-        printf("Core 0 task running\n");
-        pico_rtos_task_delay(1000);
-    }
-}
-
-void core1_task(void *param) {
-    // Task runs on core 1
-    while (1) {
-        printf("Core 1 task running\n");
-        pico_rtos_task_delay(1000);
-    }
-}
-
-int main() {
-    pico_rtos_init();
-    pico_rtos_smp_init();  // Enable multi-core
-    
-    pico_rtos_task_t task0, task1;
-    
-    // Create task for core 0
-    pico_rtos_task_create(&task0, "Core0", core0_task, NULL, 1024, 10);
-    pico_rtos_task_set_core_affinity(&task0, 0x01);  // Core 0 only
-    
-    // Create task for core 1
-    pico_rtos_task_create(&task1, "Core1", core1_task, NULL, 1024, 10);
-    pico_rtos_task_set_core_affinity(&task1, 0x02);  // Core 1 only
-    
-    pico_rtos_start();
-    return 0;
-}
-```
+#### `bool pico_rtos_io_close(pico_rtos_io_t *io)`
+Closes an I/O channel and releases resources.
 
 ---
 
-## 🔄 Version Compatibility
+## Universal Timeouts
+Consistent timeout handling. Defined in `include/pico_rtos/timeout.h`.
 
-### v0.3.0 Compatibility
-- **100% backward compatible** with v0.2.1 and earlier
-- All existing APIs continue to work unchanged
-- New features are additive and optional
-- Configuration migration tools available
+### Constants
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `PICO_RTOS_NO_WAIT` | `0` | Return immediately |
+| `PICO_RTOS_WAIT_FOREVER` | `0xFFFFFFFF` | Block indefinitely |
 
-### Migration Notes
-- No code changes required for existing applications
-- New features can be adopted incrementally
-- See [Migration Guide](migration_guide.md) for details
+#### `bool pico_rtos_timeout_init(pico_rtos_timeout_t *timeout, uint32_t ms)`
+Initializes a timeout tracker.
+
+#### `bool pico_rtos_timeout_expired(pico_rtos_timeout_t *timeout)`
+Checks if timeout has elapsed.
+
+#### `uint32_t pico_rtos_timeout_remaining(pico_rtos_timeout_t *timeout)`
+Returns remaining milliseconds.
 
 ---
 
-**API Reference Version**: v0.3.0  
-**Last Updated**: July 25, 2025  
-**Compatibility**: v0.1.0, v0.2.0, v0.2.1, v0.3.0
+## See Also
+
+- [User Guide](user_guide.md) — Conceptual overview and patterns
+- [Multi-Core Guide](multicore.md) — SMP programming details
+- [Error Codes](error_codes.md) — Complete error reference
+
+---
+
+**API Reference Version**: v0.3.1  
+**Last Updated**: December 2025

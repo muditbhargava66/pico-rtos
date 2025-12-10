@@ -2,7 +2,7 @@
 
 This guide provides comprehensive information on optimizing performance with Pico-RTOS across all versions.
 
-**Current Version**: v0.3.0 "Advanced Synchronization & Multi-Core"
+**Current Version**: v0.3.1 "Advanced Synchronization & Multi-Core"
 
 ## 🎯 Performance Overview
 
@@ -11,13 +11,13 @@ This guide provides comprehensive information on optimizing performance with Pic
 - **Low Latency**: Minimal interrupt and context switch overhead
 - **High Throughput**: Maximum task execution efficiency
 - **Memory Efficiency**: Optimal RAM and flash usage
-- **Multi-Core Scaling**: Effective dual-core utilization *(v0.3.0)*
+- **Multi-Core Scaling**: Effective dual-core utilization *(v0.3.1)*
 
 ### Key Metrics
 - **Context Switch Time**: 50-100 CPU cycles (ARM Cortex-M0+)
 - **Interrupt Latency**: <10 cycles to ISR entry
 - **Memory Overhead**: ~2KB base system + per-task overhead
-- **Multi-Core Efficiency**: 80-95% scaling on RP2040 *(v0.3.0)*
+- **Multi-Core Efficiency**: 80-95% scaling on RP2040 *(v0.3.1)*
 
 ---
 
@@ -102,7 +102,7 @@ printf("Stack used: %lu/%lu bytes (%.1f%%)\n",
        (float)info.stack_used / info.stack_size * 100);
 ```
 
-#### Memory Pool Usage *(v0.3.0)*
+#### Memory Pool Usage *(v0.3.1)*
 ```c
 // Use memory pools for frequent allocations
 pico_rtos_memory_pool_t message_pool;
@@ -124,7 +124,7 @@ void fast_free(void *ptr) {
 
 ---
 
-## 🚀 Multi-Core Performance *(v0.3.0)*
+## 🚀 Multi-Core Performance *(v0.3.1)*
 
 ### SMP Scheduler Optimization
 
@@ -229,7 +229,7 @@ void consumer_task(void *param) {
 
 ## 🔄 Synchronization Performance
 
-### Event Groups vs Traditional Methods *(v0.3.0)*
+### Event Groups vs Traditional Methods *(v0.3.1)*
 
 #### Performance Comparison
 ```c
@@ -260,7 +260,7 @@ void wait_efficient() {
 }
 ```
 
-### Stream Buffer Performance *(v0.3.0)*
+### Stream Buffer Performance *(v0.3.1)*
 
 #### Zero-Copy Optimization
 ```c
@@ -314,7 +314,7 @@ pico_rtos_stream_buffer_init(&data_stream, stream_buffer,
 
 ## 📊 Performance Monitoring
 
-### Built-in Profiling *(v0.3.0)*
+### Built-in Profiling *(v0.3.1)*
 
 #### Execution Time Profiling
 ```c
@@ -362,7 +362,7 @@ void monitor_system_performance() {
 
 ### Task Performance Analysis
 
-#### Task Inspection *(v0.3.0)*
+#### Task Inspection *(v0.3.1)*
 ```c
 void analyze_task_performance(pico_rtos_task_t *task) {
     pico_rtos_task_info_t info;
@@ -398,7 +398,7 @@ set(PICO_RTOS_MAX_TASKS 16)                    # Adjust to actual needs
 set(PICO_RTOS_DEFAULT_TASK_STACK_SIZE 1024)    # Start conservative
 set(PICO_RTOS_IDLE_TASK_STACK_SIZE 256)        # Minimal for idle
 
-# v0.3.0 feature limits
+# v0.3.1 feature limits
 set(PICO_RTOS_MAX_EVENT_GROUPS 8)              # Adjust to usage
 set(PICO_RTOS_MAX_STREAM_BUFFERS 4)            # Adjust to usage
 set(PICO_RTOS_MAX_MEMORY_POOLS 4)              # Adjust to usage
@@ -424,7 +424,7 @@ set(PICO_RTOS_TICK_RATE_HZ 500)   # 2ms resolution
 
 ### Feature-Specific Optimization
 
-#### Multi-Core Settings *(v0.3.0)*
+#### Multi-Core Settings *(v0.3.1)*
 ```cmake
 # Optimize load balancing
 set(PICO_RTOS_LOAD_BALANCE_THRESHOLD 75)       # Trigger at 75% CPU
@@ -444,10 +444,10 @@ set(PICO_RTOS_IPC_CHANNEL_BUFFER_SIZE 512)     # Adjust to message sizes
 ```
 Configuration          | Context Switch Time | Memory Overhead
 --------------------- | ------------------- | ---------------
-Minimal (v0.3.0)     | 52 cycles (0.42μs) | 1.8KB + stacks
-Default (v0.3.0)      | 58 cycles (0.46μs) | 2.4KB + stacks  
-Full (v0.3.0)         | 65 cycles (0.52μs) | 3.2KB + stacks
-Multi-Core (v0.3.0)   | 68 cycles (0.54μs) | 3.6KB + stacks
+Minimal (v0.3.1)     | 52 cycles (0.42μs) | 1.8KB + stacks
+Default (v0.3.1)      | 58 cycles (0.46μs) | 2.4KB + stacks  
+Full (v0.3.1)         | 65 cycles (0.52μs) | 3.2KB + stacks
+Multi-Core (v0.3.1)   | 68 cycles (0.54μs) | 3.6KB + stacks
 ```
 
 ### Synchronization Benchmarks
@@ -459,12 +459,12 @@ Operation                    | Time (cycles) | Time (μs)
 Mutex Lock/Unlock           | 28            | 0.22
 Semaphore Take/Give          | 24            | 0.19
 Queue Send/Receive           | 32            | 0.26
-Event Group Set/Wait (v0.3.0)| 26            | 0.21
-Stream Buffer Send (v0.3.0)  | 35            | 0.28
-Memory Pool Alloc (v0.3.0)   | 18            | 0.14
+Event Group Set/Wait (v0.3.1)| 26            | 0.21
+Stream Buffer Send (v0.3.1)  | 35            | 0.28
+Memory Pool Alloc (v0.3.1)   | 18            | 0.14
 ```
 
-### Multi-Core Scaling *(v0.3.0)*
+### Multi-Core Scaling *(v0.3.1)*
 
 #### Parallel Processing Efficiency
 ```
@@ -488,12 +488,12 @@ Mixed Workload          | 100%        | 175%      | 87.5%
 4. **Avoid Busy Waiting**: Use proper synchronization
 
 #### Memory Management
-1. **Use Memory Pools**: For frequent allocations *(v0.3.0)*
+1. **Use Memory Pools**: For frequent allocations *(v0.3.1)*
 2. **Monitor Usage**: Track memory consumption
 3. **Avoid Fragmentation**: Use consistent allocation patterns
 4. **Stack Monitoring**: Check for overflow risks
 
-### Multi-Core Guidelines *(v0.3.0)*
+### Multi-Core Guidelines *(v0.3.1)*
 
 #### Task Distribution
 1. **Identify Parallelizable Work**: Look for independent tasks
@@ -555,11 +555,11 @@ void good_blocking(void *param) {
 ### Diagnostic Tools
 
 #### Performance Analysis Checklist
-1. **Profile Critical Paths**: Use execution profiling *(v0.3.0)*
+1. **Profile Critical Paths**: Use execution profiling *(v0.3.1)*
 2. **Monitor System Stats**: Check CPU and memory usage
-3. **Analyze Task Behavior**: Use task inspection *(v0.3.0)*
+3. **Analyze Task Behavior**: Use task inspection *(v0.3.1)*
 4. **Check Synchronization**: Look for contention points
-5. **Validate Multi-Core Usage**: Ensure load balancing *(v0.3.0)*
+5. **Validate Multi-Core Usage**: Ensure load balancing *(v0.3.1)*
 
 #### Common Issues and Solutions
 
@@ -609,13 +609,13 @@ if (pool_stats.fragmentation_percent > 25) {
 - [ ] Use appropriate synchronization primitives
 - [ ] Implement efficient interrupt handling
 
-### v0.3.0 Features
+### v0.3.1 Features
 - [ ] Evaluate event groups for complex synchronization
 - [ ] Consider stream buffers for variable-length data
 - [ ] Use memory pools for frequent allocations
 - [ ] Enable multi-core support where beneficial
 
-### Multi-Core Optimization *(v0.3.0)*
+### Multi-Core Optimization *(v0.3.1)*
 - [ ] Identify parallelizable workloads
 - [ ] Configure load balancing appropriately
 - [ ] Set core affinity for critical tasks
@@ -629,6 +629,6 @@ if (pool_stats.fragmentation_percent > 25) {
 
 ---
 
-**Performance Guide Version**: v0.3.0  
+**Performance Guide Version**: v0.3.1  
 **Last Updated**: July 25, 2025  
 **Benchmark Platform**: RP2040 @ 125MHz

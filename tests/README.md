@@ -1,6 +1,6 @@
-# Pico-RTOS v0.3.0 Test Suite
+# Pico-RTOS v0.3.1 Test Suite
 
-This directory contains the comprehensive test suite for Pico-RTOS v0.3.0, covering all features and ensuring production quality.
+This directory contains the comprehensive test suite for Pico-RTOS v0.3.1, covering all features and ensuring production quality.
 
 ## 🧪 Test Categories
 
@@ -12,39 +12,39 @@ This directory contains the comprehensive test suite for Pico-RTOS v0.3.0, cover
 - **`timer_test.c`** - Software timer functionality
 - **`blocking_performance_test.c`** - Blocking system performance
 
-### v0.3.0 Advanced Synchronization Tests
+### v0.3.1 Advanced Synchronization Tests
 - **`event_group_test.c`** - Event group basic functionality
 - **`comprehensive_event_group_test.c`** - Comprehensive event group testing
 - **`stream_buffer_test.c`** - Stream buffer basic operations
 - **`stream_buffer_concurrent_test.c`** - Concurrent stream buffer access
 - **`stream_buffer_performance_test.c`** - Stream buffer performance
 
-### v0.3.0 Memory Management Tests
+### v0.3.1 Memory Management Tests
 - **`memory_pool_test.c`** - Memory pool basic functionality
 - **`memory_pool_performance_test.c`** - Memory pool performance
 - **`memory_pool_statistics_test.c`** - Memory pool statistics
 - **`mpu_test.c`** - Memory Protection Unit functionality
 
-### v0.3.0 Multi-Core Tests
+### v0.3.1 Multi-Core Tests
 - **`smp_test.c`** - SMP scheduler functionality
 - **`inter_core_sync_test.c`** - Inter-core synchronization
 - **`multicore_comprehensive_test.c`** - Comprehensive multi-core testing
 - **`core_failure_test.c`** - Core failure detection and recovery
 - **`core_failure_integration_test.c`** - Core failure integration
 
-### v0.3.0 Debugging & Profiling Tests
+### v0.3.1 Debugging & Profiling Tests
 - **`debug_test.c`** - Runtime task inspection
 - **`profiler_test.c`** - Execution time profiling
 - **`trace_test.c`** - System event tracing
 - **`assertion_test.c`** - Enhanced assertion handling
 
-### v0.3.0 System Extension Tests
+### v0.3.1 System Extension Tests
 - **`io_test.c`** - I/O abstraction layer
 - **`hires_timer_test.c`** - High-resolution timers
 - **`timeout_test.c`** - Universal timeout support
 - **`logging_test.c`** - Multi-level logging system
 
-### v0.3.0 Quality Assurance Tests
+### v0.3.1 Quality Assurance Tests
 - **`deadlock_test.c`** - Deadlock detection system
 - **`health_test.c`** - System health monitoring
 - **`watchdog_test.c`** - Hardware watchdog integration
@@ -112,7 +112,7 @@ make performance_tests
 Tests are run with multiple configurations:
 - **Minimal**: Basic features only
 - **Default**: Standard feature set
-- **Full**: All v0.3.0 features enabled
+- **Full**: All v0.3.1 features enabled
 
 ## 🔧 Test Infrastructure
 
@@ -134,7 +134,7 @@ Tests are run with multiple configurations:
 - Memory management
 - Timer functionality
 
-### v0.3.0 Features: 100% ✅
+### v0.3.1 Features: 100% ✅
 - Event groups and stream buffers
 - Memory pools and MPU support
 - Multi-core and SMP functionality
@@ -231,7 +231,7 @@ pico_enable_stdio_usb(new_feature_test 1)
 
 ## 🎉 Test Results
 
-All tests in this suite have been validated for **Pico-RTOS v0.3.0** and are part of the production-ready release. The comprehensive test coverage ensures:
+All tests in this suite have been validated for **Pico-RTOS v0.3.1** and are part of the production-ready release. The comprehensive test coverage ensures:
 
 - ✅ **Functional Correctness**: All features work as specified
 - ✅ **Performance Compliance**: Real-time requirements met
@@ -241,4 +241,4 @@ All tests in this suite have been validated for **Pico-RTOS v0.3.0** and are par
 
 ---
 
-**Test Suite Status**: ✅ **PRODUCTION READY** for v0.3.0
+**Test Suite Status**: ✅ **PRODUCTION READY** for v0.3.1

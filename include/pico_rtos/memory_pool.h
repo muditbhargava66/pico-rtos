@@ -11,7 +11,7 @@
 
 /**
  * @file memory_pool.h
- * @brief Memory Pool Management for Pico-RTOS v0.3.0
+ * @brief Memory Pool Management for Pico-RTOS v0.3.1
  * 
  * This module provides O(1) fixed-size block allocation and deallocation
  * using memory pools. Memory pools reduce fragmentation and provide

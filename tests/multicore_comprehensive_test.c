@@ -1,6 +1,6 @@
 /**
  * @file multicore_comprehensive_test.c
- * @brief Comprehensive multi-core tests for all v0.3.0 synchronization primitives
+ * @brief Comprehensive multi-core tests for all v0.3.1 synchronization primitives
  * 
  * Tests multi-core task distribution, synchronization, and coordination
  * across event groups, stream buffers, memory pools, and SMP features.
@@ -433,7 +433,7 @@ static void test_multicore_synchronization_integrity(void) {
 static void run_multicore_comprehensive_tests(void) {
     printf("\n");
     printf("====================================================\n");
-    printf("  Multi-Core Comprehensive Tests (Pico-RTOS v0.3.0)\n");
+    printf("  Multi-Core Comprehensive Tests (Pico-RTOS v0.3.1)\n");
     printf("====================================================\n");
     
     test_multicore_initialization();

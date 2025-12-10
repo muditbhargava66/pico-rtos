@@ -5,6 +5,32 @@ All notable changes to Pico-RTOS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2025-12-10 - **BUG FIX RELEASE**
+
+### Enhanced
+- **Documentation**: Updated all documentation to reflect v0.3.1, including new specific guides for API, Migration, Performance, and Troubleshooting.
+
+### Fixed
+- **Tests**: Fixed integer overflow in `stream_buffer_performance_test.c` throughput calculation.
+- Fixed compilation and linking errors in `release/v0.3.1`:
+  - **Version Macro Redefinition**: Fixed `PICO_RTOS_VERSION_...` macro redefinitions in `include/pico_rtos.h`.
+  - **Stream Buffer Type Mismatch**: Merged `pico_rtos_stream_buffer_error_t` into `pico_rtos_error_t` to resolve type incompatibilities.
+  - **Linker Errors**: Added missing `pico_multicore` and `pico_sync` dependencies to `pico_rtos` library target.
+  - **Deprecation Warnings**: Fixed missing prototype for `pico_rtos_check_configuration_warnings` in `include/pico_rtos/deprecation.h`.
+  - **Test Suite**: Fixed implicit function declaration errors in `tests/deprecation_test.c`.
+  - **Build Warnings**: Supressed internal migration warnings to clean up build output.
+
+- Fixed compilation error in `smp.c` with implicit declaration of `multicore_launch_core1` ([#3](https://github.com/muditbhargava66/pico-rtos/issues/3))
+  - Replaced non-standard `PICO_PLATFORM` macro with standard Pico SDK `PICO_ON_DEVICE` macro
+  - Added proper guards around multicore hardware functions
+  - Added fallback behavior for non-device builds (testing environments)
+
+- Fixed `make menuconfig` failing with unrecognized arguments error ([#4](https://github.com/muditbhargava66/pico-rtos/issues/4))
+  - Added missing command-line argument support (`--config-file`, `--cmake-file`, `--header-file`)
+  - Fixed configuration file generation to properly iterate over Kconfig symbols
+  - Fixed defconfig file format to use proper `CONFIG_` prefix for kconfiglib compatibility
+  - Added `--show-config` and `--load-defaults` argument aliases for compatibility
+
 ## [0.3.0] - 2025-07-26 - **ADVANCED SYNCHRONIZATION & MULTI-CORE** 🚀
 
 ### 🎯 Major Features
@@ -342,6 +368,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Error Code Reference**: Complete catalog with causes and solutions
   - **Logging System Guide**: Usage patterns and best practices
   - **Menuconfig Guide**: Interactive configuration system documentation
+  - **Menuconfig Guide**: Interactive configuration system documentation
   - Updated User Guide and API Reference with v0.2.1 features
 - **Build System Integration**: Seamless integration of menuconfig with existing CMake workflow
   - `make build` automatically uses menuconfig-generated configuration
@@ -485,6 +512,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved header organization with proper include guards
 - Enhanced API design with consistent return values
 - Standardized error handling across all functions
+- Updated documentation to match implementation
 - Updated documentation to match implementation
 
 ### Removed

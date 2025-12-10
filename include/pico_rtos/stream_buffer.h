@@ -11,7 +11,7 @@
 
 /**
  * @file stream_buffer.h
- * @brief Stream Buffer Implementation for Pico-RTOS v0.3.0
+ * @brief Stream Buffer Implementation for Pico-RTOS v0.3.1
  * 
  * Stream buffers provide efficient variable-length message passing between tasks
  * with optional zero-copy semantics for large data transfers. They use circular
@@ -53,16 +53,18 @@ struct pico_rtos_block_object;
 // =============================================================================
 
 /** @brief Stream Buffer specific error codes */
-typedef enum {
-    PICO_RTOS_STREAM_BUFFER_ERROR_NONE = 0,
-    PICO_RTOS_STREAM_BUFFER_ERROR_INVALID_PARAM = 220,
-    PICO_RTOS_STREAM_BUFFER_ERROR_BUFFER_FULL = 221,
-    PICO_RTOS_STREAM_BUFFER_ERROR_BUFFER_EMPTY = 222,
-    PICO_RTOS_STREAM_BUFFER_ERROR_MESSAGE_TOO_LARGE = 223,
-    PICO_RTOS_STREAM_BUFFER_ERROR_TIMEOUT = 224,
-    PICO_RTOS_STREAM_BUFFER_ERROR_DELETED = 225,
-    PICO_RTOS_STREAM_BUFFER_ERROR_ZERO_COPY_ACTIVE = 226
-} pico_rtos_stream_buffer_error_t;
+/** @brief Stream Buffer specific error codes */
+// NOTE: Error codes are now defined in pico_rtos/error.h for global access
+// typedef enum {
+//     PICO_RTOS_STREAM_BUFFER_ERROR_NONE = 0,
+//     PICO_RTOS_STREAM_BUFFER_ERROR_INVALID_PARAM = 220,
+//     PICO_RTOS_STREAM_BUFFER_ERROR_BUFFER_FULL = 221,
+//     PICO_RTOS_STREAM_BUFFER_ERROR_BUFFER_EMPTY = 222,
+//     PICO_RTOS_STREAM_BUFFER_ERROR_MESSAGE_TOO_LARGE = 223,
+//     PICO_RTOS_STREAM_BUFFER_ERROR_TIMEOUT = 224,
+//     PICO_RTOS_STREAM_BUFFER_ERROR_DELETED = 225,
+//     PICO_RTOS_STREAM_BUFFER_ERROR_ZERO_COPY_ACTIVE = 226
+// } pico_rtos_stream_buffer_error_t;
 
 // =============================================================================
 // DATA STRUCTURES

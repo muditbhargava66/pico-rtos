@@ -1,4 +1,4 @@
-# Python dependencies for Pico-RTOS build system
+# Python dependencies for Pico-RTOS v0.3.1 build system
 # Install with: pip install -r requirements.txt
 
 # Kconfig library for menuconfig functionality

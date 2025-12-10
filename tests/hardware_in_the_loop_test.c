@@ -1,6 +1,6 @@
 /**
  * @file hardware_in_the_loop_test.c
- * @brief Hardware-in-the-loop validation tests for Pico-RTOS v0.3.0
+ * @brief Hardware-in-the-loop validation tests for Pico-RTOS v0.3.1
  * 
  * Comprehensive hardware tests on actual RP2040 devices:
  * - Multi-core functionality with real hardware timing
@@ -644,7 +644,7 @@ static void test_hardware_specific_features(void) {
 static void run_hardware_in_the_loop_tests(void) {
     printf("\n");
     printf("==========================================================\n");
-    printf("  Hardware-in-the-Loop Validation Tests (Pico-RTOS v0.3.0)\n");
+    printf("  Hardware-in-the-Loop Validation Tests (Pico-RTOS v0.3.1)\n");
     printf("==========================================================\n");
     
     test_hardware_initialization();

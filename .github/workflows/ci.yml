@@ -8,22 +8,13 @@ on:
 
 env:
   BUILD_TYPE: Release
+  ARM_TOOLCHAIN_VERSION: "13.3.rel1"
 
 jobs:
-  # Simplified build matrix
-  build:
-    name: Build (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        include:
-          - os: ubuntu-latest
-            install-deps: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi cmake ninja-build
-          - os: macos-latest
-            install-deps: brew tap armmbed/homebrew-formulae && brew install armmbed/formulae/arm-none-eabi-gcc cmake ninja
+  # Build on Ubuntu
+  build-ubuntu:
+    name: Build (Ubuntu)
+    runs-on: ubuntu-latest
     
     steps:
     - name: Checkout code
@@ -37,32 +28,78 @@ jobs:
         python-version: '3.11'
     
     - name: Install system dependencies
-      run: ${{ matrix.install-deps }}
-      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-arm-none-eabi cmake ninja-build
     
     - name: Setup Pico SDK
       run: git submodule update --init --recursive
-      shell: bash
     
     - name: Configure and build
       run: |
         python3 scripts/build.py configure --build-type Release --enable-examples
         python3 scripts/build.py build
-      shell: bash
     
     - name: Run build system tests
       run: python3 tests/build_system_test.py
-      shell: bash
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
-      if: matrix.os == 'ubuntu-latest'
       with:
-        name: pico-rtos-build-${{ github.sha }}
+        name: pico-rtos-build-ubuntu-${{ github.sha }}
         path: |
           build/libpico_rtos.a
           build/*.uf2
         retention-days: 7
+
+  # Build on macOS with ARM toolchain from official source
+  build-macos:
+    name: Build (macOS)
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install build tools
+      run: |
+        brew install cmake ninja
+    
+    - name: Download ARM toolchain
+      run: |
+        # Download ARM GNU Toolchain from official ARM website
+        TOOLCHAIN_URL="https://developer.arm.com/-/media/Files/downloads/gnu/${{ env.ARM_TOOLCHAIN_VERSION }}/binrel/arm-gnu-toolchain-${{ env.ARM_TOOLCHAIN_VERSION }}-darwin-arm64-arm-none-eabi.tar.xz"
+        
+        echo "Downloading ARM toolchain from: $TOOLCHAIN_URL"
+        curl -L -o arm-toolchain.tar.xz "$TOOLCHAIN_URL"
+        
+        # Extract to /opt
+        sudo mkdir -p /opt/arm-gnu-toolchain
+        sudo tar -xf arm-toolchain.tar.xz -C /opt/arm-gnu-toolchain --strip-components=1
+        
+        # Add to PATH
+        echo "/opt/arm-gnu-toolchain/bin" >> $GITHUB_PATH
+        
+        # Verify installation
+        /opt/arm-gnu-toolchain/bin/arm-none-eabi-gcc --version
+    
+    - name: Setup Pico SDK
+      run: git submodule update --init --recursive
+    
+    - name: Configure and build
+      run: |
+        python3 scripts/build.py configure --build-type Release --enable-examples
+        python3 scripts/build.py build
+    
+    - name: Run build system tests
+      run: python3 tests/build_system_test.py
 
   # Basic code quality checks
   code-quality:
