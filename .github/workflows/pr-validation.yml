@@ -6,9 +6,10 @@ on:
 
 env:
   BUILD_TYPE: Release
+  ARM_TOOLCHAIN_VERSION: "13.3.rel1"
 
 jobs:
-  # Quick validation for draft PRs
+  # Quick validation for draft PRs (Ubuntu only)
   draft-validation:
     name: Draft PR Quick Check
     runs-on: ubuntu-latest
@@ -36,21 +37,11 @@ jobs:
         python3 scripts/build.py configure --build-type Debug
         python3 scripts/build.py build
 
-  # Full validation for ready PRs
-  pr-validation:
-    name: PR Validation (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
+  # Full validation for ready PRs - Ubuntu
+  pr-validation-ubuntu:
+    name: PR Validation (Ubuntu)
+    runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
-    
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        include:
-          - os: ubuntu-latest
-            install-deps: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi cmake
-          - os: macos-latest
-            install-deps: brew tap armmbed/homebrew-formulae && brew install armmbed/formulae/arm-none-eabi-gcc cmake ninja
     
     steps:
     - name: Checkout code
@@ -64,7 +55,58 @@ jobs:
         python-version: '3.11'
     
     - name: Install system dependencies
-      run: ${{ matrix.install-deps }}
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-arm-none-eabi cmake ninja-build
+    
+    - name: Setup Pico SDK
+      run: git submodule update --init --recursive
+    
+    - name: Configure and build
+      run: |
+        python3 scripts/build.py configure --build-type Release --enable-examples
+        python3 scripts/build.py build
+    
+    - name: Run build system tests
+      run: python3 tests/build_system_test.py
+
+  # Full validation for ready PRs - macOS
+  pr-validation-macos:
+    name: PR Validation (macOS)
+    runs-on: macos-latest
+    if: github.event.pull_request.draft == false
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+      with:
+        submodules: recursive
+    
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.11'
+    
+    - name: Install build tools
+      run: brew install cmake ninja
+    
+    - name: Download ARM toolchain
+      run: |
+        # Download ARM GNU Toolchain from official ARM website
+        TOOLCHAIN_URL="https://developer.arm.com/-/media/Files/downloads/gnu/${{ env.ARM_TOOLCHAIN_VERSION }}/binrel/arm-gnu-toolchain-${{ env.ARM_TOOLCHAIN_VERSION }}-darwin-arm64-arm-none-eabi.tar.xz"
+        
+        echo "Downloading ARM toolchain from: $TOOLCHAIN_URL"
+        curl -L -o arm-toolchain.tar.xz "$TOOLCHAIN_URL"
+        
+        # Extract to /opt
+        sudo mkdir -p /opt/arm-gnu-toolchain
+        sudo tar -xf arm-toolchain.tar.xz -C /opt/arm-gnu-toolchain --strip-components=1
+        
+        # Add to PATH
+        echo "/opt/arm-gnu-toolchain/bin" >> $GITHUB_PATH
+        
+        # Verify installation
+        /opt/arm-gnu-toolchain/bin/arm-none-eabi-gcc --version
     
     - name: Setup Pico SDK
       run: git submodule update --init --recursive
